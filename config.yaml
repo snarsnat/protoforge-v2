@@ -40,7 +40,7 @@ sandbox:
 
 # Skills configuration
 skills:
-  path: ./skills
+  path: ../skills
   container_path: /mnt/skills
 
 # Title generation

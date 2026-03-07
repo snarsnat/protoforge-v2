@@ -41,7 +41,6 @@ class ModelUpdate(BaseModel):
 
 
 class SkillUpdate(BaseModel):
-    name: str
     enabled: bool
 
 
