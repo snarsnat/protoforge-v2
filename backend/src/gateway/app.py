@@ -196,8 +196,12 @@ async def reload_memory():
 @app.post("/api/generate")
 async def generate(request: GenerateRequest):
     """Generate a prototype using AI"""
+    import traceback
     try:
         from src.gateway.generator import ProtoForgeGenerator
+        
+        print(f"Generating: mode={request.mode}, provider={request.provider}")
+        print(f"Prompt: {request.prompt[:100]}...")
         
         # Create generator
         generator = ProtoForgeGenerator(
@@ -212,10 +216,13 @@ async def generate(request: GenerateRequest):
             project_dir="./data/projects"
         )
         
+        print(f"Generated {len(result.get('files', []))} files")
         return result
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Generate error: {e}")
+        traceback.print_exc()
+        return {"error": str(e), "files": [], "mode": request.mode}
 
 
 @app.post("/api/threads/{thread_id}/uploads")

@@ -581,21 +581,39 @@ flowchart TB
         
         return bom
     
+    def _load_design_system(self) -> str:
+        """Load the design system guidelines"""
+        try:
+            design_path = Path(__file__).parent.parent.parent.parent / "DESIGN_SYSTEM.md"
+            if design_path.exists():
+                return design_path.read_text()
+        except:
+            pass
+        return ""
+    
     def _generate_code(self, prompt: str, analysis: Dict) -> Dict[str, str]:
         """Generate code using AI"""
         
-        system_prompt = """You are a web developer. Generate a complete web application based on the user's request.
-Return ONLY a JSON object with these keys:
-- html: Complete HTML file
-- css: Complete CSS file  
-- js: Complete JavaScript file
+        design_system = self._load_design_system()
+        
+        system_prompt = f"""You are a world-class web developer. Generate a complete, functional web application.
 
-Make it functional, modern, and complete. Include all necessary HTML, CSS, and JS in the response."""
+IMPORTANT - You MUST follow the design system below:
+{design_system}
+
+Return ONLY a JSON object with these keys:
+- html: Complete HTML file with inline CSS and JS if simple, or link to external files
+- css: Complete CSS file (can be empty if HTML is self-contained)
+- js: Complete JavaScript file (can be empty if HTML is self-contained)
+
+Make it beautiful, distinctive, and anti-generic. NO purple, NO rounded corners, NO friendly AI aesthetics.
+Use dark theme, monospace fonts, sharp edges, red/yellow accents."""
         
         user_prompt = f"Create a web application for: {prompt}\n\nAnalysis: {json.dumps(analysis)}"
         
         try:
             response = self._call_ai(system_prompt, user_prompt)
+            print(f"AI Response: {response[:500]}...")
             
             # Try to extract JSON
             start = response.find('{')
@@ -605,7 +623,12 @@ Make it functional, modern, and complete. Include all necessary HTML, CSS, and J
         except Exception as e:
             print(f"Code generation error: {e}")
         
-        return {}
+        # Return default styled code if AI fails
+        return {
+            'html': self._default_html(prompt, analysis),
+            'css': self._default_css(analysis),
+            'js': self._default_js(analysis)
+        }
     
     def _default_html(self, prompt: str, analysis: Dict) -> str:
         """Default HTML template"""
