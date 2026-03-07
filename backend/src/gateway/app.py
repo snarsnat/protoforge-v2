@@ -48,6 +48,13 @@ class MCPConfig(BaseModel):
     mcpServers: dict
 
 
+class GenerateRequest(BaseModel):
+    prompt: str
+    mode: str = "software"  # software, hardware, hybrid
+    api_key: str
+    provider: str = "openai"
+
+
 # Routes
 @app.get("/")
 async def root():
@@ -184,6 +191,31 @@ async def reload_memory():
     """Reload memory"""
     # Would reload from disk
     return {"success": True}
+
+
+@app.post("/api/generate")
+async def generate(request: GenerateRequest):
+    """Generate a prototype using AI"""
+    try:
+        from src.gateway.generator import ProtoForgeGenerator
+        
+        # Create generator
+        generator = ProtoForgeGenerator(
+            api_key=request.api_key,
+            provider=request.provider
+        )
+        
+        # Generate
+        result = generator.generate(
+            prompt=request.prompt,
+            mode=request.mode,
+            project_dir="./data/projects"
+        )
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/threads/{thread_id}/uploads")
