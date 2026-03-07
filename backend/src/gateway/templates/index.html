@@ -369,7 +369,7 @@
             const text = document.getElementById('statusText');
             if (connected && config) {
                 dot.classList.add('ready');
-                text = textContent = config.provider.toUpperCase();
+                text.textContent = config.provider.toUpperCase();
             } else {
                 dot.classList.remove('ready');
                 text.textContent = 'Offline';
