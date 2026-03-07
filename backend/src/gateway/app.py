@@ -49,6 +49,24 @@ class MCPConfig(BaseModel):
 
 
 # Routes
+@app.get("/")
+async def root():
+    """Root endpoint - API info"""
+    return {
+        "service": "ProtoForge Gateway",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+        "endpoints": {
+            "models": "/api/models",
+            "skills": "/api/skills",
+            "memory": "/api/memory",
+            "mcp": "/api/mcp/config",
+            "uploads": "/api/threads/{id}/uploads"
+        }
+    }
+
+
 @app.get("/health")
 async def health():
     """Health check"""
