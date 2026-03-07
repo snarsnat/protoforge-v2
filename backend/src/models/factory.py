@@ -4,9 +4,11 @@ Creates LLM instances from configuration
 """
 
 import os
-from typing import Optional, Any
-from langchain.chat_models import ChatOpenAI
-from langchain_core.language_models import BaseChatModel
+from typing import Optional, Any, TYPE_CHECKING
+
+# Lazy imports to avoid slow module loading
+if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
 
 from src.config import get_config
 
@@ -14,7 +16,7 @@ from src.config import get_config
 class ModelFactory:
     """Factory for creating language models"""
     
-    _instances: dict[str, BaseChatModel] = {}
+    _instances: dict = {}
     
     @classmethod
     def create_chat_model(
@@ -22,7 +24,7 @@ class ModelFactory:
         name: str,
         thinking_enabled: bool = False,
         **kwargs
-    ) -> BaseChatModel:
+    ) -> "BaseChatModel":
         """Create a chat model instance"""
         
         # Check cache
@@ -66,7 +68,7 @@ class ModelFactory:
         cls,
         path: str,
         **kwargs
-    ) -> BaseChatModel:
+    ) -> "BaseChatModel":
         """Create model from class path"""
         
         # Parse path (e.g., "langchain_openai:ChatOpenAI")
@@ -115,7 +117,7 @@ class ModelFactory:
         ]
     
     @classmethod
-    def get_default_model(cls) -> BaseChatModel:
+    def get_default_model(cls) -> "BaseChatModel":
         """Get default model"""
         config = get_config()
         if not config.models:

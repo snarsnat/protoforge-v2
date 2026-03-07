@@ -20,8 +20,7 @@ help:
 check:
 	@echo "Checking prerequisites..."
 	@command -v python3 >/dev/null 2>&1 || { echo "Python3 required"; exit 1; }
-	@command -v pnpm >/dev/null 2>&1 || { echo "pnpm required"; exit 1; }
-	@command -v uv >/dev/null 2>&1 || { echo "uv required"; exit 1; }
+	@command -v pip3 >/dev/null 2>&1 || { echo "pip3 required"; exit 1; }
 	@echo "All prerequisites met"
 
 # Install all dependencies
