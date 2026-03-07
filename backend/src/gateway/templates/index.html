@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProtoForge ⚡</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1c1c1c;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --accent: #ff3e00;
+            --border: #333333;
+            --font-mono: 'SF Mono', 'Fira Code', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .logo { font-family: var(--font-mono); font-size: 1.5rem; }
+        .logo span { color: var(--accent); }
+        
+        /* Config Panel */
+        .config-panel {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .config-panel.collapsed .panel-content { display: none; }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+        }
+        .panel-header h2 {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+        .panel-content { padding: 1rem; display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; }
+        
+        /* Forms */
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        /* Buttons */
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        button:hover { background: var(--accent); opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Mode Selector */
+        .mode-selector {
+            display: flex;
+            border: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .mode-option { flex: 1; position: relative; }
+        .mode-option input { position: absolute; opacity: 0; }
+        .mode-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border);
+        }
+        .mode-option input:checked + .mode-label {
+            background: var(--accent);
+            color: white;
+        }
+        .mode-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        
+        /* Prompt Box */
+        .prompt-box {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .prompt-box textarea {
+            width: 100%;
+            min-height: 150px;
+            border: none;
+            resize: vertical;
+            padding: 1rem;
+        }
+        .prompt-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            display: none;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Results */
+        .results { display: none; }
+        .results.active { display: block; }
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .results-header h2 {
+            font-family: var(--font-mono);
+            color: var(--accent);
+        }
+        
+        /* Output Cards */
+        .output-grid { display: grid; gap: 1.5rem; }
+        .output-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+        }
+        .card-header {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+        }
+        .card-content { padding: 1rem; }
+        
+        /* Diagrams */
+        .mermaid-container {
+            background: var(--bg-primary);
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        
+        /* Files */
+        .file-list { list-style: none; }
+        .file-list li {
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+        }
+        
+        /* Status */
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+        }
+        .status-dot.connected { background: var(--accent); }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 2px solid var(--border);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⚡ <span>ProtoForge</span></div>
+            <div class="status">
+                <span class="status-dot" id="apiStatus"></span>
+                <span id="apiStatusText">API: Not connected</span>
+            </div>
+        </header>
+
+        <!-- Config -->
+        <section class="config-panel" id="configPanel">
+            <div class="panel-header" onclick="toggleConfig()">
+                <h2>// Configuration</h2>
+                <span>−</span>
+            </div>
+            <div class="panel-content">
+                <div>
+                    <label>Provider</label>
+                    <select id="provider">
+                        <option value="openai">OpenAI</option>
+                        <option value="anthropic">Anthropic</option>
+                        <option value="deepseek">DeepSeek</option>
+                    </select>
+                </div>
+                <div>
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-...">
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button onclick="saveConfig()">Connect</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mode Selector -->
+        <section class="mode-selector">
+            <label class="mode-option">
+                <input type="radio" name="mode" value="software" checked>
+                <span class="mode-label">
+                    <span class="mode-icon">🖥️</span>
+                    Software
+                </span>
+            </label>
+            <label class="mode-option">
+                <input type="radio" name="mode" value="hardware">
+                <span class="mode-label">
+                    <span class="mode-icon">⚡</span>
+                    Hardware
+                </span>
+            </label>
+            <label class="mode-option">
+                <input type="radio" name="mode" value="hybrid">
+                <span class="mode-label">
+                    <span class="mode-icon">🔗</span>
+                    Hybrid
+                </span>
+            </label>
+        </section>
+
+        <!-- Prompt Input -->
+        <section class="prompt-box">
+            <textarea id="prompt" placeholder="Describe what you want to build...&#10;&#10;Example: A temperature monitoring system with LCD display and WiFi alerts"></textarea>
+            <div class="prompt-actions">
+                <span id="charCount">0 chars</span>
+                <button onclick="generate()" id="generateBtn">Generate</button>
+            </div>
+        </section>
+
+        <!-- Loading -->
+        <section class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating your prototype...</p>
+        </section>
+
+        <!-- Results -->
+        <section class="results" id="results">
+            <div class="results-header">
+                <h2>// Generated Output</h2>
+                <button onclick="downloadZip()">↓ Download .zip</button>
+            </div>
+            
+            <div class="output-grid">
+                <!-- Diagrams -->
+                <div class="output-card" id="diagramsCard">
+                    <div class="card-header">📐 Diagrams</div>
+                    <div class="card-content">
+                        <div class="mermaid-container" id="diagramContent">
+                            Diagrams will appear here...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Files -->
+                <div class="output-card">
+                    <div class="card-header">📁 Generated Files</div>
+                    <div class="card-content">
+                        <ul class="file-list" id="fileList">
+                            Files will appear here...
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        ProtoForge // AI Prototyping Engine // Your API Key, Your Data
+    </footer>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentProjectId = null;
+        
+        // Check API on load
+        async function checkAPI() {
+            try {
+                const res = await fetch(API_BASE + '/health');
+                if (res.ok) {
+                    document.getElementById('apiStatus').classList.add('connected');
+                    document.getElementById('apiStatusText').textContent = 'API: Connected';
+                    
+                    // Load saved config
+                    const saved = localStorage.getItem('protoforge_config');
+                    if (saved) {
+                        const config = JSON.parse(saved);
+                        document.getElementById('provider').value = config.provider;
+                        document.getElementById('apiKey').value = config.api_key;
+                    }
+                }
+            } catch (e) {
+                console.error('API not reachable');
+            }
+        }
+        checkAPI();
+
+        function toggleConfig() {
+            document.getElementById('configPanel').classList.toggle('collapsed');
+        }
+
+        function saveConfig() {
+            const provider = document.getElementById('provider').value;
+            const apiKey = document.getElementById('apiKey').value;
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            localStorage.setItem('protoforge_config', JSON.stringify({ provider, api_key: apiKey }));
+            document.getElementById('apiStatus').classList.add('connected');
+            document.getElementById('apiStatusText').textContent = 'API: ' + provider.toUpperCase() + ' connected';
+            document.getElementById('configPanel').classList.add('collapsed');
+        }
+
+        // Character count
+        document.getElementById('prompt').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length + ' chars';
+        });
+
+        async function generate() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please describe what you want to build');
+                return;
+            }
+
+            const config = localStorage.getItem('protoforge_config');
+            if (!config) {
+                alert('Please configure your API key first');
+                document.getElementById('configPanel').classList.remove('collapsed');
+                return;
+            }
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                // For now, show a demo response since we don't have the full agent running
+                // In a full implementation, this would call the /api/generate endpoint
+                await new Promise(r => setTimeout(r, 2000)); // Simulate
+                
+                // Show results
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('results').classList.add('active');
+                
+                // Show demo diagram
+                document.getElementById('diagramContent').innerHTML = `
+                    <pre style="background:#1a1a1a;padding:1rem;overflow:auto;font-size:12px;">
+## ${mode.toUpperCase()} Prototype
+
+Based on your request: "${prompt.slice(0, 50)}..."
+
+### Generated Components:
+- Main Controller
+- Power Supply
+- Sensors/Inputs
+- Outputs/Actuators
+
+### Diagram (Mermaid.js):
+\`\`\`mermaid
+flowchart TB
+    subgraph Power["⚡ Power"]
+        USB["🔌 USB 5V"]
+        VCC["📍 VCC"]
+        GND["📍 GND"]
+    end
+    
+    subgraph MCU["🧠 Controller"]
+        PIN["🎛️ GPIO"]
+    end
+    
+    subgraph Components["📟 Components"]
+        SENSOR["📡 Sensor"]
+        OUTPUT["📤 Output"]
+    end
+    
+    USB --> VCC
+    USB --> GND
+    VCC --> PIN
+    PIN --> SENSOR
+    PIN --> OUTPUT
+\`\`\`
+                    </pre>
+                `;
+                
+                // Show files
+                document.getElementById('fileList').innerHTML = `
+                    <li>📄 README.md</li>
+                    <li>📄 circuit.md</li>
+                    <li>📄 config.json</li>
+                    ${mode !== 'software' ? '<li>🎲 model.obj</li>' : ''}
+                    ${mode !== 'hardware' ? '<li>🌐 index.html</li>' : ''}
+                `;
+                
+            } catch (e) {
+                alert('Error: ' + e.message);
+                document.getElementById('loading').classList.remove('active');
+            }
+            
+            document.getElementById('generateBtn').disabled = false;
+        }
+
+        function downloadZip() {
+            alert('Download feature coming soon!');
+        }
+    </script>
+</body>
+</html>

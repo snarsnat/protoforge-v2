@@ -51,7 +51,12 @@ class MCPConfig(BaseModel):
 # Routes
 @app.get("/")
 async def root():
-    """Root endpoint - API info"""
+    """Root endpoint - Serve UI"""
+    from pathlib import Path
+    template_path = Path(__file__).parent / "templates" / "index.html"
+    if template_path.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(template_path)
     return {
         "service": "ProtoForge Gateway",
         "version": "1.0.0",
