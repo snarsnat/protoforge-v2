@@ -12,10 +12,10 @@ help:
 	@echo "make format   - Format code"
 
 install:
-	uv pip install -r ../requirements.txt
+	uv pip install --system -r ../requirements.txt
 
 dev:
-	uv pip install -e .
+	uv pip install --system -e .
 	python -m src.gateway.app
 
 test:
