@@ -36,7 +36,7 @@ make docker-init
 make docker-start
 ```
 
-Access at http://localhost:2026
+Access at http://localhost:8001
 
 ### Local Development
 
