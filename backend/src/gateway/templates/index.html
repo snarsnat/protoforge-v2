@@ -4,521 +4,371 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProtoForge // Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* =========================================
-           ANTI-TROPE DESIGN SYSTEM
-           Against: purple gradients, rounded corners, Inter font, hero sections
-           ========================================= */
-        
         :root {
-            --ink: #0a0a0a;
-            --paper: #f5f5f0;
-            --concrete: #2d2d2d;
-            --chalk: #888;
-            --marker: #e63946;
-            --highlight: #ffbe0b;
-            --border: 1px solid #ccc;
-            
-            --font-display: 'Courier New', Courier, monospace;
-            --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            
-            --space-xs: 4px;
-            --space-sm: 8px;
-            --space-md: 16px;
-            --space-lg: 24px;
-            --space-xl: 32px;
+            --bg-canvas: #0a0a0a;
+            --bg-surface: #141414;
+            --bg-panel: #1a1a1a;
+            --text-primary: #f5f5f0;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666;
+            --accent: #e63946;
+            --accent-hover: #c62828;
+            --border-light: #2a2a2a;
+            --border-medium: #444;
+            --success-text: #4caf50;
+            --warning-text: #ff9800;
+            --error-text: #f44336;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        /* No border-radius anywhere - sharp edges */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: var(--font-body);
-            background: var(--ink);
-            color: var(--paper);
-            line-height: 1.4;
-            min-height: 100vh;
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-canvas);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
             font-size: 14px;
+            line-height: 1.5;
         }
-        
-        /* Layout */
-        .app {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            grid-template-rows: auto 1fr auto;
-            min-height: 100vh;
-        }
-        
-        /* Header */
-        .header {
-            grid-column: 1 / -1;
-            background: var(--concrete);
-            border-bottom: 1px solid #444;
-            padding: var(--space-md) var(--space-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-family: var(--font-display);
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: -1px;
-        }
-        
-        .logo::before {
-            content: '// ';
-            color: var(--chalk);
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-panel); }
+        ::-webkit-scrollbar-thumb { background: var(--border-medium); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        .app-container { display: flex; height: 100vh; }
         
         /* Sidebar */
-        .sidebar {
-            background: var(--concrete);
-            border-right: 1px solid #444;
-            padding: var(--space-lg);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-lg);
-        }
+        .sidebar { width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border-light); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-light); }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .logo-icon { width: 32px; height: 32px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; font-family: 'IBM Plex Mono', monospace; }
+        .logo-text { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; font-family: 'IBM Plex Mono', monospace; }
+        .new-project-btn { margin-top: 16px; width: 100%; padding: 10px 14px; background: var(--accent); border: none; color: white; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.1s; }
+        .new-project-btn:hover { background: var(--accent-hover); }
+        .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); padding: 0 12px; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s; }
+        .nav-item:hover { background: var(--bg-panel); }
+        .nav-item.active { background: var(--bg-panel); color: var(--text-primary); }
+        .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         
-        .sidebar-section h3 {
-            font-family: var(--font-display);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--chalk);
-            margin-bottom: var(--space-sm);
-        }
+        /* Project List */
+        .project-list { padding: 0 12px; }
+        .project-item { padding: 10px 12px; cursor: pointer; transition: background 0.1s; margin-bottom: 2px; }
+        .project-item:hover { background: var(--bg-panel); }
+        .project-item.active { background: var(--bg-panel); border: 1px solid var(--border-medium); }
+        .project-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .project-status { width: 6px; height: 6px; background: var(--success-text); }
+        .project-status.processing { background: var(--warning-text); }
         
-        /* Config form */
-        .config-form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-sm);
-        }
+        /* Skills */
+        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+        .skill-card { padding: 12px; background: var(--bg-panel); border: 1px solid var(--border-light); cursor: pointer; transition: border-color 0.1s; }
+        .skill-card:hover { border-color: var(--border-medium); }
+        .skill-card.selected { border-color: var(--accent); background: rgba(230, 57, 70, 0.1); }
+        .skill-icon { font-size: 16px; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
+        .skill-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+        .skill-desc { font-size: 11px; color: var(--text-muted); }
         
-        .config-form label {
-            font-size: 11px;
-            color: var(--chalk);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        /* Config */
+        .config-section { padding: 12px; border-top: 1px solid var(--border-light); }
+        .config-select, .config-input { width: 100%; padding: 8px 10px; background: var(--bg-panel); border: 1px solid var(--border-light); color: var(--text-primary); font-size: 12px; margin-bottom: 8px; }
+        .config-select:focus, .config-input:focus { outline: none; border-color: var(--accent); }
+        .config-btn { width: 100%; padding: 8px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .config-btn:hover { background: var(--accent-hover); }
         
-        .config-form select,
-        .config-form input {
-            width: 100%;
-            padding: var(--space-sm);
-            background: var(--ink);
-            border: 1px solid #444;
-            color: var(--paper);
-            font-family: var(--font-display);
-            font-size: 12px;
-        }
+        /* User Profile */
+        .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border-light); }
+        .user-profile { display: flex; align-items: center; gap: 10px; padding: 6px; }
+        .user-profile:hover { background: var(--bg-panel); }
+        .user-avatar { width: 28px; height: 28px; background: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; color: var(--bg-surface); }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+        .user-plan { font-size: 11px; color: var(--text-muted); }
         
-        .config-form select:focus,
-        .config-form input:focus {
-            outline: none;
-            border-color: var(--marker);
-        }
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-canvas); }
+        .main-header { height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); background: var(--bg-surface); }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+        .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--text-primary); }
+        .breadcrumb-separator { color: var(--text-muted); }
+        .breadcrumb-current { color: var(--text-primary); font-weight: 500; }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .header-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.1s; background: transparent; border: 1px solid var(--border-medium); color: var(--text-secondary); }
+        .header-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .header-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .header-btn.primary:hover { background: var(--accent-hover); color: white; }
+        .header-btn svg { width: 14px; height: 14px; }
         
-        /* Mode buttons - NO rounded corners, NO cards */
-        .mode-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            background: #444;
-        }
+        /* Workspace */
+        .workspace { flex: 1; display: flex; overflow: hidden; }
+        .chat-panel { width: 45%; min-width: 400px; display: flex; flex-direction: column; border-right: 1px solid var(--border-light); background: var(--bg-surface); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .message { display: flex; gap: 12px; }
+        .message-avatar { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+        .message-avatar.ai { background: var(--accent); color: white; }
+        .message-avatar.user { background: var(--bg-panel); border: 1px solid var(--border-medium); color: var(--text-secondary); }
+        .message-content { flex: 1; min-width: 0; }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .message-role { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+        .message-time { font-size: 11px; color: var(--text-muted); }
+        .message-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+        .message-text p { margin-bottom: 8px; }
+        .message-text p:last-child { margin-bottom: 0; }
+        .message-text strong { color: var(--text-primary); }
         
-        .mode-btn {
-            padding: var(--space-sm) var(--space-md);
-            background: var(--concrete);
-            border: none;
-            color: var(--chalk);
-            font-family: var(--font-display);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            text-align: left;
-            transition: none;
-        }
+        /* Code Block */
+        .code-block { margin-top: 10px; background: var(--bg-panel); border: 1px solid var(--border-light); overflow: hidden; }
+        .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
+        .code-language { font-size: 11: 500;px; font-weight color: var(--text-muted); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+        .code-actions { display: flex; gap: 6px; }
+        .code-action-btn { padding: 3px 8px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); }
+        .code-action-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .code-content { padding: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--text-secondary); max-height: 200px; overflow-y: auto; }
         
-        .mode-btn:hover {
-            background: #3a3a3a;
-            color: var(--paper);
-        }
+        /* Chat Input */
+        .chat-input-area { padding: 16px 20px; border-top: 1px solid var(--border-light); background: var(--bg-surface); }
+        .chat-input-container { border: 1px solid var(--border-medium); background: var(--bg-surface); }
+        .chat-input-container:focus-within { border-color: var(--accent); }
+        .chat-textarea { width: 100%; min-height: 24px; max-height: 120px; padding: 12px 14px; background: transparent; border: none; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.5; resize: none; outline: none; }
+        .chat-textarea::placeholder { color: var(--text-muted); }
+        .chat-input-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--border-light); }
+        .input-tools { display: flex; gap: 4px; }
+        .input-tool-btn { padding: 4px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
+        .input-tool-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .input-tool-btn svg { width: 16px; height: 16px; }
+        .send-btn { padding: 6px 12px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .send-btn:hover { background: var(--accent-hover); }
+        .send-btn:disabled { background: var(--border-medium); cursor: not-allowed; }
+        .input-hint { text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+        .kbd { padding: 1px 4px; background: var(--bg-panel); border: 1px solid var(--border-light); font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
         
-        .mode-btn.active {
-            background: var(--marker);
-            color: white;
-        }
+        /* Preview Panel */
+        .preview-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); min-width: 0; }
+        .preview-toolbar { height: 40px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); background: var(--bg-surface); }
+        .preview-tabs { display: flex; gap: 2px; }
+        .preview-tab { padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; background: transparent; border: none; color: var(--text-secondary); }
+        .preview-tab:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .preview-tab.active { background: var(--text-primary); color: var(--bg-surface); }
+        .device-toggles { display: flex; align-items: center; gap: 2px; padding: 2px; background: var(--bg-panel); border: 1px solid var(--border-light); }
+        .device-btn { padding: 4px 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
+        .device-btn:hover { color: var(--text-primary); }
+        .device-btn.active { background: var(--bg-surface); color: var(--text-primary); }
+        .device-btn svg { width: 14px; height: 14px; }
+        .preview-actions { display: flex; gap: 6px; }
+        .preview-action-btn { padding: 4px 10px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+        .preview-action-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
+        .preview-action-btn svg { width: 12px; height: 12px; }
+        .preview-canvas { flex: 1; padding: 20px; display: flex; align-items: center; justify-content: center; overflow: auto; background: var(--bg-panel); }
+        .preview-frame { width: 100%; max-width: 1200px; height: 100%; background: white; border: 1px solid var(--border-light); overflow: hidden; }
+        .preview-frame.mobile { max-width: 375px; height: 667px; border: 4px solid var(--text-primary); }
+        .preview-frame.tablet { max-width: 768px; height: 800px; border: 3px solid var(--text-primary); }
+        .preview-frame iframe { width: 100%; height: 100%; border: none; }
         
-        .mode-btn::before {
-            content: '> ';
-            opacity: 0.5;
-        }
+        /* Empty State */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px; }
+        .empty-state-icon { width: 56px; height: 56px; background: var(--bg-surface); border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .empty-state-icon svg { width: 24px; height: 24px; color: var(--text-muted); }
+        .empty-state-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+        .empty-state-desc { font-size: 13px; color: var(--text-secondary); max-width: 320px; line-height: 1.5; margin-bottom: 20px; }
+        .empty-state-btn { padding: 10px 20px; background: var(--accent); border: none; color: white; font-size: 13px; font-weight: 500; cursor: pointer; }
+        .empty-state-btn:hover { background: var(--accent-hover); }
         
-        /* Main content */
-        .main {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        /* Chat area */
-        .chat {
-            flex: 1;
-            overflow-y: auto;
-            padding: var(--space-lg);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-lg);
-        }
-        
-        .message {
-            max-width: 800px;
-        }
-        
-        .message.system {
-            align-self: flex-start;
-        }
-        
-        .message.user {
-            align-self: flex-end;
-            text-align: right;
-        }
-        
-        .message-bubble {
-            display: inline-block;
-            padding: var(--space-md);
-            background: var(--concrete);
-            border: 1px solid #444;
-            text-align: left;
-            max-width: 100%;
-        }
-        
-        .message.user .message-bubble {
-            background: #1a1a2e;
-            border-color: #333;
-        }
-        
-        .message-label {
-            font-family: var(--font-display);
-            font-size: 10px;
-            color: var(--chalk);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: var(--space-xs);
-        }
-        
-        .message-content {
-            white-space: pre-wrap;
-            font-size: 14px;
-        }
-        
-        .message-content code {
-            background: var(--ink);
-            padding: 2px 6px;
-            font-family: var(--font-display);
-            font-size: 12px;
-        }
-        
-        /* Input area */
-        .input-area {
-            background: var(--concrete);
-            border-top: 1px solid #444;
-            padding: var(--space-lg);
-        }
-        
-        .prompt-input {
-            width: 100%;
-            min-height: 80px;
-            padding: var(--space-md);
-            background: var(--ink);
-            border: 2px solid #444;
-            color: var(--paper);
-            font-family: var(--font-body);
-            font-size: 14px;
-            resize: vertical;
-        }
-        
-        .prompt-input:focus {
-            outline: none;
-            border-color: var(--marker);
-        }
-        
-        .prompt-input::placeholder {
-            color: var(--chalk);
-        }
-        
-        .input-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: var(--space-sm);
-        }
-        
-        .char-count {
-            font-family: var(--font-display);
-            font-size: 11px;
-            color: var(--chalk);
-        }
-        
-        .generate-btn {
-            padding: var(--space-sm) var(--space-xl);
-            background: var(--marker);
-            border: none;
-            color: white;
-            font-family: var(--font-display);
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-        }
-        
-        .generate-btn:hover {
-            background: #c62828;
-        }
-        
-        .generate-btn:disabled {
-            background: #444;
-            cursor: not-allowed;
-        }
+        /* Files View */
+        .files-view { width: 100%; height: 100%; overflow-y: auto; padding: 20px; }
+        .file-tree { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+        .file-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+        .file-item:hover { background: var(--bg-surface); color: var(--text-primary); }
         
         /* Loading */
-        .loading {
-            padding: var(--space-lg);
-            text-align: center;
-            color: var(--chalk);
-            font-family: var(--font-display);
-            font-size: 12px;
-        }
+        .loading-indicator { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-light); width: fit-content; }
+        .loading-bar { width: 60px; height: 4px; background: var(--bg-panel); overflow: hidden; }
+        .loading-bar-fill { height: 100%; background: var(--text-primary); width: 30%; animation: loading 1s ease-in-out infinite; }
+        @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+        .loading-text { font-size: 12px; color: var(--text-secondary); }
         
-        .loading::before {
-            content: '...';
-            animation: dots 1s infinite;
-        }
+        /* Resize Handle */
+        .resize-handle { width: 4px; cursor: col-resize; background: var(--border-light); }
+        .resize-handle:hover { background: var(--accent); }
         
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
+        /* Toast */
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-medium); display: flex; align-items: center; gap: 8px; }
+        .toast.success { border-color: var(--success-text); }
+        .toast.error { border-color: var(--error-text); }
+        .toast-icon { width: 16px; height: 16px; }
+        .toast-icon.success { color: var(--success-text); }
+        .toast-icon.error { color: var(--error-text); }
+        .toast-message { font-size: 12px; color: var(--text-primary); }
         
-        /* Results */
-        .results {
-            background: var(--concrete);
-            border: 2px solid var(--marker);
-            margin: var(--space-lg);
-            margin-top: 0;
-        }
+        /* Status */
+        .status-indicator { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; }
+        .status-dot { width: 6px; height: 6px; background: var(--text-muted); }
+        .status-dot.ready { background: var(--success-text); }
         
-        .results-header {
-            background: var(--marker);
-            color: white;
-            padding: var(--space-sm) var(--space-md);
-            font-family: var(--font-display);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .results-content {
-            padding: var(--space-md);
-        }
-        
-        .file-list {
-            list-style: none;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: var(--space-sm);
-        }
-        
-        .file-list li {
-            background: var(--ink);
-            padding: var(--space-sm);
-            font-family: var(--font-display);
-            font-size: 11px;
-            border: 1px solid #444;
-        }
-        
-        .file-list li::before {
-            content: '📄 ';
-        }
-        
-        /* Status indicator */
-        .status {
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-            font-family: var(--font-display);
-            font-size: 10px;
-            color: var(--chalk);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: #666;
-        }
-        
-        .status-dot.ready {
-            background: #4caf50;
-        }
-        
-        /* Error */
-        .error {
-            background: #3a1a1a;
-            border: 1px solid var(--marker);
-            color: #ff6b6b;
-            padding: var(--space-md);
-            margin: var(--space-lg);
-            font-family: var(--font-display);
-            font-size: 12px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .app {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-        }
-        
-        /* Scrollbar - sharp */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--ink);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #444;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+        @media (max-width: 1024px) { .sidebar { width: 200px; } .chat-panel { min-width: 320px; } }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; z-index: 100; height: 100vh; } .workspace { flex-direction: column; } .chat-panel { width: 100%; min-width: 100%; } }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">ProtoForge</div>
-            <div class="header-right">
-                <div class="status">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">OFFLINE</span>
-                </div>
-            </div>
-        </header>
-        
+    <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <!-- Config -->
-            <div class="sidebar-section">
-                <h3>// API Config</h3>
-                <div class="config-form">
-                    <label>Provider</label>
-                    <select id="provider">
-                        <option value="openai">OpenAI</option>
-                        <option value="anthropic">Anthropic</option>
-                        <option value="deepseek">DeepSeek</option>
-                    </select>
-                </div>
-                <div class="config-form" style="margin-top: 8px;">
-                    <label>API Key</label>
-                    <input type="password" id="apiKey" placeholder="sk-...">
-                </div>
-                <button class="generate-btn" onclick="saveConfig()" style="margin-top: 8px; width: 100%;">Connect</button>
+            <div class="sidebar-header">
+                <a href="#" class="logo">
+                    <div class="logo-icon">PF</div>
+                    <div class="logo-text">ProtoForge</div>
+                </a>
+                <button class="new-project-btn" onclick="newProject()">+ New Project</button>
             </div>
-            
-            <!-- Mode -->
-            <div class="sidebar-section">
-                <h3>// Build Mode</h3>
-                <div class="mode-buttons">
-                    <button class="mode-btn active" data-mode="software" onclick="setMode('software')">Software</button>
-                    <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')">Hardware</button>
-                    <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')">Hybrid</button>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu</div>
+                    <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-item" onclick="showSection('playground')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                        Playground
+                    </a>
+                    <a href="#" class="nav-item" onclick="showSection('skills')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Skills
+                    </a>
+                    <a href="#" class="nav-item" onclick="showSection('history')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
+                        History
+                    </a>
                 </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Skills</div>
+                    <div class="skills-grid">
+                        <div class="skill-card" onclick="selectSkill('research')"><div class="skill-icon">R</div><div class="skill-name">Research</div><div class="skill-desc">Deep research</div></div>
+                        <div class="skill-card" onclick="selectSkill('report')"><div class="skill-icon">R</div><div class="skill-name">Reports</div><div class="skill-desc">Documentation</div></div>
+                        <div class="skill-card" onclick="selectSkill('diagram')"><div class="skill-icon">D</div><div class="skill-name">Diagrams</div><div class="skill-desc">Mermaid</div></div>
+                        <div class="skill-card" onclick="selectSkill('3d')"><div class="skill-icon">3</div><div class="skill-name">3D</div><div class="skill-desc">Prototypes</div></div>
+                        <div class="skill-card" onclick="selectSkill('code')"><div class="skill-icon">C</div><div class="skill-name">Code</div><div class="skill-desc">Software</div></div>
+                        <div class="skill-card" onclick="selectSkill('web')"><div class="skill-icon">W</div><div class="skill-name">Web</div><div class="skill-desc">Applications</div></div>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Projects</div>
+                    <div class="project-list" id="projectList">
+                        <div class="project-item active" onclick="loadProject('E-commerce Dashboard')"><div class="project-name">E-commerce Dashboard</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>2m</span></div></div>
+                        <div class="project-item" onclick="loadProject('AI Chat Interface')"><div class="project-name">AI Chat Interface</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>1h</span></div></div>
+                        <div class="project-item" onclick="loadProject('Mobile App Prototype')"><div class="project-name">Mobile App Prototype</div><div class="project-meta"><span class="project-status processing"></span><span>Processing</span><span>-</span><span>3h</span></div></div>
+                    </div>
+                </div>
+            </nav>
+            <div class="config-section">
+                <select class="config-select" id="provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="deepseek">DeepSeek</option></select>
+                <input type="password" class="config-input" id="apiKey" placeholder="sk-...">
+                <button class="config-btn" onclick="saveConfig()">Connect</button>
             </div>
-            
-            <!-- Info -->
-            <div class="sidebar-section" style="margin-top: auto;">
-                <h3>// About</h3>
-                <p style="font-size: 11px; color: var(--chalk);">
-                    ProtoForge generates real prototypes using AI. Your API key stays on your device.
-                </p>
-            </div>
-        </aside>
-        
-        <!-- Main -->
-        <main class="main">
-            <!-- Chat -->
-            <div class="chat" id="chat">
-                <div class="message system">
-                    <div class="message-bubble">
-                        <div class="message-label">ProtoForge</div>
-                        <div class="message-content">// READY
-
-Tell me what to build. I can create:
-- Software: Web apps, APIs, scripts
-- Hardware: Circuits, 3D models, BOMs
-- Hybrid: Combined systems
-
-Example: "A temperature monitoring dashboard with alerts"</div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">U</div>
+                    <div class="user-info">
+                        <div class="user-name">User</div>
+                        <div class="user-plan"><span class="status-indicator"><span class="status-dot" id="statusDot"></span><span id="statusText">Offline</span></span></div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Error -->
-            <div class="error" id="error" style="display: none;"></div>
-            
-            <!-- Results -->
-            <div class="results" id="results" style="display: none;">
-                <div class="results-header">// Generated Files</div>
-                <div class="results-content">
-                    <ul class="file-list" id="fileList"></ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <div class="breadcrumb"><a href="#">Projects</a><span class="breadcrumb-separator">/</span><span class="breadcrumb-current" id="breadcrumbProject">E-commerce Dashboard</span></div>
                 </div>
-            </div>
-            
-            <!-- Input -->
-            <div class="input-area">
-                <textarea class="prompt-input" id="prompt" placeholder="Describe what you want to build..."></textarea>
-                <div class="input-actions">
-                    <span class="char-count" id="charCount">0 chars</span>
-                    <button class="generate-btn" id="generateBtn" onclick="generate()">Build</button>
+                <div class="header-actions">
+                    <button class="header-btn" onclick="shareProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share</button>
+                    <button class="header-btn" onclick="exportProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export</button>
+                    <button class="header-btn" onclick="downloadZip()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Download</button>
                 </div>
+            </header>
+
+            <div class="workspace">
+                <!-- Chat Panel -->
+                <section class="chat-panel">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message">
+                            <div class="message-avatar ai">PF</div>
+                            <div class="message-content">
+                                <div class="message-header"><span class="message-role">ProtoForge</span><span class="message-time">Just now</span></div>
+                                <div class="message-text"><p>Welcome. Describe what you want to build.</p><p>I can help with research, reports, diagrams, 3D models, code, and web applications.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="chat-input-container">
+                            <textarea class="chat-textarea" id="chatInput" placeholder="Describe what you want to build..." rows="1"></textarea>
+                            <div class="chat-input-actions">
+                                <div class="input-tools">
+                                    <button class="input-tool-btn" title="Attach" onclick="attachFile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
+                                    <button class="input-tool-btn" title="Skill" onclick="showSkillMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+                                </div>
+                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+                            </div>
+                        </div>
+                        <div class="input-hint"><span class="kbd">Enter</span> to send, <span class="kbd">Shift+Enter</span> for new line</div>
+                    </div>
+                </section>
+
+                <!-- Resize Handle -->
+                <div class="resize-handle" id="resizeHandle"></div>
+
+                <!-- Preview Panel -->
+                <section class="preview-panel">
+                    <div class="preview-toolbar">
+                        <div class="preview-tabs">
+                            <button class="preview-tab active" data-view="preview" onclick="setView('preview')">Preview</button>
+                            <button class="preview-tab" data-view="code" onclick="setView('code')">Code</button>
+                            <button class="preview-tab" data-view="files" onclick="setView('files')">Files</button>
+                        </div>
+                        <div class="device-toggles">
+                            <button class="device-btn" data-device="mobile" onclick="setDevice('mobile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></button>
+                            <button class="device-btn" data-device="tablet" onclick="setDevice('tablet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></button>
+                            <button class="device-btn active" data-device="desktop" onclick="setDevice('desktop')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        </div>
+                        <div class="preview-actions">
+                            <button class="preview-action-btn" onclick="refreshPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10                            <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>Refresh</button>
+                            <button class="preview-action-btn" onclick="openInNewTab()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>Open</button>
+                        </div>
+                    </div>
+                    <div class="preview-canvas">
+                        <div class="empty-state" id="emptyState">
+                            <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
+                            <h3 class="empty-state-title">Ready to Create</h3>
+                            <p class="empty-state-desc">Type a prompt to start building. ProtoForge will research, design, and generate a prototype.</p>
+                            <button class="empty-state-btn" onclick="startQuickBuild()">Quick Start</button>
+                        </div>
+                        <div class="preview-frame" id="previewFrame" style="display: none;"><iframe id="previewIframe" src="about:blank"></iframe></div>
+                        <div class="files-view" id="filesView" style="display: none;"></div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 
+    <div class="toast-container" id="toastContainer"></div>
+
     <script>
         const API_BASE = window.location.origin;
         let config = null;
-        let currentMode = 'software';
-        
-        // Load saved config
+        let currentProject = 'E-commerce Dashboard';
+        let currentSkill = null;
+        let generatedFiles = [];
+
+        // Load config
         function loadConfig() {
             const saved = localStorage.getItem('protoforge_config');
             if (saved) {
@@ -529,141 +379,237 @@ Example: "A temperature monitoring dashboard with alerts"</div>
             }
         }
         loadConfig();
-        
+
         function updateStatus(connected) {
             const dot = document.getElementById('statusDot');
             const text = document.getElementById('statusText');
             if (connected && config) {
                 dot.classList.add('ready');
-                text.textContent = config.provider.toUpperCase() + ' READY';
+                text.textContent = config.provider.toUpperCase();
             } else {
                 dot.classList.remove('ready');
-                text.textContent = 'OFFLINE';
+                text.textContent = 'Offline';
             }
         }
-        
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === mode);
-            });
-        }
-        
+
         function saveConfig() {
             const provider = document.getElementById('provider').value;
             const apiKey = document.getElementById('apiKey').value;
-            
-            if (!apiKey) {
-                showError('Please enter an API key');
-                return;
-            }
-            
+            if (!apiKey) { showToast('Please enter an API key', 'error'); return; }
             config = { provider, api_key: apiKey };
             localStorage.setItem('protoforge_config', JSON.stringify(config));
             updateStatus(true);
-            hideError();
+            showToast('Connected to ' + provider, 'success');
         }
-        
-        function showError(msg) {
-            const el = document.getElementById('error');
-            el.textContent = '// ERROR: ' + msg;
-            el.style.display = 'block';
-        }
-        
-        function hideError() {
-            document.getElementById('error').style.display = 'none';
-        }
-        
-        // Character count
-        document.getElementById('prompt').addEventListener('input', function() {
-            document.getElementById('charCount').textContent = this.value.length + ' chars';
+
+        // Chat
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
-        
-        function addMessage(role, content) {
-            const chat = document.getElementById('chat');
-            const div = document.createElement('div');
-            div.className = 'message ' + role;
-            div.innerHTML = '<div class="message-bubble"><div class="message-label">' + 
-                (role === 'user' ? 'You' : 'ProtoForge') + 
-                '</div><div class="message-content">' + content + '</div></div>';
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
-        
-        async function generate() {
-            const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) {
-                showError('Please describe what you want to build');
-                return;
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
-            
-            if (!config) {
-                showError('Please configure your API key first');
-                return;
-            }
-            
-            hideError();
-            document.getElementById('generateBtn').disabled = true;
-            document.getElementById('results').style.display = 'none';
-            
-            // User message
-            addMessage('user', '[' + currentMode.toUpperCase() + '] ' + prompt);
-            
-            // Loading
-            const loading = document.createElement('div');
-            loading.className = 'loading';
-            loading.id = 'loadingMsg';
-            document.getElementById('chat').appendChild(loading);
-            
-            addMessage('system', 'Building your prototype...');
-            
-            try {
-                const res = await fetch(API_BASE + '/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        mode: currentMode,
-                        api_key: config.api_key,
-                        provider: config.provider
-                    })
-                });
+        });
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            if (!config) { showToast('Please configure your API key first', 'error'); return; }
+
+            addMessage(message, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Show loading
+            addMessage('Building your prototype...', 'ai', true);
+
+            fetch(API_BASE + '/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: (currentSkill ? currentSkill + ': ' : '') + message,
+                    mode: 'software',
+                    api_key: config.api_key,
+                    provider: config.provider
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loading-' + (chatMessages.children.length - 1))?.remove();
                 
-                document.getElementById('loadingMsg')?.remove();
-                
-                if (!res.ok) {
-                    const err = await res.text();
-                    throw new Error(err);
+                if (data.error) {
+                    addMessage('Error: ' + data.error, 'ai');
+                    showToast(data.error, 'error');
+                } else {
+                    generatedFiles = data.files || [];
+                    addMessage('Generated ' + (generatedFiles.length || 0) + ' files. Check the Preview/Code/Files tabs.', 'ai');
+                    updateFilesView();
+                    showToast('Build complete!', 'success');
                 }
-                
-                const data = await res.json();
-                
-                // Show files
-                document.getElementById('results').style.display = 'block';
-                document.getElementById('fileList').innerHTML = data.files.map(f => 
-                    '<li>' + f.name + '</li>'
-                ).join('');
-                
-                addMessage('system', '✅ Done! Generated ' + data.files.length + ' files.\n\nFiles: ' + 
-                    data.files.map(f => f.name).join(', '));
-                
-            } catch (e) {
-                document.getElementById('loadingMsg')?.remove();
-                showError(e.message);
-                addMessage('system', '❌ Failed: ' + e.message);
-            }
-            
-            document.getElementById('generateBtn').disabled = false;
-            document.getElementById('prompt').value = '';
-            document.getElementById('charCount').textContent = '0 chars';
+            })
+            .catch(e => {
+                addMessage('Error: ' + e.message, 'ai');
+                showToast(e.message, 'error');
+            });
         }
-        
-        // Enter to submit
-        document.getElementById('prompt').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                generate();
+
+        function addMessage(content, role, isLoading = false) {
+            const div = document.createElement('div');
+            div.className = 'message';
+            const avatar = role === 'ai' ? 'PF' : 'U';
+            const name = role === 'ai' ? 'ProtoForge' : 'You';
+            
+            if (isLoading) {
+                div.id = 'loading-' + chatMessages.children.length;
+                div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><div class="loading-indicator"><div class="loading-bar"><div class="loading-bar-fill"></div></div><span class="loading-text">${content}</span></div></div></div>`;
+            } else {
+                div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><p>${content}</p></div></div>`;
             }
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Preview tabs
+        function setView(view) {
+            document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.preview-tab[data-view="' + view + '"]').classList.add('active');
+            
+            const emptyState = document.getElementById('emptyState');
+            const previewFrame = document.getElementById('previewFrame');
+            const filesView = document.getElementById('filesView');
+            
+            if (view === 'preview') {
+                emptyState.style.display = 'flex';
+                previewFrame.style.display = 'none';
+                filesView.style.display = 'none';
+            } else if (view === 'code') {
+                emptyState.style.display = 'none';
+                previewFrame.style.display = 'block';
+                filesView.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                previewFrame.style.display = 'none';
+                filesView.style.display = 'block';
+                updateFilesView();
+            }
+        }
+
+        function updateFilesView() {
+            const filesView = document.getElementById('filesView');
+            if (generatedFiles.length === 0) {
+                filesView.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files yet</h3><p class="empty-state-desc">Generate a project to see files here.</p></div>';
+                return;
+            }
+            filesView.innerHTML = '<div class="file-tree">' + generatedFiles.map(f => 
+                '<div class="file-item file" onclick="viewFile(\'' + f.name + '\')">' + f.name + '</div>'
+            ).join('') + '</div>';
+        }
+
+        function viewFile(filename) {
+            showToast('Viewing: ' + filename, 'success');
+        }
+
+        // Device toggles
+        function setDevice(device) {
+            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.device-btn[data-device="' + device + '"]').classList.add('active');
+            const frame = document.getElementById('previewFrame');
+            frame.className = 'preview-frame';
+            if (device !== 'desktop') frame.classList.add(device);
+        }
+
+        // Resize
+        let isResizing = false;
+        const resizeHandle = document.getElementById('resizeHandle');
+        const chatPanel = document.querySelector('.chat-panel');
+        
+        resizeHandle.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'col-resize'; });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const w = document.querySelector('.workspace').offsetWidth;
+            const nw = (e.clientX / w) * 100;
+            if (nw > 25 && nw < 75) chatPanel.style.width = nw + '%';
         });
+        document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; });
+
+        // Projects
+        function loadProject(name) {
+            currentProject = name;
+            document.getElementById('breadcrumbProject').textContent = name;
+            document.querySelectorAll('.project-item').forEach(p => p.classList.remove('active'));
+            event.target.closest('.project-item').classList.add('active');
+            showToast('Loaded: ' + name, 'success');
+        }
+
+        function newProject() {
+            const name = prompt('Project name:', 'New Project');
+            if (name) {
+                const list = document.getElementById('projectList');
+                const item = document.createElement('div');
+                item.className = 'project-item';
+                item.onclick = function() { loadProject(name); };
+                item.innerHTML = '<div class="project-name">' + name + '</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>Now</span></div>';
+                list.insertBefore(item, list.firstChild);
+                loadProject(name);
+            }
+        }
+
+        // Skills
+        function selectSkill(skill) {
+            currentSkill = skill;
+            document.querySelectorAll('.skill-card').forEach(s => s.classList.remove('selected'));
+            event.target.closest('.skill-card').classList.add('selected');
+            const skills = { research: 'Research', report: 'Report', diagram: 'Diagram', '3d': '3D Model', code: 'Code', web: 'Web App' };
+            chatInput.value = skills[skill] + ': ';
+            chatInput.focus();
+        }
+
+        function showSkillMenu() {
+            chatInput.focus();
+        }
+
+        // Quick start
+        function startQuickBuild() {
+            chatInput.value = 'Create a landing page with hero, features, pricing, contact sections';
+            chatInput.focus();
+            sendMessage();
+        }
+
+        // Header actions
+        function shareProject() { showToast('Share link copied!', 'success'); }
+        function exportProject() { showToast('Exporting project...', 'success'); }
+        function downloadZip() {
+            if (generatedFiles.length === 0) { showToast('No files to download', 'error'); return; }
+            showToast('Preparing download...', 'success');
+            // In real implementation, this would trigger /api/download
+        }
+
+        // Preview
+        function refreshPreview() { showToast('Refreshing preview...', 'success'); }
+        function openInNewTab() { showToast('Opening in new tab...', 'success'); }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<svg class="toast-icon ' + type + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span class="toast-message">' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function attachFile() { showToast('File attachment coming soon', 'success'); }
+        function showSection(section) { showToast('Switched to ' + section, 'success'); }
+
+        console.log('ProtoForge v2 loaded');
     </script>
 </body>
 </html>
