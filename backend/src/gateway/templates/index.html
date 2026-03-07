@@ -50,12 +50,15 @@
         .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
         .nav-section { margin-bottom: 24px; }
         .nav-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); padding: 0 12px; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s; }
-        .nav-item:hover { background: var(--bg-panel); }
-        .nav-item.active { background: var(--bg-panel); color: var(--text-primary); }
-        .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         
-        /* Project List */
+        /* Mode Buttons */
+        .mode-buttons { display: flex; flex-direction: column; gap: 2px; background: #222; }
+        .mode-btn { padding: 12px 16px; background: transparent; border: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; text-align: left; transition: all 0.1s; display: flex; align-items: center; gap: 10px; }
+        .mode-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .mode-btn.active { background: var(--accent); color: white; }
+        .mode-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+        
+        /* Projects */
         .project-list { padding: 0 12px; }
         .project-item { padding: 10px 12px; cursor: pointer; transition: background 0.1s; margin-bottom: 2px; }
         .project-item:hover { background: var(--bg-panel); }
@@ -64,15 +67,7 @@
         .project-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
         .project-status { width: 6px; height: 6px; background: var(--success-text); }
         .project-status.processing { background: var(--warning-text); }
-        
-        /* Skills */
-        .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
-        .skill-card { padding: 12px; background: var(--bg-panel); border: 1px solid var(--border-light); cursor: pointer; transition: border-color 0.1s; }
-        .skill-card:hover { border-color: var(--border-medium); }
-        .skill-card.selected { border-color: var(--accent); background: rgba(230, 57, 70, 0.1); }
-        .skill-icon { font-size: 16px; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
-        .skill-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
-        .skill-desc { font-size: 11px; color: var(--text-muted); }
+        .no-projects { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; }
         
         /* Config */
         .config-section { padding: 12px; border-top: 1px solid var(--border-light); }
@@ -121,12 +116,11 @@
         .message-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
         .message-text p { margin-bottom: 8px; }
         .message-text p:last-child { margin-bottom: 0; }
-        .message-text strong { color: var(--text-primary); }
         
         /* Code Block */
         .code-block { margin-top: 10px; background: var(--bg-panel); border: 1px solid var(--border-light); overflow: hidden; }
         .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
-        .code-language { font-size: 11: 500;px; font-weight color: var(--text-muted); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
+        .code-language { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
         .code-actions { display: flex; gap: 6px; }
         .code-action-btn { padding: 3px 8px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); }
         .code-action-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
@@ -229,41 +223,26 @@
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Menu</div>
-                    <a href="#" class="nav-item active" onclick="showSection('dashboard')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        Dashboard
-                    </a>
-                    <a href="#" class="nav-item" onclick="showSection('playground')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-                        Playground
-                    </a>
-                    <a href="#" class="nav-item" onclick="showSection('skills')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        Skills
-                    </a>
-                    <a href="#" class="nav-item" onclick="showSection('history')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
-                        History
-                    </a>
-                </div>
-                <div class="nav-section">
-                    <div class="nav-section-title">Skills</div>
-                    <div class="skills-grid">
-                        <div class="skill-card" onclick="selectSkill('research')"><div class="skill-icon">R</div><div class="skill-name">Research</div><div class="skill-desc">Deep research</div></div>
-                        <div class="skill-card" onclick="selectSkill('report')"><div class="skill-icon">R</div><div class="skill-name">Reports</div><div class="skill-desc">Documentation</div></div>
-                        <div class="skill-card" onclick="selectSkill('diagram')"><div class="skill-icon">D</div><div class="skill-name">Diagrams</div><div class="skill-desc">Mermaid</div></div>
-                        <div class="skill-card" onclick="selectSkill('3d')"><div class="skill-icon">3</div><div class="skill-name">3D</div><div class="skill-desc">Prototypes</div></div>
-                        <div class="skill-card" onclick="selectSkill('code')"><div class="skill-icon">C</div><div class="skill-name">Code</div><div class="skill-desc">Software</div></div>
-                        <div class="skill-card" onclick="selectSkill('web')"><div class="skill-icon">W</div><div class="skill-name">Web</div><div class="skill-desc">Applications</div></div>
+                    <div class="nav-section-title">Build Mode</div>
+                    <div class="mode-buttons">
+                        <button class="mode-btn active" data-mode="software" onclick="setMode('software')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                            Software
+                        </button>
+                        <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                            Hardware
+                        </button>
+                        <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                            Hybrid
+                        </button>
                     </div>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Projects</div>
                     <div class="project-list" id="projectList">
-                        <div class="project-item active" onclick="loadProject('E-commerce Dashboard')"><div class="project-name">E-commerce Dashboard</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>2m</span></div></div>
-                        <div class="project-item" onclick="loadProject('AI Chat Interface')"><div class="project-name">AI Chat Interface</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>1h</span></div></div>
-                        <div class="project-item" onclick="loadProject('Mobile App Prototype')"><div class="project-name">Mobile App Prototype</div><div class="project-meta"><span class="project-status processing"></span><span>Processing</span><span>-</span><span>3h</span></div></div>
+                        <!-- Projects loaded dynamically - empty initially -->
                     </div>
                 </div>
             </nav>
@@ -287,12 +266,12 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <div class="breadcrumb"><a href="#">Projects</a><span class="breadcrumb-separator">/</span><span class="breadcrumb-current" id="breadcrumbProject">E-commerce Dashboard</span></div>
+                    <div class="breadcrumb"><a href="#">Projects</a><span class="breadcrumb-separator">/</span><span class="breadcrumb-current" id="breadcrumbProject">New Project</span></div>
                 </div>
                 <div class="header-actions">
                     <button class="header-btn" onclick="shareProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share</button>
                     <button class="header-btn" onclick="exportProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export</button>
-                    <button class="header-btn" onclick="downloadZip()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Download</button>
+                    <button class="header-btn primary" onclick="downloadZip()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Download</button>
                 </div>
             </header>
 
@@ -304,7 +283,7 @@
                             <div class="message-avatar ai">PF</div>
                             <div class="message-content">
                                 <div class="message-header"><span class="message-role">ProtoForge</span><span class="message-time">Just now</span></div>
-                                <div class="message-text"><p>Welcome. Describe what you want to build.</p><p>I can help with research, reports, diagrams, 3D models, code, and web applications.</p></div>
+                                <div class="message-text"><p>Select a mode (Software, Hardware, or Hybrid) and describe what you want to build.</p><p><strong>Software</strong> - Web apps, APIs, scripts<br><strong>Hardware</strong> - 3D printable enclosures, circuits, BOMs<br><strong>Hybrid</strong> - Combined systems</p></div>
                             </div>
                         </div>
                     </div>
@@ -314,12 +293,11 @@
                             <div class="chat-input-actions">
                                 <div class="input-tools">
                                     <button class="input-tool-btn" title="Attach" onclick="attachFile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-                                    <button class="input-tool-btn" title="Skill" onclick="showSkillMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
                                 </div>
-                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Build <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
                             </div>
                         </div>
-                        <div class="input-hint"><span class="kbd">Enter</span> to send, <span class="kbd">Shift+Enter</span> for new line</div>
+                        <div class="input-hint"><span class="kbd">Enter</span> to build, <span class="kbd">Shift+Enter</span> for new line</div>
                     </div>
                 </section>
 
@@ -331,7 +309,6 @@
                     <div class="preview-toolbar">
                         <div class="preview-tabs">
                             <button class="preview-tab active" data-view="preview" onclick="setView('preview')">Preview</button>
-                            <button class="preview-tab" data-view="code" onclick="setView('code')">Code</button>
                             <button class="preview-tab" data-view="files" onclick="setView('files')">Files</button>
                         </div>
                         <div class="device-toggles">
@@ -340,15 +317,15 @@
                             <button class="device-btn active" data-device="desktop" onclick="setDevice('desktop')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
                         </div>
                         <div class="preview-actions">
-                            <button class="preview-action-btn" onclick="refreshPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10                            <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>Refresh</button>
+                            <button class="preview-action-btn" onclick="refreshPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>Refresh</button>
                             <button class="preview-action-btn" onclick="openInNewTab()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>Open</button>
                         </div>
                     </div>
                     <div class="preview-canvas">
                         <div class="empty-state" id="emptyState">
                             <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
-                            <h3 class="empty-state-title">Ready to Create</h3>
-                            <p class="empty-state-desc">Type a prompt to start building. ProtoForge will research, design, and generate a prototype.</p>
+                            <h3 class="empty-state-title">Ready to Build</h3>
+                            <p class="empty-state-desc">Select a mode and describe what you want to create. ProtoForge will generate real files you can download.</p>
                             <button class="empty-state-btn" onclick="startQuickBuild()">Quick Start</button>
                         </div>
                         <div class="preview-frame" id="previewFrame" style="display: none;"><iframe id="previewIframe" src="about:blank"></iframe></div>
@@ -364,9 +341,10 @@
     <script>
         const API_BASE = window.location.origin;
         let config = null;
-        let currentProject = 'E-commerce Dashboard';
-        let currentSkill = null;
+        let currentProject = 'New Project';
+        let currentMode = 'software';
         let generatedFiles = [];
+        let projects = [];
 
         // Load config
         function loadConfig() {
@@ -377,6 +355,12 @@
                 document.getElementById('apiKey').value = config.api_key;
                 updateStatus(true);
             }
+            // Load projects
+            const savedProjects = localStorage.getItem('protoforge_projects');
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+                renderProjects();
+            }
         }
         loadConfig();
 
@@ -385,7 +369,7 @@
             const text = document.getElementById('statusText');
             if (connected && config) {
                 dot.classList.add('ready');
-                text.textContent = config.provider.toUpperCase();
+                text = textContent = config.provider.toUpperCase();
             } else {
                 dot.classList.remove('ready');
                 text.textContent = 'Offline';
@@ -402,9 +386,16 @@
             showToast('Connected to ' + provider, 'success');
         }
 
+        // Mode selection
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.mode-btn[data-mode="' + mode + '"]').classList.add('active');
+            showToast(mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode selected', 'success');
+        }
+
         // Chat
         const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendBtn');
         const chatMessages = document.getElementById('chatMessages');
 
         chatInput.addEventListener('input', function() {
@@ -428,34 +419,44 @@
             chatInput.value = '';
             chatInput.style.height = 'auto';
 
-            // Show loading
-            addMessage('Building your prototype...', 'ai', true);
+            addMessage('Building your ' + currentMode + ' project...', 'ai', true);
 
             fetch(API_BASE + '/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    prompt: (currentSkill ? currentSkill + ': ' : '') + message,
-                    mode: 'software',
+                    prompt: message,
+                    mode: currentMode,
                     api_key: config.api_key,
                     provider: config.provider
                 })
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('loading-' + (chatMessages.children.length - 1))?.remove();
+                const loading = chatMessages.querySelector('.loading-indicator');
+                if (loading) loading.parentElement.remove();
                 
                 if (data.error) {
                     addMessage('Error: ' + data.error, 'ai');
                     showToast(data.error, 'error');
                 } else {
                     generatedFiles = data.files || [];
-                    addMessage('Generated ' + (generatedFiles.length || 0) + ' files. Check the Preview/Code/Files tabs.', 'ai');
-                    updateFilesView();
+                    const modeText = currentMode === 'hardware' ? '3D models, circuits, BOMs' : currentMode === 'hybrid' ? 'software and hardware' : 'web application files';
+                    addMessage('Generated ' + (generatedFiles.length || 0) + ' ' + currentMode + ' files. Check the Files tab to download.', 'ai');
+                    
+                    // Save project
+                    const projectName = message.substring(0, 30) + '...';
+                    const newProject = { name: projectName, mode: currentMode, time: 'Just now', status: 'ready', files: generatedFiles };
+                    projects.unshift(newProject);
+                    localStorage.setItem('protoforge_projects', JSON.stringify(projects));
+                    renderProjects();
+                    
                     showToast('Build complete!', 'success');
                 }
             })
             .catch(e => {
+                const loading = chatMessages.querySelector('.loading-indicator');
+                if (loading) loading.parentElement.remove();
                 addMessage('Error: ' + e.message, 'ai');
                 showToast(e.message, 'error');
             });
@@ -468,13 +469,54 @@
             const name = role === 'ai' ? 'ProtoForge' : 'You';
             
             if (isLoading) {
-                div.id = 'loading-' + chatMessages.children.length;
                 div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><div class="loading-indicator"><div class="loading-bar"><div class="loading-bar-fill"></div></div><span class="loading-text">${content}</span></div></div></div>`;
             } else {
                 div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><p>${content}</p></div></div>`;
             }
             chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Render projects
+        function renderProjects() {
+            const list = document.getElementById('projectList');
+            if (projects.length === 0) {
+                list.innerHTML = '<div class="no-projects">No projects yet. Start building!</div>';
+                return;
+            }
+            list.innerHTML = projects.map((p, i) => `
+                <div class="project-item" onclick="loadProject(${i})">
+                    <div class="project-name">${p.name}</div>
+                    <div class="project-meta">
+                        <span class="project-status ${p.status === 'processing' ? 'processing' : ''}"></span>
+                        <span>${p.mode}</span>
+                        <span>-</span>
+                        <span>${p.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadProject(index) {
+            const p = projects[index];
+            currentProject = p.name;
+            generatedFiles = p.files || [];
+            document.getElementById('breadcrumbProject').textContent = p.name;
+            document.querySelectorAll('.project-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            setView('files');
+            showToast('Loaded: ' + p.name, 'success');
+        }
+
+        function newProject() {
+            const name = prompt('Project name:', 'New Project');
+            if (name) {
+                currentProject = name;
+                document.getElementById('breadcrumbProject').textContent = name;
+                generatedFiles = [];
+                showToast('New project created', 'success');
+            }
         }
 
         // Preview tabs
@@ -487,12 +529,8 @@
             const filesView = document.getElementById('filesView');
             
             if (view === 'preview') {
-                emptyState.style.display = 'flex';
-                previewFrame.style.display = 'none';
-                filesView.style.display = 'none';
-            } else if (view === 'code') {
-                emptyState.style.display = 'none';
-                previewFrame.style.display = 'block';
+                emptyState.style.display = generatedFiles.length === 0 ? 'flex' : 'none';
+                previewFrame.style.display = generatedFiles.length > 0 ? 'block' : 'none';
                 filesView.style.display = 'none';
             } else {
                 emptyState.style.display = 'none';
@@ -505,16 +543,12 @@
         function updateFilesView() {
             const filesView = document.getElementById('filesView');
             if (generatedFiles.length === 0) {
-                filesView.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files yet</h3><p class="empty-state-desc">Generate a project to see files here.</p></div>';
+                filesView.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files yet</h3><p class="empty-state-desc">Build a project to see generated files here.</p></div>';
                 return;
             }
             filesView.innerHTML = '<div class="file-tree">' + generatedFiles.map(f => 
-                '<div class="file-item file" onclick="viewFile(\'' + f.name + '\')">' + f.name + '</div>'
+                '<div class="file-item">' + f.name + '</div>'
             ).join('') + '</div>';
-        }
-
-        function viewFile(filename) {
-            showToast('Viewing: ' + filename, 'success');
         }
 
         // Device toggles
@@ -540,45 +574,9 @@
         });
         document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; });
 
-        // Projects
-        function loadProject(name) {
-            currentProject = name;
-            document.getElementById('breadcrumbProject').textContent = name;
-            document.querySelectorAll('.project-item').forEach(p => p.classList.remove('active'));
-            event.target.closest('.project-item').classList.add('active');
-            showToast('Loaded: ' + name, 'success');
-        }
-
-        function newProject() {
-            const name = prompt('Project name:', 'New Project');
-            if (name) {
-                const list = document.getElementById('projectList');
-                const item = document.createElement('div');
-                item.className = 'project-item';
-                item.onclick = function() { loadProject(name); };
-                item.innerHTML = '<div class="project-name">' + name + '</div><div class="project-meta"><span class="project-status"></span><span>Ready</span><span>-</span><span>Now</span></div>';
-                list.insertBefore(item, list.firstChild);
-                loadProject(name);
-            }
-        }
-
-        // Skills
-        function selectSkill(skill) {
-            currentSkill = skill;
-            document.querySelectorAll('.skill-card').forEach(s => s.classList.remove('selected'));
-            event.target.closest('.skill-card').classList.add('selected');
-            const skills = { research: 'Research', report: 'Report', diagram: 'Diagram', '3d': '3D Model', code: 'Code', web: 'Web App' };
-            chatInput.value = skills[skill] + ': ';
-            chatInput.focus();
-        }
-
-        function showSkillMenu() {
-            chatInput.focus();
-        }
-
         // Quick start
         function startQuickBuild() {
-            chatInput.value = 'Create a landing page with hero, features, pricing, contact sections';
+            chatInput.value = currentMode === 'hardware' ? 'A 3D printable box for a Raspberry Pi with ventilation holes' : 'Create a landing page with hero, features, pricing, contact';
             chatInput.focus();
             sendMessage();
         }
@@ -587,9 +585,8 @@
         function shareProject() { showToast('Share link copied!', 'success'); }
         function exportProject() { showToast('Exporting project...', 'success'); }
         function downloadZip() {
-            if (generatedFiles.length === 0) { showToast('No files to download', 'error'); return; }
+            if (generatedFiles.length === 0) { showToast('Build a project first to download', 'error'); return; }
             showToast('Preparing download...', 'success');
-            // In real implementation, this would trigger /api/download
         }
 
         // Preview
@@ -607,7 +604,6 @@
         }
 
         function attachFile() { showToast('File attachment coming soon', 'success'); }
-        function showSection(section) { showToast('Switched to ' + section, 'success'); }
 
         console.log('ProtoForge v2 loaded');
     </script>

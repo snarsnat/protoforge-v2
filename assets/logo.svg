@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <defs>
+    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffbe0b"/>
+      <stop offset="100%" style="stop-color:#e63946"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="60" fill="#0a0a0a"/>
+  
+  <!-- Logo Icon - P in box -->
+  <rect x="10" y="10" width="40" height="40" fill="none" stroke="#e63946" stroke-width="2"/>
+  <text x="30" y="38" font-family="'IBM Plex Mono', monospace" font-size="24" font-weight="bold" fill="#e63946" text-anchor="middle">P</text>
+  
+  <!-- Lightning bolt -->
+  <path d="M58 8 L72 8 L64 22 L78 22 L58 52 L62 28 L48 28 Z" fill="url(#bolt)" stroke="#ffbe0b" stroke-width="1"/>
+  
+  <!-- Text -->
+  <text x="90" y="38" font-family="'IBM Plex Mono', monospace" font-size="22" font-weight="bold" fill="#f5f5f0">ProtoForge</text>
+</svg>
