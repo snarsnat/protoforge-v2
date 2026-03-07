@@ -46,15 +46,25 @@ class ProtoForgeGenerator:
             'max_tokens': 4000
         }
         
-        resp = requests.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers=headers,
-            json=payload,
-            timeout=120
-        )
-        
-        if resp.status_code != 200:
-            raise Exception(f"OpenAI error: {resp.text}")
+        try:
+            resp = requests.post(
+                'https://api.openai.com/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("OpenAI rate limit exceeded. Wait a moment and try again.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid OpenAI API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"OpenAI error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("OpenAI request timed out. Try again.")
         
         return resp.json()['choices'][0]['message']['content']
     
@@ -104,17 +114,27 @@ class ProtoForgeGenerator:
             'max_tokens': 4000
         }
         
-        resp = requests.post(
-            'https://api.deepseek.com/v1/chat/completions',
-            headers=headers,
-            json=payload,
-            timeout=120
-        )
-        
-        if resp.status_code != 200:
-            raise Exception(f"DeepSeek error: {resp.text}")
-        
-        return resp.json()['choices'][0]['message']['content']
+        try:
+            resp = requests.post(
+                'https://api.deepseek.com/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("DeepSeek rate limit exceeded. Try OpenAI or Anthropic instead.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid DeepSeek API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"DeepSeek error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("DeepSeek request timed out. Try a different provider.")
+        except requests.exceptions.ConnectionError:
+            raise Exception("Could not connect to DeepSeek. Check your internet connection.")
     
     def generate(self, prompt: str, mode: str, project_dir: str) -> Dict[str, Any]:
         """Generate prototype based on prompt and mode"""
