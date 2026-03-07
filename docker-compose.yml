@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: ./backend
+    ports:
+      - "8001:8001"
+    environment:
+      - PROTOFORGE_CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./extensions_config.json:/app/extensions_config.json:ro
+      - ./data:/app/data
+    depends_on:
+      - langgraph
+
+  langgraph:
+    build: ./backend
+    ports:
+      - "2024:2024"
+    environment:
+      - PROTOFORGE_CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data:/app/data
+      - ./skills:/app/skills
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8001
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "2026:2026"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - gateway
+      - langgraph
+      - frontend

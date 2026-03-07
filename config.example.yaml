@@ -1,0 +1,72 @@
+# Example Configuration - Copy to config.yaml and edit
+# ProtoForge Configuration
+
+models:
+  - name: gpt-4o
+    display_name: GPT-4o
+    use: langchain_openai:ChatOpenAI
+    model: gpt-4o
+    api_key: $OPENAI_API_KEY
+    supports_thinking: false
+    supports_vision: true
+    max_tokens: 4096
+    temperature: 0.7
+
+  # Add more models
+  # - name: claude
+  #   display_name: Claude 3.5
+  #   use: langchain_anthropic:ChatAnthropic
+  #   model: claude-3-5-sonnet-20241022
+  #   api_key: $ANTHROPIC_API_KEY
+  #   supports_thinking: true
+  #   supports_vision: true
+
+# Tools configuration
+tools: []
+
+tool_groups:
+  - name: sandbox
+    description: Sandbox execution tools
+  - name: builtin
+    description: Built-in tools
+  - name: community
+    description: Community tools
+  - name: mcp
+    description: MCP server tools
+
+# Sandbox configuration
+sandbox:
+  use: src.community.local_sandbox:LocalSandboxProvider
+
+# Skills configuration
+skills:
+  path: ./skills
+  container_path: /mnt/skills
+
+# Title generation
+title:
+  enabled: true
+  max_words: 10
+  max_chars: 80
+
+# Subagents
+subagents:
+  enabled: true
+
+# Memory
+memory:
+  enabled: true
+  injection_enabled: true
+  storage_path: ./data/memory.json
+  debounce_seconds: 30
+  max_facts: 100
+  fact_confidence_threshold: 0.7
+  max_injection_tokens: 2000
+
+# Summarization
+summarization:
+  enabled: false
+  trigger: tokens
+  threshold: 100000
+  keep_policy: recent
+  keep_count: 10

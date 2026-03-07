@@ -1,0 +1,11 @@
+{
+  "mcpServers": {},
+  "skills": {
+    "research": { "enabled": true },
+    "report-generation": { "enabled": true },
+    "diagram-generation": { "enabled": true },
+    "code-generation": { "enabled": true },
+    "3d-modeling": { "enabled": true },
+    "web-page": { "enabled": true }
+  }
+}
