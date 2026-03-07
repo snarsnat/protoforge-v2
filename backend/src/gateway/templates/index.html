@@ -3,397 +3,520 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProtoForge ⚡</title>
+    <title>ProtoForge // Builder</title>
     <style>
+        /* =========================================
+           ANTI-TROPE DESIGN SYSTEM
+           Against: purple gradients, rounded corners, Inter font, hero sections
+           ========================================= */
+        
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #141414;
-            --bg-tertiary: #1c1c1c;
-            --text-primary: #f0f0f0;
-            --text-secondary: #888888;
-            --accent: #ff3e00;
-            --accent-dim: #cc3100;
-            --border: #333333;
-            --font-mono: 'SF Mono', 'Fira Code', monospace;
+            --ink: #0a0a0a;
+            --paper: #f5f5f0;
+            --concrete: #2d2d2d;
+            --chalk: #888;
+            --marker: #e63946;
+            --highlight: #ffbe0b;
+            --border: 1px solid #ccc;
+            
+            --font-display: 'Courier New', Courier, monospace;
+            --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* No border-radius anywhere - sharp edges */
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: var(--font-body);
+            background: var(--ink);
+            color: var(--paper);
+            line-height: 1.4;
             min-height: 100vh;
-            line-height: 1.5;
+            font-size: 14px;
         }
-        .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+        
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+        }
         
         /* Header */
-        header {
+        .header {
+            grid-column: 1 / -1;
+            background: var(--concrete);
+            border-bottom: 1px solid #444;
+            padding: var(--space-md) var(--space-lg);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 1.5rem;
         }
-        .logo { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; }
-        .logo span { color: var(--accent); }
         
-        /* Config */
-        .config-panel {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            margin-bottom: 1.5rem;
+        .logo {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: -1px;
         }
-        .config-panel.collapsed .panel-content { display: none; }
-        .panel-header {
+        
+        .logo::before {
+            content: '// ';
+            color: var(--chalk);
+        }
+        
+        .header-right {
             display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            background: var(--bg-tertiary);
-            cursor: pointer;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--accent);
+            align-items: center;
+            gap: var(--space-md);
         }
-        .panel-content { padding: 1rem; display: grid; grid-template-columns: 1fr 2fr auto; gap: 1rem; align-items: end; }
         
-        input, select {
-            padding: 0.6rem;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-        }
-        input:focus, select:focus { outline: none; border-color: var(--accent); }
-        
-        button {
-            padding: 0.6rem 1.2rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        button:hover { background: var(--accent-dim); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* Mode */
-        .mode-selector {
-            display: flex;
-            border: 2px solid var(--border);
-            margin-bottom: 1rem;
-        }
-        .mode-option { flex: 1; position: relative; }
-        .mode-option input { position: absolute; opacity: 0; }
-        .mode-label {
+        /* Sidebar */
+        .sidebar {
+            background: var(--concrete);
+            border-right: 1px solid #444;
+            padding: var(--space-lg);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 0.75rem;
-            cursor: pointer;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            border-right: 1px solid var(--border);
+            gap: var(--space-lg);
         }
-        .mode-option input:checked + .mode-label {
-            background: var(--accent);
+        
+        .sidebar-section h3 {
+            font-family: var(--font-display);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--chalk);
+            margin-bottom: var(--space-sm);
+        }
+        
+        /* Config form */
+        .config-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .config-form label {
+            font-size: 11px;
+            color: var(--chalk);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .config-form select,
+        .config-form input {
+            width: 100%;
+            padding: var(--space-sm);
+            background: var(--ink);
+            border: 1px solid #444;
+            color: var(--paper);
+            font-family: var(--font-display);
+            font-size: 12px;
+        }
+        
+        .config-form select:focus,
+        .config-form input:focus {
+            outline: none;
+            border-color: var(--marker);
+        }
+        
+        /* Mode buttons - NO rounded corners, NO cards */
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: #444;
+        }
+        
+        .mode-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--concrete);
+            border: none;
+            color: var(--chalk);
+            font-family: var(--font-display);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-align: left;
+            transition: none;
+        }
+        
+        .mode-btn:hover {
+            background: #3a3a3a;
+            color: var(--paper);
+        }
+        
+        .mode-btn.active {
+            background: var(--marker);
             color: white;
         }
-        .mode-icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
         
-        /* Chat */
-        .chat-container {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            margin-bottom: 1rem;
-            max-height: 400px;
+        .mode-btn::before {
+            content: '> ';
+            opacity: 0.5;
+        }
+        
+        /* Main content */
+        .main {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Chat area */
+        .chat {
+            flex: 1;
             overflow-y: auto;
-        }
-        .chat-message {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .chat-message.user {
-            background: var(--bg-tertiary);
-        }
-        .chat-message .role {
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-        .chat-message .content {
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-        .chat-message .content pre {
-            background: var(--bg-primary);
-            padding: 0.75rem;
-            overflow-x: auto;
-            font-size: 0.75rem;
-            border: 1px solid var(--border);
-            margin-top: 0.5rem;
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
         }
         
-        /* Prompt */
-        .prompt-box {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            margin-bottom: 1rem;
+        .message {
+            max-width: 800px;
         }
-        .prompt-box textarea {
+        
+        .message.system {
+            align-self: flex-start;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            text-align: right;
+        }
+        
+        .message-bubble {
+            display: inline-block;
+            padding: var(--space-md);
+            background: var(--concrete);
+            border: 1px solid #444;
+            text-align: left;
+            max-width: 100%;
+        }
+        
+        .message.user .message-bubble {
+            background: #1a1a2e;
+            border-color: #333;
+        }
+        
+        .message-label {
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: var(--chalk);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .message-content {
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        
+        .message-content code {
+            background: var(--ink);
+            padding: 2px 6px;
+            font-family: var(--font-display);
+            font-size: 12px;
+        }
+        
+        /* Input area */
+        .input-area {
+            background: var(--concrete);
+            border-top: 1px solid #444;
+            padding: var(--space-lg);
+        }
+        
+        .prompt-input {
             width: 100%;
-            min-height: 100px;
-            border: none;
+            min-height: 80px;
+            padding: var(--space-md);
+            background: var(--ink);
+            border: 2px solid #444;
+            color: var(--paper);
+            font-family: var(--font-body);
+            font-size: 14px;
             resize: vertical;
-            padding: 1rem;
-            background: transparent;
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
         }
-        .prompt-box textarea:focus { outline: none; }
-        .prompt-actions {
+        
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--marker);
+        }
+        
+        .prompt-input::placeholder {
+            color: var(--chalk);
+        }
+        
+        .input-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1rem;
-            background: var(--bg-tertiary);
-            border-top: 1px solid var(--border);
+            margin-top: var(--space-sm);
+        }
+        
+        .char-count {
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--chalk);
+        }
+        
+        .generate-btn {
+            padding: var(--space-sm) var(--space-xl);
+            background: var(--marker);
+            border: none;
+            color: white;
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        
+        .generate-btn:hover {
+            background: #c62828;
+        }
+        
+        .generate-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
         }
         
         /* Loading */
         .loading {
+            padding: var(--space-lg);
             text-align: center;
-            padding: 2rem;
-            display: none;
+            color: var(--chalk);
+            font-family: var(--font-display);
+            font-size: 12px;
         }
-        .loading.active { display: block; }
-        .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 0.75rem;
+        
+        .loading::before {
+            content: '...';
+            animation: dots 1s infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
         
         /* Results */
-        .results { display: none; }
-        .results.active { display: block; }
+        .results {
+            background: var(--concrete);
+            border: 2px solid var(--marker);
+            margin: var(--space-lg);
+            margin-top: 0;
+        }
+        
         .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .results-header h2 {
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            color: var(--accent);
+            background: var(--marker);
+            color: white;
+            padding: var(--space-sm) var(--space-md);
+            font-family: var(--font-display);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        .output-card {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            margin-bottom: 1rem;
+        .results-content {
+            padding: var(--space-md);
         }
-        .card-header {
-            padding: 0.75rem 1rem;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border);
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-        }
-        .card-content { padding: 1rem; }
         
-        .file-list { list-style: none; }
+        .file-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--space-sm);
+        }
+        
         .file-list li {
-            padding: 0.5rem 0.75rem;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            margin-bottom: 0.25rem;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
+            background: var(--ink);
+            padding: var(--space-sm);
+            font-family: var(--font-display);
+            font-size: 11px;
+            border: 1px solid #444;
         }
         
-        .diagram-container {
-            background: var(--bg-primary);
-            padding: 1rem;
-            overflow-x: auto;
-            font-size: 0.75rem;
-        }
-        .diagram-container pre {
-            margin: 0;
-            white-space: pre-wrap;
+        .file-list li::before {
+            content: '📄 ';
         }
         
-        /* Status */
+        /* Status indicator */
         .status {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+            gap: var(--space-xs);
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: var(--chalk);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-muted);
-        }
-        .status-dot.connected { background: var(--accent); }
         
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            border-top: 2px);
-            solid var(--border margin-top: 2rem;
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #666;
+        }
+        
+        .status-dot.ready {
+            background: #4caf50;
         }
         
         /* Error */
         .error {
             background: #3a1a1a;
-            border: 1px solid #ff4444;
-            color: #ff6666;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
+            border: 1px solid var(--marker);
+            color: #ff6b6b;
+            padding: var(--space-md);
+            margin: var(--space-lg);
+            font-family: var(--font-display);
+            font-size: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+        
+        /* Scrollbar - sharp */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--ink);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">⚡ <span>ProtoForge</span></div>
-            <div class="status">
-                <span class="status-dot" id="apiStatus"></span>
-                <span id="apiStatusText">API: Not configured</span>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">ProtoForge</div>
+            <div class="header-right">
+                <div class="status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">OFFLINE</span>
+                </div>
             </div>
         </header>
-
-        <!-- Config -->
-        <section class="config-panel" id="configPanel">
-            <div class="panel-header" onclick="toggleConfig()">
-                <span>// API Configuration</span>
-                <span>−</span>
-            </div>
-            <div class="panel-content">
-                <div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Config -->
+            <div class="sidebar-section">
+                <h3>// API Config</h3>
+                <div class="config-form">
+                    <label>Provider</label>
                     <select id="provider">
                         <option value="openai">OpenAI</option>
                         <option value="anthropic">Anthropic</option>
                         <option value="deepseek">DeepSeek</option>
                     </select>
                 </div>
-                <div>
-                    <input type="password" id="apiKey" placeholder="API Key (sk-... for OpenAI)">
+                <div class="config-form" style="margin-top: 8px;">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-...">
                 </div>
-                <button onclick="saveConfig()">Save</button>
-            </div>
-        </section>
-
-        <!-- Mode -->
-        <section class="mode-selector">
-            <label class="mode-option">
-                <input type="radio" name="mode" value="software" checked>
-                <span class="mode-label">
-                    <span class="mode-icon">🖥️</span>
-                    Software
-                </span>
-            </label>
-            <label class="mode-option">
-                <input type="radio" name="mode" value="hardware">
-                <span class="mode-label">
-                    <span class="mode-icon">⚡</span>
-                    Hardware
-                </span>
-            </label>
-            <label class="mode-option">
-                <input type="radio" name="mode" value="hybrid">
-                <span class="mode-label">
-                    <span class="mode-icon">🔗</span>
-                    Hybrid
-                </span>
-            </label>
-        </section>
-
-        <!-- Chat -->
-        <section class="chat-container" id="chatContainer">
-            <div class="chat-message">
-                <div class="role">ProtoForge</div>
-                <div class="content">👋 Hi! I'm ProtoForge, your AI prototyping assistant.
-
-Tell me what you want to build - I can create:
-• <b>Software</b> - Web apps, APIs, scripts
-• <b>Hardware</b> - Circuit diagrams, 3D models, BOMs
-• <b>Hybrid</b> - Both combined
-
-Just describe what you want and I'll generate it! 🔧</div>
-            </div>
-        </section>
-
-        <!-- Loading -->
-        <section class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Generating your prototype...</p>
-        </section>
-
-        <!-- Error -->
-        <div class="error" id="error" style="display: none;"></div>
-
-        <!-- Results -->
-        <section class="results" id="results">
-            <div class="results-header">
-                <h2>// Generated Files</h2>
-                <button onclick="downloadZip()">↓ Download .zip</button>
+                <button class="generate-btn" onclick="saveConfig()" style="margin-top: 8px; width: 100%;">Connect</button>
             </div>
             
-            <div class="output-card">
-                <div class="card-header">📐 Diagram</div>
-                <div class="card-content">
-                    <div class="diagram-container" id="diagramContent"></div>
+            <!-- Mode -->
+            <div class="sidebar-section">
+                <h3>// Build Mode</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="software" onclick="setMode('software')">Software</button>
+                    <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')">Hardware</button>
+                    <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')">Hybrid</button>
                 </div>
             </div>
             
-            <div class="output-card">
-                <div class="card-header">📁 Files</div>
-                <div class="card-content">
+            <!-- Info -->
+            <div class="sidebar-section" style="margin-top: auto;">
+                <h3>// About</h3>
+                <p style="font-size: 11px; color: var(--chalk);">
+                    ProtoForge generates real prototypes using AI. Your API key stays on your device.
+                </p>
+            </div>
+        </aside>
+        
+        <!-- Main -->
+        <main class="main">
+            <!-- Chat -->
+            <div class="chat" id="chat">
+                <div class="message system">
+                    <div class="message-bubble">
+                        <div class="message-label">ProtoForge</div>
+                        <div class="message-content">// READY
+
+Tell me what to build. I can create:
+- Software: Web apps, APIs, scripts
+- Hardware: Circuits, 3D models, BOMs
+- Hybrid: Combined systems
+
+Example: "A temperature monitoring dashboard with alerts"</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Error -->
+            <div class="error" id="error" style="display: none;"></div>
+            
+            <!-- Results -->
+            <div class="results" id="results" style="display: none;">
+                <div class="results-header">// Generated Files</div>
+                <div class="results-content">
                     <ul class="file-list" id="fileList"></ul>
                 </div>
             </div>
-        </section>
-
-        <!-- Prompt -->
-        <section class="prompt-box">
-            <textarea id="prompt" placeholder="Describe what you want to build...&#10;&#10;Example: A temperature monitoring web app with a dashboard that shows real-time sensor data"></textarea>
-            <div class="prompt-actions">
-                <span id="charCount">0 chars</span>
-                <button onclick="generate()" id="generateBtn">Generate</button>
+            
+            <!-- Input -->
+            <div class="input-area">
+                <textarea class="prompt-input" id="prompt" placeholder="Describe what you want to build..."></textarea>
+                <div class="input-actions">
+                    <span class="char-count" id="charCount">0 chars</span>
+                    <button class="generate-btn" id="generateBtn" onclick="generate()">Build</button>
+                </div>
             </div>
-        </section>
+        </main>
     </div>
-
-    <footer>
-        ProtoForge // Your API Key, Your Data // Built with ⚡
-    </footer>
 
     <script>
         const API_BASE = window.location.origin;
         let config = null;
+        let currentMode = 'software';
         
         // Load saved config
         function loadConfig() {
@@ -402,16 +525,30 @@ Just describe what you want and I'll generate it! 🔧</div>
                 config = JSON.parse(saved);
                 document.getElementById('provider').value = config.provider;
                 document.getElementById('apiKey').value = config.api_key;
-                document.getElementById('apiStatus').classList.add('connected');
-                document.getElementById('apiStatusText').textContent = 'API: ' + config.provider.toUpperCase();
+                updateStatus(true);
             }
         }
         loadConfig();
-
-        function toggleConfig() {
-            document.getElementById('configPanel').classList.toggle('collapsed');
+        
+        function updateStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            if (connected && config) {
+                dot.classList.add('ready');
+                text.textContent = config.provider.toUpperCase() + ' READY';
+            } else {
+                dot.classList.remove('ready');
+                text.textContent = 'OFFLINE';
+            }
         }
-
+        
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+        
         function saveConfig() {
             const provider = document.getElementById('provider').value;
             const apiKey = document.getElementById('apiKey').value;
@@ -423,72 +560,76 @@ Just describe what you want and I'll generate it! 🔧</div>
             
             config = { provider, api_key: apiKey };
             localStorage.setItem('protoforge_config', JSON.stringify(config));
-            document.getElementById('apiStatus').classList.add('connected');
-            document.getElementById('apiStatusText').textContent = 'API: ' + provider.toUpperCase();
-            document.getElementById('configPanel').classList.add('collapsed');
+            updateStatus(true);
             hideError();
         }
-
+        
         function showError(msg) {
             const el = document.getElementById('error');
-            el.textContent = msg;
+            el.textContent = '// ERROR: ' + msg;
             el.style.display = 'block';
         }
-
+        
         function hideError() {
             document.getElementById('error').style.display = 'none';
         }
-
+        
         // Character count
         document.getElementById('prompt').addEventListener('input', function() {
             document.getElementById('charCount').textContent = this.value.length + ' chars';
         });
-
+        
         function addMessage(role, content) {
-            const container = document.getElementById('chatContainer');
+            const chat = document.getElementById('chat');
             const div = document.createElement('div');
-            div.className = 'chat-message ' + role;
-            div.innerHTML = '<div class="role">' + role + '</div><div class="content">' + content + '</div>';
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            div.className = 'message ' + role;
+            div.innerHTML = '<div class="message-bubble"><div class="message-label">' + 
+                (role === 'user' ? 'You' : 'ProtoForge') + 
+                '</div><div class="message-content">' + content + '</div></div>';
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
         }
-
+        
         async function generate() {
             const prompt = document.getElementById('prompt').value.trim();
             if (!prompt) {
                 showError('Please describe what you want to build');
                 return;
             }
-
+            
             if (!config) {
                 showError('Please configure your API key first');
-                document.getElementById('configPanel').classList.remove('collapsed');
                 return;
             }
-
-            const mode = document.querySelector('input[name="mode"]:checked').value;
             
-            // Show loading
             hideError();
-            document.getElementById('loading').classList.add('active');
-            document.getElementById('results').classList.remove('active');
             document.getElementById('generateBtn').disabled = true;
+            document.getElementById('results').style.display = 'none';
             
-            // Add user message to chat
-            addMessage('user', '[' + mode.toUpperCase() + '] ' + prompt);
-            addMessage('ProtoForge', '🔧 Generating your ' + mode + ' prototype...');
-
+            // User message
+            addMessage('user', '[' + currentMode.toUpperCase() + '] ' + prompt);
+            
+            // Loading
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.id = 'loadingMsg';
+            document.getElementById('chat').appendChild(loading);
+            
+            addMessage('system', 'Building your prototype...');
+            
             try {
                 const res = await fetch(API_BASE + '/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         prompt: prompt,
-                        mode: mode,
+                        mode: currentMode,
                         api_key: config.api_key,
                         provider: config.provider
                     })
                 });
+                
+                document.getElementById('loadingMsg')?.remove();
                 
                 if (!res.ok) {
                     const err = await res.text();
@@ -497,34 +638,32 @@ Just describe what you want and I'll generate it! 🔧</div>
                 
                 const data = await res.json();
                 
-                // Show results
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('results').classList.add('active');
-                
-                // Show diagram
-                document.getElementById('diagramContent').innerHTML = '<pre>' + (data.diagram || 'No diagram generated') + '</pre>';
-                
                 // Show files
-                const fileList = document.getElementById('fileList');
-                fileList.innerHTML = data.files.map(f => '<li>' + f.name + '</li>').join('');
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('fileList').innerHTML = data.files.map(f => 
+                    '<li>' + f.name + '</li>'
+                ).join('');
                 
-                // Add to chat
-                addMessage('ProtoForge', '✅ Generated your ' + mode + ' prototype!\n\nFiles created:\n' + data.files.map(f => '• ' + f.name).join('\n'));
+                addMessage('system', '✅ Done! Generated ' + data.files.length + ' files.\n\nFiles: ' + 
+                    data.files.map(f => f.name).join(', '));
                 
             } catch (e) {
-                document.getElementById('loading').classList.remove('active');
-                showError('Error: ' + e.message);
-                addMessage('ProtoForge', '❌ Error: ' + e.message);
+                document.getElementById('loadingMsg')?.remove();
+                showError(e.message);
+                addMessage('system', '❌ Failed: ' + e.message);
             }
             
             document.getElementById('generateBtn').disabled = false;
             document.getElementById('prompt').value = '';
             document.getElementById('charCount').textContent = '0 chars';
         }
-
-        function downloadZip() {
-            alert('Download feature - files are generated in ./data/projects');
-        }
+        
+        // Enter to submit
+        document.getElementById('prompt').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                generate();
+            }
+        });
     </script>
 </body>
 </html>
