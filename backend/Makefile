@@ -12,7 +12,7 @@ help:
 	@echo "make format   - Format code"
 
 install:
-	uv pip install -r requirements.txt
+	uv pip install -r ../requirements.txt
 
 dev:
 	uv pip install -e .
