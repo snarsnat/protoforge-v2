@@ -66,6 +66,11 @@ class CreditCheckRequest(BaseModel):
     mode: str = "software"
 
 
+class TestApiRequest(BaseModel):
+    api_key: str
+    provider: str = "openai"
+
+
 # Initialize credit system
 credit_system = CreditSystem(data_dir="./data")
 
@@ -98,6 +103,36 @@ async def root():
 async def health():
     """Health check"""
     return {"status": "ok", "service": "protoforge-gateway"}
+
+
+@app.post("/api/test")
+async def test_api(request: TestApiRequest):
+    """Test an API key with a simple request"""
+    from src.gateway.generator import ProtoForgeGenerator
+    
+    try:
+        generator = ProtoForgeGenerator(
+            api_key=request.api_key,
+            provider=request.provider
+        )
+        
+        # Make a simple test call
+        response = generator._call_ai(
+            system_prompt="You are a helpful assistant. Reply with 'OK' if you understand.",
+            user_prompt="Say OK"
+        )
+        
+        return {
+            "success": True,
+            "provider": request.provider,
+            "response": response[:100]
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "provider": request.provider,
+            "error": str(e)
+        }
 
 
 @app.get("/api/models")

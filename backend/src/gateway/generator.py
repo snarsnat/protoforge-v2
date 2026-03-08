@@ -81,8 +81,6 @@ class ProtoForgeGenerator:
             return resp.json()['choices'][0]['message']['content']
         except requests.exceptions.Timeout:
             raise Exception("OpenAI request timed out. Try again.")
-        
-        return resp.json()['choices'][0]['message']['content']
     
     def _call_anthropic(self, system: str, user: str) -> str:
         """Call Anthropic API"""
