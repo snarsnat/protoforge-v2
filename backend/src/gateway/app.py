@@ -15,6 +15,7 @@ from src.models.factory import ModelFactory
 from src.skills import get_skills_loader
 from src.mcp import get_mcp_manager
 from src.agents.memory import get_memory_system, init_memory_system
+from src.gateway.credits import CreditSystem
 
 
 app = FastAPI(title="ProtoForge Gateway")
@@ -53,6 +54,20 @@ class GenerateRequest(BaseModel):
     mode: str = "software"  # software, hardware, hybrid
     api_key: str
     provider: str = "openai"
+
+
+class DepositRequest(BaseModel):
+    user_id: str
+    amount: float
+
+
+class CreditCheckRequest(BaseModel):
+    user_id: str
+    mode: str = "software"
+
+
+# Initialize credit system
+credit_system = CreditSystem(data_dir="./data")
 
 
 # Routes
@@ -268,6 +283,86 @@ async def get_artifact(thread_id: str, path: str, download: bool = False):
         headers={"Content-Disposition": f"attachment; filename={path}"}
         if download else {}
     )
+
+
+# Credit System Routes
+@app.post("/api/credits/deposit")
+async def deposit_credits(request: DepositRequest):
+    """Deposit credits into user account"""
+    result = credit_system.deposit(request.user_id, request.amount)
+    return result
+
+
+@app.get("/api/credits/balance/{user_id}")
+async def get_balance(user_id: str):
+    """Get user's credit balance"""
+    balance = credit_system.get_balance(user_id)
+    return {
+        "balance": balance['balance'],
+        "deposited": balance['deposited'],
+        "prompts_used": balance['prompts_used'],
+        "free_prompts_remaining": balance.get('prompts_free', 0)
+    }
+
+
+@app.post("/api/credits/check")
+async def check_credits(request: CreditCheckRequest):
+    """Check if user can make a prompt"""
+    can_prompt, message = credit_system.can_prompt(request.user_id, request.mode)
+    cost = credit_system.get_cost(request.mode)
+    return {
+        "can_prompt": can_prompt,
+        "message": message,
+        "cost": cost,
+        "mode": request.mode
+    }
+
+
+@app.post("/api/credits/use")
+async def use_credits(request: CreditCheckRequest):
+    """Use a prompt (deduct credits)"""
+    result = credit_system.use_prompt(request.user_id, request.mode)
+    return result
+
+
+# Generation endpoint with credit check
+@app.post("/api/generate")
+async def generate_with_credits(request: GenerateRequest):
+    """Generate prototype with credit system"""
+    user_id = request.api_key[:8]  # Use API key prefix as user ID
+    
+    # Check credits first
+    can_prompt, message = credit_system.can_prompt(user_id, request.mode)
+    if not can_prompt:
+        raise HTTPException(status_code=402, detail=message)
+    
+    # Use the prompt (deduct credits)
+    credit_result = credit_system.use_prompt(user_id, request.mode)
+    
+    # Proceed with generation (import here to avoid circular imports)
+    from src.gateway.generator import ProtoForgeGenerator
+    
+    generator = ProtoForgeGenerator(
+        api_key=request.api_key,
+        provider=request.provider
+    )
+    
+    try:
+        result = generator.generate(
+            prompt=request.prompt,
+            mode=request.mode,
+            project_dir="./data/projects"
+        )
+        
+        # Add credit info to response
+        result['credits'] = credit_result
+        return result
+        
+    except Exception as e:
+        # Refund credits on failure
+        if credit_result['type'] == 'paid':
+            credit_system.deposit(user_id, credit_result['cost'])
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def init_app():

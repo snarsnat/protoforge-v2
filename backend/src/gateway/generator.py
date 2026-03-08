@@ -26,6 +26,22 @@ class ProtoForgeGenerator:
             return self._call_anthropic(system_prompt, user_prompt)
         elif self.provider == 'deepseek':
             return self._call_deepseek(system_prompt, user_prompt)
+        elif self.provider == 'minimax':
+            return self._call_minimax(system_prompt, user_prompt)
+        elif self.provider == 'kimi':
+            return self._call_kimi(system_prompt, user_prompt)
+        elif self.provider == 'zhipu':
+            return self._call_zhipu(system_prompt, user_prompt)
+        elif self.provider == 'qwen':
+            return self._call_qwen(system_prompt, user_prompt)
+        elif self.provider == 'volcengine':
+            return self._call_volcengine(system_prompt, user_prompt)
+        elif self.provider == 'siliconflow':
+            return self._call_siliconflow(system_prompt, user_prompt)
+        elif self.provider == 'together':
+            return self._call_together(system_prompt, user_prompt)
+        elif self.provider == 'groq':
+            return self._call_groq(system_prompt, user_prompt)
         else:
             raise ValueError(f"Unknown provider: {self.provider}")
     
@@ -135,6 +151,302 @@ class ProtoForgeGenerator:
             raise Exception("DeepSeek request timed out. Try a different provider.")
         except requests.exceptions.ConnectionError:
             raise Exception("Could not connect to DeepSeek. Check your internet connection.")
+    
+    def _call_minimax(self, system: str, user: str) -> str:
+        """Call MiniMax API (free tier often available)"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'abab6.5s-chat',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://api.minimax.chat/v1/text/chatcompletion_v2',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("MiniMax rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid MiniMax API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"MiniMax error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("MiniMax request timed out. Try a different provider.")
+    
+    def _call_kimi(self, system: str, user: str) -> str:
+        """Call Kimi (Moonshot AI) API"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'kimi-k2.5',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://api.moonshot.ai/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Kimi rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Kimi API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Kimi error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Kimi request timed out. Try a different provider.")
+    
+    def _call_zhipu(self, system: str, user: str) -> str:
+        """Call Zhipu (GLM) API"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'glm-4',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Zhipu/GLM rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Zhipu API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Zhipu/GLM error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Zhipu request timed out. Try a different provider.")
+    
+    def _call_qwen(self, system: str, user: str) -> str:
+        """Call Qwen API"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'qwen-turbo',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Qwen rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Qwen API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Qwen error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Qwen request timed out. Try a different provider.")
+    
+    def _call_volcengine(self, system: str, user: str) -> str:
+        """Call Volcano Engine (BytePlus) API"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'doubao-seed-1-8-251228',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Volcano Engine rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Volcano Engine API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Volcano Engine error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Volcano Engine request timed out. Try a different provider.")
+    
+    def _call_siliconflow(self, system: str, user: str) -> str:
+        """Call SiliconFlow API (free tier available)"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'Qwen/Qwen2.5-7B-Instruct',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://api.siliconflow.cn/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("SiliconFlow rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid SiliconFlow API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"SiliconFlow error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("SiliconFlow request timed out. Try a different provider.")
+    
+    def _call_together(self, system: str, user: str) -> str:
+        """Call Together AI API (free tier available)"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://api.together.ai/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Together AI rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Together AI API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Together AI error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Together AI request timed out. Try a different provider.")
+    
+    def _call_groq(self, system: str, user: str) -> str:
+        """Call Groq API (fast, free tier available)"""
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            'model': 'llama-3.3-70b-versatile',
+            'messages': [
+                {'role': 'system', 'content': system},
+                {'role': 'user', 'content': user}
+            ],
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+        
+        try:
+            resp = requests.post(
+                'https://api.groq.com/openai/v1/chat/completions',
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if resp.status_code == 429:
+                raise Exception("Groq rate limit exceeded. Try again later.")
+            elif resp.status_code == 401:
+                raise Exception("Invalid Groq API key. Please check your API key.")
+            elif resp.status_code != 200:
+                error_data = resp.json() if resp.text else {}
+                raise Exception(f"Groq error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+            
+            return resp.json()['choices'][0]['message']['content']
+        except requests.exceptions.Timeout:
+            raise Exception("Groq request timed out. Try a different provider.")
     
     def generate(self, prompt: str, mode: str, project_dir: str) -> Dict[str, Any]:
         """Generate prototype based on prompt and mode"""
