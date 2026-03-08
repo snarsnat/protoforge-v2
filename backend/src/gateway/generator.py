@@ -62,6 +62,10 @@ PROVIDERS = {
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
         "model": "llama-3.3-70b-versatile"
+    },
+    "ollama": {
+        "base_url": "http://localhost:11434",
+        "model": "llama3.2:3b"
     }
 }
 
@@ -85,6 +89,8 @@ class ProtoForgeGenerator:
             return self._call_volcengine(system_prompt, user_prompt)
         elif self.provider == "minimax":
             return self._call_minimax(system_prompt, user_prompt)
+        elif self.provider == "ollama":
+            return self._call_ollama(system_prompt, user_prompt)
         else:
             # Use OpenAI-compatible API
             return self._call_openai_compatible(system_prompt, user_prompt)
@@ -267,6 +273,30 @@ class ProtoForgeGenerator:
             
         except requests.exceptions.Timeout:
             raise Exception("MiniMax request timed out.")
+    
+    def _call_ollama(self, system: str, user: str) -> str:
+        """Call Ollama local AI"""
+        
+        url = f"{self.config['base_url']}/api/generate"
+        
+        payload = {
+            'model': self.config['model'],
+            'prompt': f"System: {system}\n\nUser: {user}",
+            'stream': False
+        }
+        
+        try:
+            resp = requests.post(url, json=payload, timeout=120)
+            
+            if resp.status_code != 200:
+                raise Exception(f"Ollama error: {resp.text[:100]}")
+            
+            return resp.json().get('response', 'No response')
+            
+        except requests.exceptions.ConnectionError:
+            raise Exception("Ollama not running. Start with: ollama serve")
+        except requests.exceptions.Timeout:
+            raise Exception("Ollama request timed out.")
     
     def generate(self, prompt: str, mode: str, project_dir: str) -> Dict[str, Any]:
         """Generate prototype based on prompt and mode"""
