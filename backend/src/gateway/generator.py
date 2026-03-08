@@ -212,13 +212,17 @@ class ProtoForgeGenerator:
                 timeout=120
             )
             
+            # Debug: print response status and body
+            print(f"Kimi response status: {resp.status_code}")
+            print(f"Kimi response body: {resp.text[:500]}")
+            
             if resp.status_code == 429:
                 raise Exception("Kimi rate limit exceeded. Try again later.")
             elif resp.status_code == 401:
                 raise Exception("Invalid Kimi API key. Please check your API key.")
             elif resp.status_code != 200:
                 error_data = resp.json() if resp.text else {}
-                raise Exception(f"Kimi error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+                raise Exception(f"Kimi error ({resp.status_code}): {error_data.get('error', {}).get('message', resp.text[:200])}")
             
             return resp.json()['choices'][0]['message']['content']
         except requests.exceptions.Timeout:
