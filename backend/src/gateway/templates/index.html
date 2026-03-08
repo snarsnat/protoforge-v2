@@ -7,247 +7,276 @@
     <title>ProtoForge // Builder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-canvas: #0a0a0a;
-            --bg-surface: #141414;
+            --bg-surface: #111111;
             --bg-panel: #1a1a1a;
-            --text-primary: #f5f5f0;
-            --text-secondary: #a0a0a0;
-            --text-muted: #666;
-            --accent: #e63946;
-            --accent-hover: #c62828;
-            --border-light: #2a2a2a;
-            --border-medium: #444;
-            --success-text: #4caf50;
-            --warning-text: #ff9800;
-            --error-text: #f44336;
+            --bg-elevated: #222222;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #ff3e00;
+            --accent-hover: #ff5722;
+            --border-light: #1f1f1f;
+            --border-medium: #333333;
+            --success: #00c853;
+            --warning: #ff9100;
+            --error: #ff1744;
         }
+
+        [data-theme="light"] {
+            --bg-canvas: #f5f5f5;
+            --bg-surface: #ffffff;
+            --bg-panel: #eeeeee;
+            --bg-elevated: #e0e0e0;
+            --text-primary: #0a0a0a;
+            --text-secondary: #555555;
+            --text-muted: #999999;
+            --accent: #d32f2f;
+            --accent-hover: #b71c1c;
+            --border-light: #e0e0e0;
+            --border-medium: #bbbbbb;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'IBM Plex Mono', 'Space Mono', monospace;
             background: var(--bg-canvas);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.5;
+            transition: background 0.4s ease, color 0.4s ease;
         }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-panel); }
         ::-webkit-scrollbar-thumb { background: var(--border-medium); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
         .app-container { display: flex; height: 100vh; }
-        
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border-light); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-light); }
-        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
-        .logo-icon { width: 32px; height: 32px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; font-family: 'IBM Plex Mono', monospace; }
-        .logo-text { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; font-family: 'IBM Plex Mono', monospace; }
-        .new-project-btn { margin-top: 16px; width: 100%; padding: 10px 14px; background: var(--accent); border: none; color: white; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.1s; }
-        .new-project-btn:hover { background: var(--accent-hover); }
+
+        .sidebar { 
+            width: 280px; 
+            background: var(--bg-surface); 
+            border-right: 2px solid var(--border-light); 
+            display: flex; 
+            flex-direction: column;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .sidebar-header { 
+            padding: 20px; 
+            border-bottom: 2px solid var(--border-light);
+            background: var(--bg-panel);
+        }
+
+        .logo-section { display: flex; align-items: center; justify-content: space-between; }
+
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+
+        .logo-icon { 
+            width: 40px; height: 40px; background: var(--accent); 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 700; font-size: 14px; color: white;
+            border-radius: 0; 
+        }
+
+        .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -1px; text-transform: uppercase; }
+
+        .theme-toggle {
+            width: 36px; height: 36px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-medium);
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 16px; transition: all 0.3s ease;
+            border-radius: 0;
+        }
+
+        .theme-toggle:hover { background: var(--accent); border-color: var(--accent); }
+
+        .credits-display {
+            margin-top: 16px; padding: 12px;
+            background: var(--bg-surface);
+            border: 2px solid var(--border-light);
+        }
+
+        .credits-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+        .credits-amount { font-size: 20px; font-weight: 700; color: var(--accent); }
+        .credits-free { font-size: 10px; color: var(--success); margin-top: 4px; }
+
+        .deposit-btn {
+            margin-top: 8px; width: 100%; padding: 8px;
+            background: transparent; border: 2px solid var(--accent);
+            color: var(--accent); font-family: inherit;
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            cursor: pointer; transition: all 0.3s ease; border-radius: 0;
+        }
+
+        .deposit-btn:hover { background: var(--accent); color: white; }
+
+        .new-project-btn { 
+            margin-top: 16px; width: 100%; padding: 14px 16px; 
+            background: var(--accent); border: none; color: white; 
+            font-size: 12px; font-weight: 600; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+            gap: 8px; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s ease; border-radius: 0;
+        }
+
+        .new-project-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
         .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
         .nav-section { margin-bottom: 24px; }
-        .nav-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); padding: 0 12px; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace; }
-        
-        /* Mode Buttons */
-        .mode-buttons { display: flex; flex-direction: column; gap: 2px; background: #222; }
-        .mode-btn { padding: 12px 16px; background: transparent; border: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; text-align: left; transition: all 0.1s; display: flex; align-items: center; gap: 10px; }
-        .mode-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .nav-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 0 12px; margin-bottom: 8px; }
+
+        .mode-buttons { display: flex; flex-direction: column; gap: 0; background: var(--bg-panel); border: 2px solid var(--border-light); }
+
+        .mode-btn { 
+            padding: 14px 16px; background: transparent; border: none; 
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary); font-size: 12px; font-weight: 500; 
+            cursor: pointer; text-align: left; transition: all 0.3s ease;
+            font-family: inherit; display: flex; align-items: center; gap: 12px; border-radius: 0;
+        }
+
+        .mode-btn:last-child { border-bottom: none; }
+        .mode-btn:hover { background: var(--bg-elevated); color: var(--text-primary); padding-left: 20px; }
         .mode-btn.active { background: var(--accent); color: white; }
-        .mode-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-        
-        /* Projects */
-        .project-list { padding: 0 12px; }
-        .project-item { padding: 10px 12px; cursor: pointer; transition: background 0.1s; margin-bottom: 2px; }
-        .project-item:hover { background: var(--bg-panel); }
-        .project-item.active { background: var(--bg-panel); border: 1px solid var(--border-medium); }
-        .project-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .project-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-        .project-status { width: 6px; height: 6px; background: var(--success-text); }
-        .project-status.processing { background: var(--warning-text); }
-        .no-projects { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; }
-        
-        /* Config */
-        .config-section { padding: 12px; border-top: 1px solid var(--border-light); }
-        .config-select, .config-input { width: 100%; padding: 8px 10px; background: var(--bg-panel); border: 1px solid var(--border-light); color: var(--text-primary); font-size: 12px; margin-bottom: 8px; }
+
+        .project-list { padding: 0; }
+        .project-item { padding: 12px 16px; cursor: pointer; transition: all 0.3s ease; border-bottom: 1px solid var(--border-light); border-radius: 0; }
+        .project-item:hover { background: var(--bg-elevated); }
+        .project-item.active { background: var(--bg-elevated); border-left: 3px solid var(--accent); }
+        .project-name { font-size: 12px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-meta { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+        .project-status { width: 6px; height: 6px; background: var(--success); }
+        .project-status.processing { background: var(--warning); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .config-section { padding: 16px; border-top: 2px solid var(--border-light); background: var(--bg-panel); }
+        .config-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
+        .config-select, .config-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 2px solid var(--border-light); color: var(--text-primary); font-size: 11px; margin-bottom: 10px; font-family: inherit; transition: all 0.3s ease; border-radius: 0; }
         .config-select:focus, .config-input:focus { outline: none; border-color: var(--accent); }
-        .config-btn { width: 100%; padding: 8px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .config-btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; border-radius: 0; }
         .config-btn:hover { background: var(--accent-hover); }
-        
-        /* User Profile */
-        .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border-light); }
-        .user-profile { display: flex; align-items: center; gap: 10px; padding: 6px; }
-        .user-profile:hover { background: var(--bg-panel); }
-        .user-avatar { width: 28px; height: 28px; background: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; color: var(--bg-surface); }
-        .user-info { flex: 1; min-width: 0; }
-        .user-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-        .user-plan { font-size: 11px; color: var(--text-muted); }
-        
-        /* Main Content */
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-canvas); }
-        .main-header { height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); background: var(--bg-surface); }
-        .header-left { display: flex; align-items: center; gap: 16px; }
-        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-canvas); transition: background 0.4s ease; }
+        .main-header { height: 56px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--border-light); background: var(--bg-surface); transition: all 0.4s ease; }
+        .breadcrumb { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-secondary); }
         .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
         .breadcrumb a:hover { color: var(--text-primary); }
-        .breadcrumb-separator { color: var(--text-muted); }
-        .breadcrumb-current { color: var(--text-primary); font-weight: 500; }
         .header-actions { display: flex; align-items: center; gap: 8px; }
-        .header-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.1s; background: transparent; border: 1px solid var(--border-medium); color: var(--text-secondary); }
-        .header-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
+        .header-btn { padding: 8px 16px; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease; background: transparent; border: 2px solid var(--border-medium); color: var(--text-secondary); font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 0; }
+        .header-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
         .header-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-        .header-btn.primary:hover { background: var(--accent-hover); color: white; }
-        .header-btn svg { width: 14px; height: 14px; }
-        
-        /* Workspace */
-        .workspace { flex: 1; display: flex; overflow: hidden; }
-        .chat-panel { width: 45%; min-width: 400px; display: flex; flex-direction: column; border-right: 1px solid var(--border-light); background: var(--bg-surface); }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-        .message { display: flex; gap: 12px; }
-        .message-avatar { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
-        .message-avatar.ai { background: var(--accent); color: white; }
-        .message-avatar.user { background: var(--bg-panel); border: 1px solid var(--border-medium); color: var(--text-secondary); }
-        .message-content { flex: 1; min-width: 0; }
-        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-        .message-role { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-        .message-time { font-size: 11px; color: var(--text-muted); }
-        .message-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
-        .message-text p { margin-bottom: 8px; }
-        .message-text p:last-child { margin-bottom: 0; }
-        
-        /* Code Block */
-        .code-block { margin-top: 10px; background: var(--bg-panel); border: 1px solid var(--border-light); overflow: hidden; }
-        .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); }
-        .code-language { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
-        .code-actions { display: flex; gap: 6px; }
-        .code-action-btn { padding: 3px 8px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); }
-        .code-action-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
-        .code-content { padding: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--text-secondary); max-height: 200px; overflow-y: auto; }
-        
-        /* Chat Input */
-        .chat-input-area { padding: 16px 20px; border-top: 1px solid var(--border-light); background: var(--bg-surface); }
-        .chat-input-container { border: 1px solid var(--border-medium); background: var(--bg-surface); }
-        .chat-input-container:focus-within { border-color: var(--accent); }
-        .chat-textarea { width: 100%; min-height: 24px; max-height: 120px; padding: 12px 14px; background: transparent; border: none; color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.5; resize: none; outline: none; }
-        .chat-textarea::placeholder { color: var(--text-muted); }
-        .chat-input-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid var(--border-light); }
-        .input-tools { display: flex; gap: 4px; }
-        .input-tool-btn { padding: 4px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
-        .input-tool-btn:hover { background: var(--bg-panel); color: var(--text-primary); }
-        .input-tool-btn svg { width: 16px; height: 16px; }
-        .send-btn { padding: 6px 12px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .header-btn.primary:hover { background: var(--accent-hover); }
+        .header-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .chat-area { flex: 1; display: flex; overflow: hidden; }
+        .chat-panel { flex: 1; display: flex; flex-direction: column; border-right: 2px solid var(--border-light); min-width: 0; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 24px; }
+
+        .message { margin-bottom: 20px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { text-align: right; }
+        .message-content { display: inline-block; max-width: 80%; padding: 16px 20px; border-radius: 0; }
+        .message.user .message-content { background: var(--accent); color: white; }
+        .message.ai .message-content { background: var(--bg-panel); border: 1px solid var(--border-light); }
+
+        .chat-input-area { padding: 16px 24px; background: var(--bg-surface); border-top: 2px solid var(--border-light); }
+        .chat-input-wrapper { display: flex; gap: 12px; }
+        .chat-input { flex: 1; padding: 14px 18px; background: var(--bg-panel); border: 2px solid var(--border-light); color: var(--text-primary); font-size: 13px; font-family: inherit; resize: none; transition: all 0.3s ease; border-radius: 0; }
+        .chat-input:focus { outline: none; border-color: var(--accent); }
+        .chat-input::placeholder { color: var(--text-muted); }
+        .send-btn { padding: 14px 24px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; border-radius: 0; }
         .send-btn:hover { background: var(--accent-hover); }
         .send-btn:disabled { background: var(--border-medium); cursor: not-allowed; }
-        .input-hint { text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
-        .kbd { padding: 1px 4px; background: var(--bg-panel); border: 1px solid var(--border-light); font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
-        
-        /* Preview Panel */
-        .preview-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-panel); min-width: 0; }
-        .preview-toolbar { height: 40px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); background: var(--bg-surface); }
-        .preview-tabs { display: flex; gap: 2px; }
-        .preview-tab { padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; background: transparent; border: none; color: var(--text-secondary); }
-        .preview-tab:hover { background: var(--bg-panel); color: var(--text-primary); }
-        .preview-tab.active { background: var(--text-primary); color: var(--bg-surface); }
-        .device-toggles { display: flex; align-items: center; gap: 2px; padding: 2px; background: var(--bg-panel); border: 1px solid var(--border-light); }
-        .device-btn { padding: 4px 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
-        .device-btn:hover { color: var(--text-primary); }
-        .device-btn.active { background: var(--bg-surface); color: var(--text-primary); }
-        .device-btn svg { width: 14px; height: 14px; }
-        .preview-actions { display: flex; gap: 6px; }
-        .preview-action-btn { padding: 4px 10px; font-size: 11px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
-        .preview-action-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
-        .preview-action-btn svg { width: 12px; height: 12px; }
-        .preview-canvas { flex: 1; padding: 20px; display: flex; align-items: center; justify-content: center; overflow: auto; background: var(--bg-panel); }
-        .preview-frame { width: 100%; max-width: 1200px; height: 100%; background: white; border: 1px solid var(--border-light); overflow: hidden; }
-        .preview-frame.mobile { max-width: 375px; height: 667px; border: 4px solid var(--text-primary); }
-        .preview-frame.tablet { max-width: 768px; height: 800px; border: 3px solid var(--text-primary); }
-        .preview-frame iframe { width: 100%; height: 100%; border: none; }
-        
-        /* Empty State */
-        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px; }
-        .empty-state-icon { width: 56px; height: 56px; background: var(--bg-surface); border: 1px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .empty-state-icon svg { width: 24px; height: 24px; color: var(--text-muted); }
-        .empty-state-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-        .empty-state-desc { font-size: 13px; color: var(--text-secondary); max-width: 320px; line-height: 1.5; margin-bottom: 20px; }
-        .empty-state-btn { padding: 10px 20px; background: var(--accent); border: none; color: white; font-size: 13px; font-weight: 500; cursor: pointer; }
-        .empty-state-btn:hover { background: var(--accent-hover); }
-        
-        /* Files View */
-        .files-view { width: 100%; height: 100%; overflow-y: auto; padding: 20px; }
-        .file-tree { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
-        .file-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
-        .file-item:hover { background: var(--bg-surface); color: var(--text-primary); }
-        
-        /* Loading */
-        .loading-indicator { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-light); width: fit-content; }
-        .loading-bar { width: 60px; height: 4px; background: var(--bg-panel); overflow: hidden; }
-        .loading-bar-fill { height: 100%; background: var(--text-primary); width: 30%; animation: loading 1s ease-in-out infinite; }
-        @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
-        .loading-text { font-size: 12px; color: var(--text-secondary); }
-        
-        /* Resize Handle */
-        .resize-handle { width: 4px; cursor: col-resize; background: var(--border-light); }
-        .resize-handle:hover { background: var(--accent); }
-        
-        /* Toast */
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-        .toast { padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-medium); display: flex; align-items: center; gap: 8px; }
-        .toast.success { border-color: var(--success-text); }
-        .toast.error { border-color: var(--error-text); }
-        .toast-icon { width: 16px; height: 16px; }
-        .toast-icon.success { color: var(--success-text); }
-        .toast-icon.error { color: var(--error-text); }
-        .toast-message { font-size: 12px; color: var(--text-primary); }
-        
-        /* Status */
-        .status-indicator { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; }
-        .status-dot { width: 6px; height: 6px; background: var(--text-muted); }
-        .status-dot.ready { background: var(--success-text); }
-        
-        @media (max-width: 1024px) { .sidebar { width: 200px; } .chat-panel { min-width: 320px; } }
-        @media (max-width: 768px) { .sidebar { position: fixed; left: -260px; z-index: 100; height: 100vh; } .workspace { flex-direction: column; } .chat-panel { width: 100%; min-width: 100%; } }
+
+        .preview-panel { width: 45%; display: flex; flex-direction: column; background: var(--bg-surface); }
+        .preview-tabs { display: flex; border-bottom: 2px solid var(--border-light); background: var(--bg-panel); }
+        .preview-tab { padding: 12px 20px; background: transparent; border: none; color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; }
+        .preview-tab:hover { color: var(--text-primary); }
+        .preview-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .preview-content { flex: 1; overflow: hidden; position: relative; }
+        .preview-frame { width: 100%; height: 100%; border: none; display: none; }
+        .preview-frame.active { display: block; }
+        .preview-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .files-view { flex: 1; overflow-y: auto; padding: 16px; display: none; }
+        .files-view.active { display: block; }
+        .file-item { padding: 10px 14px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; border-radius: 0; border-left: 2px solid transparent; }
+        .file-item:hover { background: var(--bg-elevated); border-left-color: var(--accent); }
+        .file-icon { font-size: 14px; }
+        .file-name { flex: 1; }
+        .file-type { font-size: 9px; text-transform: uppercase; color: var(--text-muted); padding: 2px 6px; background: var(--bg-panel); border: 1px solid var(--border-light); }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px; text-align: center; }
+        .empty-state-icon { width: 80px; height: 80px; background: var(--bg-panel); border: 2px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 32px; }
+        .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .empty-state-desc { font-size: 12px; color: var(--text-secondary); max-width: 300px; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 20px; background: var(--bg-panel); border: 2px solid var(--border-medium); color: var(--text-primary); font-size: 12px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; border-radius: 0; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--error); }
+
+        .loading-indicator { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12px; padding: 16px; }
+        .loading-dots { display: flex; gap: 4px; }
+        .loading-dots span { width: 6px; height: 6px; background: var(--accent); animation: bounce 1.4s infinite ease-in-out; }
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        @media (max-width: 1024px) { .preview-panel { display: none; } }
+        @media (max-width: 768px) { .sidebar { width: 220px; } }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <a href="#" class="logo">
-                    <div class="logo-icon">PF</div>
-                    <div class="logo-text">ProtoForge</div>
-                </a>
-                <button class="new-project-btn" onclick="newProject()">+ New Project</button>
+                <div class="logo-section">
+                    <a href="#" class="logo">
+                        <div class="logo-icon">PF</div>
+                        <span class="logo-text">ProtoForge</span>
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                        <span id="theme-icon">☀</span>
+                    </button>
+                </div>
+                <div class="credits-display">
+                    <div class="credits-label">Credits</div>
+                    <div class="credits-amount">$<span id="credit-balance">0.00</span></div>
+                    <div class="credits-free" id="free-prompts">1 free prompt available</div>
+                    <button class="deposit-btn" onclick="showDepositModal()">+ Deposit</button>
+                </div>
+                <button class="new-project-btn" onclick="newProject()">
+                    <span>+</span> New Project
+                </button>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Build Mode</div>
+                    <div class="nav-section-title">Mode</div>
                     <div class="mode-buttons">
-                        <button class="mode-btn active" data-mode="software" onclick="setMode('software')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                            Software
-                        </button>
-                        <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                            Hardware
-                        </button>
-                        <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
-                            Hybrid
-                        </button>
+                        <button class="mode-btn active" data-mode="software" onclick="setMode('software')"><span>💻</span> Software</button>
+                        <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')"><span>⚡</span> Hardware</button>
+                        <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')"><span>🔗</span> Hybrid</button>
                     </div>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Projects</div>
-                    <div class="project-list" id="projectList">
-                        <!-- Projects loaded dynamically - empty initially -->
-                    </div>
+                    <div class="project-list" id="project-list"></div>
                 </div>
             </nav>
             <div class="config-section">
+                <div class="config-title">API Configuration</div>
                 <select class="config-select" id="provider">
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic</option>
@@ -261,105 +290,92 @@
                     <option value="together">Together AI</option>
                     <option value="groq">Groq</option>
                 </select>
-                <input type="password" class="config-input" id="apiKey" placeholder="sk-...">
-                <button class="config-btn" onclick="saveConfig()">Connect</button>
-            </div>
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">U</div>
-                    <div class="user-info">
-                        <div class="user-name">User</div>
-                        <div class="user-plan"><span class="status-indicator"><span class="status-dot" id="statusDot"></span><span id="statusText">Offline</span></span></div>
-                    </div>
-                </div>
+                <input type="password" class="config-input" id="apiKey" placeholder="Enter API key...">
+                <button class="config-btn" onclick="connect()">Connect</button>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
-                <div class="header-left">
-                    <div class="breadcrumb"><a href="#">Projects</a><span class="breadcrumb-separator">/</span><span class="breadcrumb-current" id="breadcrumbProject">New Project</span></div>
+                <div class="breadcrumb">
+                    <a href="#">ProtoForge</a>
+                    <span>/</span>
+                    <span id="current-project">New Project</span>
                 </div>
                 <div class="header-actions">
-                    <button class="header-btn" onclick="shareProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>Share</button>
-                    <button class="header-btn" onclick="exportProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export</button>
-                    <button class="header-btn primary" onclick="downloadZip()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Download</button>
+                    <button class="header-btn" onclick="downloadAll()" id="download-btn" disabled>⬇ Download</button>
+                    <button class="header-btn primary" onclick="shareProject()">Share</button>
                 </div>
             </header>
 
-            <div class="workspace">
-                <!-- Chat Panel -->
-                <section class="chat-panel">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="message">
-                            <div class="message-avatar ai">PF</div>
-                            <div class="message-content">
-                                <div class="message-header"><span class="message-role">ProtoForge</span><span class="message-time">Just now</span></div>
-                                <div class="message-text"><p>Select a mode (Software, Hardware, or Hybrid) and describe what you want to build.</p><p><strong>Software</strong> - Web apps, APIs, scripts<br><strong>Hardware</strong> - 3D printable enclosures, circuits, BOMs<br><strong>Hybrid</strong> - Combined systems</p></div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="chat-area">
+                <div class="chat-panel">
+                    <div class="chat-messages" id="chat-messages"></div>
                     <div class="chat-input-area">
-                        <div class="chat-input-container">
-                            <textarea class="chat-textarea" id="chatInput" placeholder="Describe what you want to build..." rows="1"></textarea>
-                            <div class="chat-input-actions">
-                                <div class="input-tools">
-                                    <button class="input-tool-btn" title="Attach" onclick="attachFile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
-                                </div>
-                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Build <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
-                            </div>
+                        <div class="chat-input-wrapper">
+                            <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build..." rows="1" onkeydown="handleInputKey(event)"></textarea>
+                            <button class="send-btn" onclick="sendMessage()" id="send-btn">Build</button>
                         </div>
-                        <div class="input-hint"><span class="kbd">Enter</span> to build, <span class="kbd">Shift+Enter</span> for new line</div>
                     </div>
-                </section>
+                </div>
 
-                <!-- Resize Handle -->
-                <div class="resize-handle" id="resizeHandle"></div>
-
-                <!-- Preview Panel -->
-                <section class="preview-panel">
-                    <div class="preview-toolbar">
-                        <div class="preview-tabs">
-                            <button class="preview-tab active" data-view="preview" onclick="setView('preview')">Preview</button>
-                            <button class="preview-tab" data-view="files" onclick="setView('files')">Files</button>
-                        </div>
-                        <div class="device-toggles">
-                            <button class="device-btn" data-device="mobile" onclick="setDevice('mobile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></button>
-                            <button class="device-btn" data-device="tablet" onclick="setDevice('tablet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></button>
-                            <button class="device-btn active" data-device="desktop" onclick="setDevice('desktop')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
-                        </div>
-                        <div class="preview-actions">
-                            <button class="preview-action-btn" onclick="refreshPreview()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>Refresh</button>
-                            <button class="preview-action-btn" onclick="openInNewTab()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>Open</button>
-                        </div>
+                <div class="preview-panel">
+                    <div class="preview-tabs">
+                        <button class="preview-tab active" onclick="setPreviewTab('preview')">Preview</button>
+                        <button class="preview-tab" onclick="setPreviewTab('code')">Code</button>
+                        <button class="preview-tab" onclick="setPreviewTab('files')">Files</button>
                     </div>
-                    <div class="preview-canvas">
-                        <div class="empty-state" id="emptyState">
-                            <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
-                            <h3 class="empty-state-title">Ready to Build</h3>
-                            <p class="empty-state-desc">Select a mode and describe what you want to create. ProtoForge will generate real files you can download.</p>
-                            <button class="empty-state-btn" onclick="startQuickBuild()">Quick Start</button>
-                        </div>
-                        <div class="preview-frame" id="previewFrame" style="display: none;"><iframe id="previewIframe" src="about:blank"></iframe></div>
-                        <div class="files-view" id="filesView" style="display: none;"></div>
+                    <div class="preview-content">
+                        <div class="preview-placeholder" id="preview-placeholder">Build a project to see preview</div>
+                        <iframe class="preview-frame" id="preview-frame"></iframe>
+                        <div class="files-view" id="files-view"></div>
                     </div>
-                </section>
+                </div>
             </div>
         </main>
     </div>
 
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
-        const API_BASE = window.location.origin;
-        let config = null;
-        let currentProject = 'New Project';
+        const API_BASE = '';
+        let config = { provider: 'openai', api_key: '' };
         let currentMode = 'software';
+        let currentProject = null;
         let generatedFiles = [];
         let projects = [];
+        let userCredits = { balance: 0, freePrompts: 1 };
 
-        // Load config
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                icon.textContent = '☀';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                icon.textContent = '☾';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.getElementById('theme-icon').textContent = '☾';
+        }
+
+        function init() {
+            loadConfig();
+            loadProjects();
+            loadCredits();
+            renderProjects();
+            if (projects.length === 0) {
+                addMessage('Welcome to ProtoForge. Select a mode, enter your API key, and describe what you want to build.', 'ai');
+            }
+        }
+
         function loadConfig() {
             const saved = localStorage.getItem('protoforge_config');
             if (saved) {
@@ -368,85 +384,159 @@
                 document.getElementById('apiKey').value = config.api_key;
                 updateStatus(true);
             }
-            // Load projects
-            const savedProjects = localStorage.getItem('protoforge_projects');
-            if (savedProjects) {
-                projects = JSON.parse(savedProjects);
-                renderProjects();
-            }
-        }
-        loadConfig();
-
-        function updateStatus(connected) {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            if (connected && config) {
-                dot.classList.add('ready');
-                text.textContent = config.provider.toUpperCase();
-            } else {
-                dot.classList.remove('ready');
-                text.textContent = 'Offline';
-            }
         }
 
         function saveConfig() {
+            localStorage.setItem('protoforge_config', JSON.stringify(config));
+        }
+
+        async function loadCredits() {
+            const userId = config.api_key ? config.api_key.slice(0, 8) : 'anonymous';
+            try {
+                const res = await fetch(API_BASE + '/api/credits/balance/' + userId);
+                if (res.ok) {
+                    const data = await res.json();
+                    userCredits = { balance: data.balance || 0, freePrompts: data.free_prompts_remaining || 0 };
+                    updateCreditsDisplay();
+                }
+            } catch (e) { console.log('Credits API not available'); }
+        }
+
+        function updateCreditsDisplay() {
+            document.getElementById('credit-balance').textContent = userCredits.balance.toFixed(2);
+            document.getElementById('free-prompts').textContent = userCredits.freePrompts > 0 ? `${userCredits.freePrompts} free prompt${userCredits.freePrompts > 1 ? 's' : ''} available` : 'No free prompts';
+        }
+
+        async function checkCredits() {
+            const userId = config.api_key.slice(0, 8);
+            try {
+                const res = await fetch(API_BASE + '/api/credits/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, mode: currentMode })
+                });
+                const data = await res.json();
+                if (!data.can_prompt) { showToast(data.message, 'error'); return false; }
+                return true;
+            } catch (e) { return true; }
+        }
+
+        function showDepositModal() {
+            const amount = prompt('Enter amount to deposit ($):');
+            if (amount) { depositCredits(parseFloat(amount)); }
+        }
+
+        async function depositCredits(amount) {
+            const userId = config.api_key.slice(0, 8);
+            try {
+                const res = await fetch(API_BASE + '/api/credits/deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, amount: amount })
+                });
+                const data = await res.json();
+                userCredits.balance = data.new_balance;
+                updateCreditsDisplay();
+                showToast('Deposited $' + amount, 'success');
+            } catch (e) { showToast('Deposit failed', 'error'); }
+        }
+
+        function connect() {
             const provider = document.getElementById('provider').value;
             const apiKey = document.getElementById('apiKey').value;
             if (!apiKey) { showToast('Please enter an API key', 'error'); return; }
             config = { provider, api_key: apiKey };
-            localStorage.setItem('protoforge_config', JSON.stringify(config));
+            saveConfig();
             updateStatus(true);
-            showToast('Connected to ' + provider, 'success');
+            loadCredits();
+            showToast('Connected to ' + provider.toUpperCase(), 'success');
         }
 
-        // Mode selection
+        function updateStatus(connected) {
+            document.querySelector('.config-btn').textContent = connected ? 'Connected' : 'Connect';
+        }
+
         function setMode(mode) {
             currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.mode-btn[data-mode="' + mode + '"]').classList.add('active');
-            showToast(mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode selected', 'success');
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            showToast(currentMode.charAt(0).toUpperCase() + currentMode.slice(1) + ' mode', 'success');
         }
 
-        // Chat
-        const chatInput = document.getElementById('chatInput');
-        const chatMessages = document.getElementById('chatMessages');
+        function loadProjects() {
+            const saved = localStorage.getItem('protoforge_projects');
+            projects = saved ? JSON.parse(saved) : [];
+        }
 
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
+        function saveProjects() {
+            localStorage.setItem('protoforge_projects', JSON.stringify(projects));
+        }
 
-        chatInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+        function renderProjects() {
+            const list = document.getElementById('project-list');
+            if (projects.length === 0) {
+                list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p style="color: var(--text-muted); font-size: 11px;">No projects yet</p></div>';
+                return;
             }
-        });
+            list.innerHTML = projects.map((p, i) => `
+                <div class="project-item ${currentProject === i ? 'active' : ''}" onclick="selectProject(${i})">
+                    <div class="project-name">${p.name}</div>
+                    <div class="project-meta">
+                        <div class="project-status ${p.status === 'processing' ? 'processing' : ''}"></div>
+                        <span>${p.mode}</span>
+                        <span>•</span>
+                        <span>${p.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        function sendMessage() {
-            const message = chatInput.value.trim();
+        function newProject() {
+            currentProject = null;
+            document.getElementById('current-project').textContent = 'New Project';
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('chat-input').value = '';
+            generatedFiles = [];
+            updatePreview();
+            renderProjects();
+        }
+
+        function selectProject(index) {
+            currentProject = index;
+            const project = projects[index];
+            document.getElementById('current-project').textContent = project.name;
+            generatedFiles = project.files || [];
+            renderProjects();
+            updatePreview();
+        }
+
+        function handleInputKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
             if (!message) return;
-            if (!config) { showToast('Please configure your API key first', 'error'); return; }
+            if (!config.api_key) { showToast('Please enter your API key first', 'error'); return; }
+
+            const canProceed = await checkCredits();
+            if (!canProceed) return;
 
             addMessage(message, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-
+            input.value = '';
             addMessage('Building your ' + currentMode + ' project...', 'ai', true);
 
-            fetch(API_BASE + '/api/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prompt: message,
-                    mode: currentMode,
-                    api_key: config.api_key,
-                    provider: config.provider
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                const loading = chatMessages.querySelector('.loading-indicator');
+            try {
+                const res = await fetch(API_BASE + '/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: message, mode: currentMode, api_key: config.api_key, provider: config.provider })
+                });
+                
+                const data = await res.json();
+                const loading = document.querySelector('.loading-indicator');
                 if (loading) loading.parentElement.remove();
                 
                 if (data.error) {
@@ -457,168 +547,97 @@
                     const modeText = currentMode === 'hardware' ? '3D models, circuits, BOMs' : currentMode === 'hybrid' ? 'software and hardware' : 'web application files';
                     addMessage('Generated ' + (generatedFiles.length || 0) + ' ' + currentMode + ' files. Check the Files tab to download.', 'ai');
                     
-                    // Save project
-                    const projectName = message.substring(0, 30) + '...';
+                    const projectName = 'Project ' + new Date().toLocaleTimeString();
                     const newProject = { name: projectName, mode: currentMode, time: 'Just now', status: 'ready', files: generatedFiles };
                     projects.unshift(newProject);
-                    localStorage.setItem('protoforge_projects', JSON.stringify(projects));
+                    currentProject = 0;
+                    saveProjects();
                     renderProjects();
+                    document.getElementById('current-project').textContent = projectName;
+                    document.getElementById('download-btn').disabled = false;
                     
+                    updatePreview();
+                    loadCredits();
                     showToast('Build complete!', 'success');
                 }
-            })
-            .catch(e => {
-                const loading = chatMessages.querySelector('.loading-indicator');
-                if (loading) loading.parentElement.remove();
+            } catch (e) {
                 addMessage('Error: ' + e.message, 'ai');
-                showToast(e.message, 'error');
-            });
+                showToast('Build failed', 'error');
+            }
         }
 
-        function addMessage(content, role, isLoading = false) {
+        function addMessage(content, role, loading = false) {
+            const container = document.getElementById('chat-messages');
             const div = document.createElement('div');
-            div.className = 'message';
-            const avatar = role === 'ai' ? 'PF' : 'U';
-            const name = role === 'ai' ? 'ProtoForge' : 'You';
+            div.className = 'message ' + role;
             
-            if (isLoading) {
-                div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><div class="loading-indicator"><div class="loading-bar"><div class="loading-bar-fill"></div></div><span class="loading-text">${content}</span></div></div></div>`;
+            if (loading) {
+                div.innerHTML = '<div class="message-content"><div class="loading-indicator"><div class="loading-dots"><span></span><span></span></div>Building...</div></div>';
             } else {
-                div.innerHTML = `<div class="message-avatar ${role}">${avatar}</div><div class="message-content"><div class="message-header"><span class="message-role">${name}</span><span class="message-time">Just now</span></div><div class="message-text"><p>${content}</p></div></div>`;
+                div.innerHTML = '<div class="message-content">' + content + '</div>';
             }
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
-        // Render projects
-        function renderProjects() {
-            const list = document.getElementById('projectList');
-            if (projects.length === 0) {
-                list.innerHTML = '<div class="no-projects">No projects yet. Start building!</div>';
-                return;
-            }
-            list.innerHTML = projects.map((p, i) => `
-                <div class="project-item" onclick="loadProject(${i})">
-                    <div class="project-name">${p.name}</div>
-                    <div class="project-meta">
-                        <span class="project-status ${p.status === 'processing' ? 'processing' : ''}"></span>
-                        <span>${p.mode}</span>
-                        <span>-</span>
-                        <span>${p.time}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function loadProject(index) {
-            const p = projects[index];
-            currentProject = p.name;
-            generatedFiles = p.files || [];
-            document.getElementById('breadcrumbProject').textContent = p.name;
-            document.querySelectorAll('.project-item').forEach((el, i) => {
-                el.classList.toggle('active', i === index);
-            });
-            setView('files');
-            showToast('Loaded: ' + p.name, 'success');
-        }
-
-        function newProject() {
-            const name = prompt('Project name:', 'New Project');
-            if (name) {
-                currentProject = name;
-                document.getElementById('breadcrumbProject').textContent = name;
-                generatedFiles = [];
-                showToast('New project created', 'success');
-            }
-        }
-
-        // Preview tabs
-        function setView(view) {
+        function setPreviewTab(tab) {
             document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector('.preview-tab[data-view="' + view + '"]').classList.add('active');
+            event.target.classList.add('active');
             
-            const emptyState = document.getElementById('emptyState');
-            const previewFrame = document.getElementById('previewFrame');
-            const filesView = document.getElementById('filesView');
+            document.getElementById('preview-placeholder').style.display = 'none';
+            document.getElementById('preview-frame').classList.remove('active');
+            document.getElementById('files-view').classList.remove('active');
             
-            if (view === 'preview') {
-                emptyState.style.display = generatedFiles.length === 0 ? 'flex' : 'none';
-                previewFrame.style.display = generatedFiles.length > 0 ? 'block' : 'none';
-                filesView.style.display = 'none';
-            } else {
-                emptyState.style.display = 'none';
-                previewFrame.style.display = 'none';
-                filesView.style.display = 'block';
-                updateFilesView();
+            if (tab === 'preview') {
+                document.getElementById('preview-placeholder').style.display = 'flex';
+            } else if (tab === 'files') {
+                renderFiles();
+                document.getElementById('files-view').classList.add('active');
             }
         }
 
-        function updateFilesView() {
-            const filesView = document.getElementById('filesView');
+        function renderFiles() {
+            const view = document.getElementById('files-view');
             if (generatedFiles.length === 0) {
-                filesView.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files yet</h3><p class="empty-state-desc">Build a project to see generated files here.</p></div>';
+                view.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files</h3><p class="empty-state-desc">Build a project first</p></div>';
                 return;
             }
-            filesView.innerHTML = '<div class="file-tree">' + generatedFiles.map(f => 
-                '<div class="file-item">' + f.name + '</div>'
+            view.innerHTML = '<div class="file-tree">' + generatedFiles.map(f => 
+                '<div class="file-item" onclick="downloadFile(\'' + f.name + '\')"><span class="file-icon">📄</span><span class="file-name">' + f.name + '</span><span class="file-type">' + f.type + '</span></div>'
             ).join('') + '</div>';
         }
 
-        // Device toggles
-        function setDevice(device) {
-            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.device-btn[data-device="' + device + '"]').classList.add('active');
-            const frame = document.getElementById('previewFrame');
-            frame.className = 'preview-frame';
-            if (device !== 'desktop') frame.classList.add(device);
+        function updatePreview() {
+            document.getElementById('download-btn').disabled = generatedFiles.length === 0;
+            if (generatedFiles.length > 0) {
+                document.getElementById('preview-placeholder').textContent = 'Switch to Files tab to download';
+            }
         }
 
-        // Resize
-        let isResizing = false;
-        const resizeHandle = document.getElementById('resizeHandle');
-        const chatPanel = document.querySelector('.chat-panel');
-        
-        resizeHandle.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'col-resize'; });
-        document.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
-            const w = document.querySelector('.workspace').offsetWidth;
-            const nw = (e.clientX / w) * 100;
-            if (nw > 25 && nw < 75) chatPanel.style.width = nw + '%';
-        });
-        document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; });
-
-        // Quick start
-        function startQuickBuild() {
-            chatInput.value = currentMode === 'hardware' ? 'A 3D printable box for a Raspberry Pi with ventilation holes' : 'Create a landing page with hero, features, pricing, contact';
-            chatInput.focus();
-            sendMessage();
+        function downloadFile(filename) {
+            showToast('Download: ' + filename, 'success');
         }
 
-        // Header actions
-        function shareProject() { showToast('Share link copied!', 'success'); }
-        function exportProject() { showToast('Exporting project...', 'success'); }
-        function downloadZip() {
-            if (generatedFiles.length === 0) { showToast('Build a project first to download', 'error'); return; }
+        function downloadAll() {
+            if (generatedFiles.length === 0) { showToast('No files to download', 'error'); return; }
             showToast('Preparing download...', 'success');
         }
 
-        // Preview
-        function refreshPreview() { showToast('Refreshing preview...', 'success'); }
-        function openInNewTab() { showToast('Opening in new tab...', 'success'); }
+        function shareProject() {
+            showToast('Share feature coming soon', 'success');
+        }
 
-        // Toast
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
+            const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
-            toast.innerHTML = '<svg class="toast-icon ' + type + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span class="toast-message">' + message + '</span>';
+            toast.textContent = message;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
 
-        function attachFile() { showToast('File attachment coming soon', 'success'); }
-
-        console.log('ProtoForge v2 loaded');
+        init();
     </script>
 </body>
 </html>
