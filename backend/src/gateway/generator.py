@@ -206,7 +206,7 @@ class ProtoForgeGenerator:
         
         try:
             resp = requests.post(
-                'https://api.moonshot.ai/v1/chat/completions',
+                'https://api.moonshot.cn/v1/chat/completions',
                 headers=headers,
                 json=payload,
                 timeout=120
@@ -280,7 +280,7 @@ class ProtoForgeGenerator:
         
         try:
             resp = requests.post(
-                'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+                'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
                 headers=headers,
                 json=payload,
                 timeout=120
