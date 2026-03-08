@@ -47,37 +47,35 @@
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 320px;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 24px;
+            padding: 32px 24px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 32px;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-            font-size: 16px;
+            font-size: 24px;
         }
 
         .logo-text {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: -1px;
+        }
+
+        .tagline {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-bottom: 32px;
         }
 
         .section { margin-bottom: 24px; }
@@ -146,16 +144,17 @@
         }
 
         .main-title {
-            font-size: 64px;
+            font-size: 42px;
             font-weight: 700;
-            letter-spacing: -3px;
-            margin-bottom: 16px;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
         }
 
         .main-subtitle {
             font-size: 14px;
             color: var(--text-2);
-            margin-bottom: 48px;
+            margin-bottom: 40px;
+            max-width: 500px;
         }
 
         .chat-container {
@@ -382,9 +381,10 @@
     <div class="app">
         <aside class="sidebar">
             <div class="logo">
-                <div class="logo-icon">🔥</div>
+                <span class="logo-icon">🔥</span>
                 <span class="logo-text">PROTOFORGE</span>
             </div>
+            <p class="tagline">Connect an AI model to get started</p>
 
             <div class="section">
                 <div class="label">Provider</div>
@@ -428,8 +428,8 @@
         </aside>
 
         <main class="main">
-            <h1 class="main-title">PROTOFORGE</h1>
-            <p class="main-subtitle">AI-Powered Prototyping Engine</p>
+            <h1 class="main-title">What would you like to build?</h1>
+            <p class="main-subtitle">Describe your project and the AI will generate code, schematics, and instructions.</p>
 
             <div class="chat-container">
                 <div class="chat-messages" id="messages">
@@ -438,7 +438,7 @@
                     </div>
                 </div>
                 <div class="chat-input-wrap">
-                    <textarea class="chat-input" id="chatInput" placeholder="Describe what you want to build..." rows="1" onkeydown="handleKey(event)"></textarea>
+                    <textarea class="chat-input" id="chatInput" placeholder="I want to build a..." rows="1" onkeydown="handleKey(event)"></textarea>
                     <button class="send-btn" onclick="send()">Build</button>
                 </div>
             </div>
