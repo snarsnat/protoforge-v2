@@ -1,12 +1,15 @@
-<img src="https://raw.githubusercontent.com/snarsnat/protoforge-v2/main/assets/logo.svg" alt="ProtoForge" width="200"/>
+<img src="https://i.imgur.com/S6lNJLn.png" alt="ProtoForge" width="100%"/>
 
 # ProtoForge ⚡
+
+[![X](https://img.shields.io/badge/Follow-@happinezreal-000000?style=flat&logo=x)](https://x.com/happinezreal)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/nebsol)
 
 **AI-Powered Prototyping Engine**
 
 Build real software, hardware, and hybrid prototypes with AI.
 
-[![X](https://img.shields.io/badge/Follow-@happinezreal-000000?style=flat&logo=x)](https://x.com/happinezreal)
+---
 
 ## What is ProtoForge?
 
@@ -114,7 +117,7 @@ If ProtoForge helps you build, consider supporting development!
 
 ### Buy Me a Coffee
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/happinezreal)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/nebsol)
 
 ### Crypto Donations
 
@@ -125,6 +128,24 @@ If ProtoForge helps you build, consider supporting development!
 ```
 
 Any amount appreciated! 🙏
+
+---
+
+## Anti-Trope Design
+
+ProtoForge is deliberately designed **opposite** to typical AI builder aesthetics:
+
+| AI Builder Tropes | ProtoForge |
+|------------------|------------|
+| Purple/indigo gradients | Solid dark colors only |
+| Rounded corners everywhere | Sharp edges |
+| Shadows and glows | Flat design |
+| Frosted glass effects | No blur |
+| Inter/Space Grotesk fonts | IBM Plex Mono + Sans |
+| Sparkle emojis | No sparkles |
+| Hero sections | No hero |
+| Light themes | Dark theme |
+| Friendly/corporate | Bold, distinctive |
 
 ---
 

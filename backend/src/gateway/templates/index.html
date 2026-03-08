@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>ProtoForge // Builder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -247,7 +248,19 @@
                 </div>
             </nav>
             <div class="config-section">
-                <select class="config-select" id="provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="deepseek">DeepSeek</option></select>
+                <select class="config-select" id="provider">
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="minimax">MiniMax</option>
+                    <option value="kimi">Kimi (Moonshot)</option>
+                    <option value="zhipu">Zhipu (GLM)</option>
+                    <option value="qwen">Qwen</option>
+                    <option value="volcengine">Volcano Engine</option>
+                    <option value="siliconflow">SiliconFlow</option>
+                    <option value="together">Together AI</option>
+                    <option value="groq">Groq</option>
+                </select>
                 <input type="password" class="config-input" id="apiKey" placeholder="sk-...">
                 <button class="config-btn" onclick="saveConfig()">Connect</button>
             </div>
