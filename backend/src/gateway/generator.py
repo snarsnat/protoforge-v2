@@ -195,31 +195,29 @@ class ProtoForgeGenerator:
         }
         
         payload = {
-            'model': 'kimi-k2.5',
+            'model': 'kimi-k2-turbo-preview',
             'messages': [
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user}
             ],
-            'temperature': 0.7,
-            'max_tokens': 4000
+            'temperature': 0.6
         }
         
         try:
             resp = requests.post(
-                'https://api.moonshot.cn/v1/chat/completions',
+                'https://api.moonshot.ai/v1/chat/completions',
                 headers=headers,
                 json=payload,
                 timeout=120
             )
             
-            # Debug: print response status and body
             print(f"Kimi response status: {resp.status_code}")
             print(f"Kimi response body: {resp.text[:500]}")
             
             if resp.status_code == 429:
                 raise Exception("Kimi rate limit exceeded. Try again later.")
             elif resp.status_code == 401:
-                raise Exception("Invalid Kimi API key. Please check your API key.")
+                raise Exception("Invalid Kimi API key. Please check your API key. Make sure you have credits in your account.")
             elif resp.status_code != 200:
                 error_data = resp.json() if resp.text else {}
                 raise Exception(f"Kimi error ({resp.status_code}): {error_data.get('error', {}).get('message', resp.text[:200])}")
