@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <title>ProtoForge // Builder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-canvas: #0a0a0a;
@@ -19,6 +19,7 @@
             --text-muted: #555555;
             --accent: #ff3e00;
             --accent-hover: #ff5722;
+            --border: #ff3e00;
             --border-light: #1f1f1f;
             --border-medium: #333333;
             --success: #00c853;
@@ -27,15 +28,16 @@
         }
 
         [data-theme="light"] {
-            --bg-canvas: #f5f5f5;
-            --bg-surface: #ffffff;
+            --bg-canvas: #ffffff;
+            --bg-surface: #f5f5f5;
             --bg-panel: #eeeeee;
             --bg-elevated: #e0e0e0;
             --text-primary: #0a0a0a;
             --text-secondary: #555555;
             --text-muted: #999999;
-            --accent: #d32f2f;
-            --accent-hover: #b71c1c;
+            --accent: #ff3e00;
+            --accent-hover: #d32f2f;
+            --border: #ff3e00;
             --border-light: #e0e0e0;
             --border-medium: #bbbbbb;
         }
@@ -43,14 +45,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'IBM Plex Mono', 'Space Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             background: var(--bg-canvas);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
             font-size: 13px;
-            line-height: 1.5;
-            transition: background 0.4s ease, color 0.4s ease;
+            transition: all 0.4s ease;
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -59,292 +60,362 @@
 
         .app-container { display: flex; height: 100vh; }
 
-        .sidebar { 
-            width: 280px; 
-            background: var(--bg-surface); 
-            border-right: 2px solid var(--border-light); 
-            display: flex; 
-            flex-direction: column;
-            transition: background 0.4s ease, border-color 0.4s ease;
-        }
-
-        .sidebar-header { 
-            padding: 20px; 
-            border-bottom: 2px solid var(--border-light);
-            background: var(--bg-panel);
-        }
-
-        .logo-section { display: flex; align-items: center; justify-content: space-between; }
-
-        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
-
-        .logo-icon { 
-            width: 40px; height: 40px; background: var(--accent); 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: 700; font-size: 14px; color: white;
-            border-radius: 0; 
-        }
-
-        .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -1px; text-transform: uppercase; }
-
-        .theme-toggle {
-            width: 36px; height: 36px;
-            background: var(--bg-elevated);
-            border: 2px solid var(--border-medium);
-            cursor: pointer; display: flex;
-            align-items: center; justify-content: center;
-            font-size: 16px; transition: all 0.3s ease;
-            border-radius: 0;
-        }
-
-        .theme-toggle:hover { background: var(--accent); border-color: var(--accent); }
-
-        .credits-display {
-            margin-top: 16px; padding: 12px;
+        .chat-panel {
+            width: 420px;
+            min-width: 420px;
             background: var(--bg-surface);
-            border: 2px solid var(--border-light);
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
         }
 
-        .credits-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
-        .credits-amount { font-size: 20px; font-weight: 700; color: var(--accent); }
-        .credits-free { font-size: 10px; color: var(--success); margin-top: 4px; }
-
-        .deposit-btn {
-            margin-top: 8px; width: 100%; padding: 8px;
-            background: transparent; border: 2px solid var(--accent);
-            color: var(--accent); font-family: inherit;
-            font-size: 11px; font-weight: 600; text-transform: uppercase;
-            cursor: pointer; transition: all 0.3s ease; border-radius: 0;
+        .chat-header {
+            padding: 16px;
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--border);
         }
 
-        .deposit-btn:hover { background: var(--accent); color: white; }
-
-        .new-project-btn { 
-            margin-top: 16px; width: 100%; padding: 14px 16px; 
-            background: var(--accent); border: none; color: white; 
-            font-size: 12px; font-weight: 600; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; 
-            gap: 8px; text-transform: uppercase; letter-spacing: 1px;
-            transition: all 0.3s ease; border-radius: 0;
+        .chat-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .new-project-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .control-group { display: flex; align-items: center; gap: 4px; }
+        .control-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
 
-        .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
-        .nav-section { margin-bottom: 24px; }
-        .nav-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 0 12px; margin-bottom: 8px; }
-
-        .mode-buttons { display: flex; flex-direction: column; gap: 0; background: var(--bg-panel); border: 2px solid var(--border-light); }
-
-        .mode-btn { 
-            padding: 14px 16px; background: transparent; border: none; 
-            border-bottom: 1px solid var(--border-light);
-            color: var(--text-secondary); font-size: 12px; font-weight: 500; 
-            cursor: pointer; text-align: left; transition: all 0.3s ease;
-            font-family: inherit; display: flex; align-items: center; gap: 12px; border-radius: 0;
+        .provider-select, .mode-select {
+            padding: 8px 10px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
         }
 
-        .mode-btn:last-child { border-bottom: none; }
-        .mode-btn:hover { background: var(--bg-elevated); color: var(--text-primary); padding-left: 20px; }
-        .mode-btn.active { background: var(--accent); color: white; }
+        .provider-select:focus, .mode-select:focus { outline: none; border-color: var(--accent); }
 
-        .project-list { padding: 0; }
-        .project-item { padding: 12px 16px; cursor: pointer; transition: all 0.3s ease; border-bottom: 1px solid var(--border-light); border-radius: 0; }
-        .project-item:hover { background: var(--bg-elevated); }
-        .project-item.active { background: var(--bg-elevated); border-left: 3px solid var(--accent); }
-        .project-name { font-size: 12px; font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .project-meta { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
-        .project-status { width: 6px; height: 6px; background: var(--success); }
-        .project-status.processing { background: var(--warning); animation: pulse 1s infinite; }
+        .api-key-input {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 10px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-family: inherit;
+        }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .api-key-input:focus { outline: none; border-color: var(--accent); }
+        .api-key-input::placeholder { color: var(--text-muted); }
 
-        .config-section { padding: 16px; border-top: 2px solid var(--border-light); background: var(--bg-panel); }
-        .config-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
-        .config-select, .config-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 2px solid var(--border-light); color: var(--text-primary); font-size: 11px; margin-bottom: 10px; font-family: inherit; transition: all 0.3s ease; border-radius: 0; }
-        .config-select:focus, .config-input:focus { outline: none; border-color: var(--accent); }
-        .config-btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; border-radius: 0; }
-        .config-btn:hover { background: var(--accent-hover); }
+        .connect-btn {
+            padding: 8px 14px;
+            background: var(--accent);
+            border: 2px solid var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: inherit;
+        }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-canvas); transition: background 0.4s ease; }
-        .main-header { height: 56px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--border-light); background: var(--bg-surface); transition: all 0.4s ease; }
-        .breadcrumb { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-secondary); }
-        .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
-        .breadcrumb a:hover { color: var(--text-primary); }
-        .header-actions { display: flex; align-items: center; gap: 8px; }
-        .header-btn { padding: 8px 16px; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease; background: transparent; border: 2px solid var(--border-medium); color: var(--text-secondary); font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 0; }
-        .header-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
-        .header-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-        .header-btn.primary:hover { background: var(--accent-hover); }
-        .header-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .connect-btn:hover { background: var(--accent-hover); }
 
-        .chat-area { flex: 1; display: flex; overflow: hidden; }
-        .chat-panel { flex: 1; display: flex; flex-direction: column; border-right: 2px solid var(--border-light); min-width: 0; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 24px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; }
 
-        .message { margin-bottom: 20px; animation: fadeIn 0.3s ease; }
+        .message { margin-bottom: 16px; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .message.user { text-align: right; }
-        .message-content { display: inline-block; max-width: 80%; padding: 16px 20px; border-radius: 0; }
+        .message-content { display: inline-block; max-width: 90%; padding: 12px 16px; font-size: 12px; }
         .message.user .message-content { background: var(--accent); color: white; }
-        .message.ai .message-content { background: var(--bg-panel); border: 1px solid var(--border-light); }
+        .message.ai .message-content { background: var(--bg-panel); border: 2px solid var(--border-light); }
 
-        .chat-input-area { padding: 16px 24px; background: var(--bg-surface); border-top: 2px solid var(--border-light); }
-        .chat-input-wrapper { display: flex; gap: 12px; }
-        .chat-input { flex: 1; padding: 14px 18px; background: var(--bg-panel); border: 2px solid var(--border-light); color: var(--text-primary); font-size: 13px; font-family: inherit; resize: none; transition: all 0.3s ease; border-radius: 0; }
+        .chat-input-area {
+            padding: 16px;
+            background: var(--bg-panel);
+            border-top: 2px solid var(--border);
+        }
+
+        .chat-input-wrapper { display: flex; gap: 8px; }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: inherit;
+            resize: none;
+            min-height: 44px;
+        }
+
         .chat-input:focus { outline: none; border-color: var(--accent); }
         .chat-input::placeholder { color: var(--text-muted); }
-        .send-btn { padding: 14px 24px; background: var(--accent); border: none; color: white; font-size: 12px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; border-radius: 0; }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: 2px solid var(--accent);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
         .send-btn:hover { background: var(--accent-hover); }
-        .send-btn:disabled { background: var(--border-medium); cursor: not-allowed; }
 
-        .preview-panel { width: 45%; display: flex; flex-direction: column; background: var(--bg-surface); }
-        .preview-tabs { display: flex; border-bottom: 2px solid var(--border-light); background: var(--bg-panel); }
-        .preview-tab { padding: 12px 20px; background: transparent; border: none; color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; }
-        .preview-tab:hover { color: var(--text-primary); }
-        .preview-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .preview-content { flex: 1; overflow: hidden; position: relative; }
-        .preview-frame { width: 100%; height: 100%; border: none; display: none; }
-        .preview-frame.active { display: block; }
-        .preview-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .browser-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-canvas);
+            padding: 20px;
+        }
 
-        .files-view { flex: 1; overflow-y: auto; padding: 16px; display: none; }
-        .files-view.active { display: block; }
-        .file-item { padding: 10px 14px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; border-radius: 0; border-left: 2px solid transparent; }
-        .file-item:hover { background: var(--bg-elevated); border-left-color: var(--accent); }
-        .file-icon { font-size: 14px; }
-        .file-name { flex: 1; }
-        .file-type { font-size: 9px; text-transform: uppercase; color: var(--text-muted); padding: 2px 6px; background: var(--bg-panel); border: 1px solid var(--border-light); }
+        .browser-mockup {
+            flex: 1;
+            background: var(--bg-surface);
+            border: 3px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px; text-align: center; }
-        .empty-state-icon { width: 80px; height: 80px; background: var(--bg-panel); border: 2px solid var(--border-medium); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 32px; }
-        .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        .empty-state-desc { font-size: 12px; color: var(--text-secondary); max-width: 300px; }
+        .browser-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--border);
+        }
 
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
-        .toast { padding: 12px 20px; background: var(--bg-panel); border: 2px solid var(--border-medium); color: var(--text-primary); font-size: 12px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; border-radius: 0; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        .toast.success { border-left: 3px solid var(--success); }
-        .toast.error { border-left: 3px solid var(--error); }
+        .browser-tabs { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
 
-        .loading-indicator { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12px; padding: 16px; }
+        .browser-tab {
+            padding: 8px 16px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .browser-tab:hover { color: var(--text-primary); }
+        .browser-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .browser-actions { display: flex; gap: 8px; }
+
+        .browser-btn {
+            padding: 8px 14px;
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .browser-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+        .browser-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .browser-btn.primary:hover { background: var(--accent-hover); }
+
+        .browser-content { flex: 1; overflow: hidden; position: relative; background: var(--bg-canvas); }
+        .tab-content { display: none; height: 100%; overflow: auto; }
+        .tab-content.active { display: block; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--bg-panel);
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 24px;
+        }
+
+        .empty-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .empty-desc { font-size: 12px; color: var(--text-secondary); max-width: 300px; }
+
+        .diagram-canvas { width: 100%; height: 100%; position: relative; background: var(--bg-panel); overflow: hidden; }
+
+        .circuit-board {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: #2d5a27;
+            border: 3px solid #4a7c43;
+            cursor: move;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #8fbc8f;
+            user-select: none;
+        }
+
+        .circuit-board.selected { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+        .bom-list { padding: 20px; }
+        .bom-item { display: flex; align-items: center; gap: 16px; padding: 14px 16px; background: var(--bg-panel); border: 2px solid var(--border-light); margin-bottom: 8px; cursor: pointer; }
+        .bom-item:hover { border-color: var(--accent); }
+        .bom-item.checked { opacity: 0.5; text-decoration: line-through; }
+        .bom-checkbox { width: 20px; height: 20px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .bom-checkbox.checked { background: var(--accent); border-color: var(--accent); color: white; }
+        .bom-name { flex: 1; font-size: 12px; }
+        .bom-qty { font-size: 10px; color: var(--text-muted); padding: 2px 8px; background: var(--bg-elevated); border: 1px solid var(--border-light); }
+
+        .code-browser { display: flex; height: 100%; }
+        .file-tree { width: 200px; background: var(--bg-panel); border-right: 2px solid var(--border-light); overflow-y: auto; padding: 10px; }
+        .file-tree-item { padding: 8px 12px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .file-tree-item:hover { background: var(--bg-elevated); }
+        .file-tree-item.active { background: var(--accent); color: white; }
+        .code-viewer { flex: 1; overflow: auto; padding: 16px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; background: var(--bg-canvas); }
+
+        .instructions-view { padding: 24px; max-width: 800px; margin: 0 auto; }
+        .instruction-step { margin-bottom: 24px; padding: 16px; background: var(--bg-panel); border-left: 4px solid var(--accent); }
+        .instruction-step h3 { font-size: 14px; margin-bottom: 8px; color: var(--accent); }
+        .instruction-step p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+        .theme-toggle { position: fixed; top: 20px; right: 20px; width: 44px; height: 44px; background: var(--bg-panel); border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 100; }
+        .theme-toggle:hover { border-color: var(--accent); }
+
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 20px; background: var(--bg-panel); border: 2px solid var(--border); color: var(--text-primary); font-size: 12px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--error); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg-surface); border: 3px solid var(--border); padding: 32px; max-width: 500px; width: 90%; }
+        .modal-title { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
+        .share-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .share-btn { padding: 16px; background: var(--bg-panel); border: 2px solid var(--border-light); color: var(--text-primary); font-size: 24px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .share-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+        .share-btn span { font-size: 10px; text-transform: uppercase; }
+        .close-modal { margin-top: 20px; width: 100%; padding: 12px; background: transparent; border: 2px solid var(--border); color: var(--text-secondary); font-family: inherit; cursor: pointer; text-transform: uppercase; font-size: 11px; }
+        .close-modal:hover { background: var(--bg-elevated); }
+
+        .loading-indicator { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12px; padding: 12px; }
         .loading-dots { display: flex; gap: 4px; }
         .loading-dots span { width: 6px; height: 6px; background: var(--accent); animation: bounce 1.4s infinite ease-in-out; }
-        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-        @media (max-width: 1024px) { .preview-panel { display: none; } }
-        @media (max-width: 768px) { .sidebar { width: 220px; } }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">☀</span></button>
+
     <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-section">
-                    <a href="#" class="logo">
-                        <div class="logo-icon">PF</div>
-                        <span class="logo-text">ProtoForge</span>
-                    </a>
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                        <span id="theme-icon">☀</span>
-                    </button>
-                </div>
-                <div class="credits-display">
-                    <div class="credits-label">Credits</div>
-                    <div class="credits-amount">$<span id="credit-balance">0.00</span></div>
-                    <div class="credits-free" id="free-prompts">1 free prompt available</div>
-                    <button class="deposit-btn" onclick="showDepositModal()">+ Deposit</button>
-                </div>
-                <button class="new-project-btn" onclick="newProject()">
-                    <span>+</span> New Project
-                </button>
-            </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <div class="nav-section-title">Mode</div>
-                    <div class="mode-buttons">
-                        <button class="mode-btn active" data-mode="software" onclick="setMode('software')"><span>💻</span> Software</button>
-                        <button class="mode-btn" data-mode="hardware" onclick="setMode('hardware')"><span>⚡</span> Hardware</button>
-                        <button class="mode-btn" data-mode="hybrid" onclick="setMode('hybrid')"><span>🔗</span> Hybrid</button>
-                    </div>
-                </div>
-                <div class="nav-section">
-                    <div class="nav-section-title">Projects</div>
-                    <div class="project-list" id="project-list"></div>
-                </div>
-            </nav>
-            <div class="config-section">
-                <div class="config-title">API Configuration</div>
-                <select class="config-select" id="provider">
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="deepseek">DeepSeek</option>
-                    <option value="minimax">MiniMax</option>
-                    <option value="kimi">Kimi (Moonshot)</option>
-                    <option value="zhipu">Zhipu (GLM)</option>
-                    <option value="qwen">Qwen</option>
-                    <option value="volcengine">Volcano Engine</option>
-                    <option value="siliconflow">SiliconFlow</option>
-                    <option value="together">Together AI</option>
-                    <option value="groq">Groq</option>
-                </select>
-                <input type="password" class="config-input" id="apiKey" placeholder="Enter API key...">
-                <button class="config-btn" onclick="connect()">Connect</button>
-            </div>
-        </aside>
-
-        <main class="main-content">
-            <header class="main-header">
-                <div class="breadcrumb">
-                    <a href="#">ProtoForge</a>
-                    <span>/</span>
-                    <span id="current-project">New Project</span>
-                </div>
-                <div class="header-actions">
-                    <button class="header-btn" onclick="downloadAll()" id="download-btn" disabled>⬇ Download</button>
-                    <button class="header-btn primary" onclick="shareProject()">Share</button>
-                </div>
-            </header>
-
-            <div class="chat-area">
-                <div class="chat-panel">
-                    <div class="chat-messages" id="chat-messages"></div>
-                    <div class="chat-input-area">
-                        <div class="chat-input-wrapper">
-                            <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build..." rows="1" onkeydown="handleInputKey(event)"></textarea>
-                            <button class="send-btn" onclick="sendMessage()" id="send-btn">Build</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="preview-panel">
-                    <div class="preview-tabs">
-                        <button class="preview-tab active" onclick="setPreviewTab('preview')">Preview</button>
-                        <button class="preview-tab" onclick="setPreviewTab('code')">Code</button>
-                        <button class="preview-tab" onclick="setPreviewTab('files')">Files</button>
-                    </div>
-                    <div class="preview-content">
-                        <div class="preview-placeholder" id="preview-placeholder">Build a project to see preview</div>
-                        <iframe class="preview-frame" id="preview-frame"></iframe>
-                        <div class="files-view" id="files-view"></div>
-                    </div>
+        <div class="chat-panel">
+            <div class="chat-header">
+                <div class="chat-controls">
+                    <select class="provider-select" id="provider">
+                        <option value="openai">OpenAI</option>
+                        <option value="anthropic">Anthropic</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="minimax">MiniMax</option>
+                        <option value="kimi">Kimi</option>
+                        <option value="zhipu">Zhipu</option>
+                        <option value="qwen">Qwen</option>
+                        <option value="volcengine">Volcano</option>
+                        <option value="siliconflow">SiliconFlow</option>
+                        <option value="together">Together</option>
+                        <option value="groq">Groq</option>
+                    </select>
+                    <input type="password" class="api-key-input" id="apiKey" placeholder="API Key...">
+                    <select class="mode-select" id="mode">
+                        <option value="software">Software</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                    <button class="connect-btn" onclick="connect()">Connect</button>
                 </div>
             </div>
-        </main>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message ai"><div class="message-content">Welcome to ProtoForge! Select a provider, enter your API key, choose a mode, and describe what you want to build.</div></div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-input" id="chatInput" placeholder="Describe what you want to build..." rows="1" onkeydown="handleInput(event)"></textarea>
+                    <button class="send-btn" onclick="sendMessage()">Build</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="browser-panel">
+            <div class="browser-mockup">
+                <div class="browser-toolbar">
+                    <div class="browser-tabs" id="browserTabs">
+                        <div class="browser-tab active" data-tab="preview" onclick="switchTab('preview')">📁 Files</div>
+                    </div>
+                    <div class="browser-actions">
+                        <button class="browser-btn" onclick="shareProject()">Share</button>
+                        <button class="browser-btn primary" onclick="downloadProject()">Download</button>
+                    </div>
+                </div>
+                <div class="browser-content">
+                    <div class="tab-content active" id="tab-preview">
+                        <div class="empty-state"><div class="empty-icon">🔨</div><div class="empty-title">Build a Project</div><div class="empty-desc">Describe what you want to create and click Build to see your files here.</div></div>
+                    </div>
+                    <div class="tab-content" id="tab-3d"><div class="empty-state"><div class="empty-icon">🎲</div><div class="empty-title">3D Model</div><div class="empty-desc">Build a hardware or hybrid project to see the 3D model.</div></div></div>
+                    <div class="tab-content" id="tab-diagram"><div class="diagram-canvas" id="diagramCanvas"><div class="empty-state"><div class="empty-icon">🔌</div><div class="empty-title">Circuit Diagram</div><div class="empty-desc">Build a hardware or hybrid project to see the circuit.</div></div></div>
+                    <div class="tab-content" id="tab-bom"><div class="bom-list" id="bomList"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Bill of Materials</div><div class="empty-desc">Build a project to see the BOM.</div></div></div></div>
+                    <div class="tab-content" id="tab-code"><div class="code-browser" id="codeBrowser"><div class="file-tree" id="fileTree"><div class="empty-state"><div class="empty-desc">No files yet</div></div></div><div class="code-viewer" id="codeViewer"><div class="empty-state"><div class="empty-desc">Select a file to view</div></div></div></div></div>
+                    <div class="tab-content" id="tab-instructions"><div class="instructions-view" id="instructionsView"><div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">Instructions</div><div class="empty-desc">Build a project to see instructions.</div></div></div></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="toast-container" id="toast-container"></div>
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal"><div class="modal-title">Share Project</div>
+            <div class="share-options">
+                <button class="share-btn" onclick="shareTo('x')">𝕏<span>X</span></button>
+                <button class="share-btn" onclick="shareTo('facebook')">📘<span>Facebook</span></button>
+                <button class="share-btn" onclick="shareTo('linkedin')">💼<span>LinkedIn</span></button>
+                <button class="share-btn" onclick="shareTo('whatsapp')">💬<span>WhatsApp</span></button>
+                <button class="share-btn" onclick="shareTo('email')">✉️<span>Email</span></button>
+            </div>
+            <button class="close-modal" onclick="closeShareModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        const API_BASE = '';
         let config = { provider: 'openai', api_key: '' };
         let currentMode = 'software';
-        let currentProject = null;
         let generatedFiles = [];
-        let projects = [];
-        let userCredits = { balance: 0, freePrompts: 1 };
+        let projectData = null;
 
         function toggleTheme() {
             const html = document.documentElement;
@@ -361,20 +432,8 @@
         }
 
         const savedTheme = localStorage.getItem('theme') || 'dark';
-        if (savedTheme === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            document.getElementById('theme-icon').textContent = '☾';
-        }
-
-        function init() {
-            loadConfig();
-            loadProjects();
-            loadCredits();
-            renderProjects();
-            if (projects.length === 0) {
-                addMessage('Welcome to ProtoForge. Select a mode, enter your API key, and describe what you want to build.', 'ai');
-            }
-        }
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-icon').textContent = savedTheme === 'light' ? '☾' : '☀';
 
         function loadConfig() {
             const saved = localStorage.getItem('protoforge_config');
@@ -382,63 +441,13 @@
                 config = JSON.parse(saved);
                 document.getElementById('provider').value = config.provider;
                 document.getElementById('apiKey').value = config.api_key;
-                updateStatus(true);
+                document.getElementById('mode').value = localStorage.getItem('protoforge_mode') || 'software';
             }
         }
 
         function saveConfig() {
             localStorage.setItem('protoforge_config', JSON.stringify(config));
-        }
-
-        async function loadCredits() {
-            const userId = config.api_key ? config.api_key.slice(0, 8) : 'anonymous';
-            try {
-                const res = await fetch(API_BASE + '/api/credits/balance/' + userId);
-                if (res.ok) {
-                    const data = await res.json();
-                    userCredits = { balance: data.balance || 0, freePrompts: data.free_prompts_remaining || 0 };
-                    updateCreditsDisplay();
-                }
-            } catch (e) { console.log('Credits API not available'); }
-        }
-
-        function updateCreditsDisplay() {
-            document.getElementById('credit-balance').textContent = userCredits.balance.toFixed(2);
-            document.getElementById('free-prompts').textContent = userCredits.freePrompts > 0 ? `${userCredits.freePrompts} free prompt${userCredits.freePrompts > 1 ? 's' : ''} available` : 'No free prompts';
-        }
-
-        async function checkCredits() {
-            const userId = config.api_key.slice(0, 8);
-            try {
-                const res = await fetch(API_BASE + '/api/credits/check', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, mode: currentMode })
-                });
-                const data = await res.json();
-                if (!data.can_prompt) { showToast(data.message, 'error'); return false; }
-                return true;
-            } catch (e) { return true; }
-        }
-
-        function showDepositModal() {
-            const amount = prompt('Enter amount to deposit ($):');
-            if (amount) { depositCredits(parseFloat(amount)); }
-        }
-
-        async function depositCredits(amount) {
-            const userId = config.api_key.slice(0, 8);
-            try {
-                const res = await fetch(API_BASE + '/api/credits/deposit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, amount: amount })
-                });
-                const data = await res.json();
-                userCredits.balance = data.new_balance;
-                updateCreditsDisplay();
-                showToast('Deposited $' + amount, 'success');
-            } catch (e) { showToast('Deposit failed', 'error'); }
+            localStorage.setItem('protoforge_mode', currentMode);
         }
 
         function connect() {
@@ -446,118 +455,43 @@
             const apiKey = document.getElementById('apiKey').value;
             if (!apiKey) { showToast('Please enter an API key', 'error'); return; }
             config = { provider, api_key: apiKey };
+            currentMode = document.getElementById('mode').value;
             saveConfig();
-            updateStatus(true);
-            loadCredits();
             showToast('Connected to ' + provider.toUpperCase(), 'success');
         }
 
-        function updateStatus(connected) {
-            document.querySelector('.config-btn').textContent = connected ? 'Connected' : 'Connect';
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === mode);
-            });
-            showToast(currentMode.charAt(0).toUpperCase() + currentMode.slice(1) + ' mode', 'success');
-        }
-
-        function loadProjects() {
-            const saved = localStorage.getItem('protoforge_projects');
-            projects = saved ? JSON.parse(saved) : [];
-        }
-
-        function saveProjects() {
-            localStorage.setItem('protoforge_projects', JSON.stringify(projects));
-        }
-
-        function renderProjects() {
-            const list = document.getElementById('project-list');
-            if (projects.length === 0) {
-                list.innerHTML = '<div class="empty-state" style="padding: 20px;"><p style="color: var(--text-muted); font-size: 11px;">No projects yet</p></div>';
-                return;
-            }
-            list.innerHTML = projects.map((p, i) => `
-                <div class="project-item ${currentProject === i ? 'active' : ''}" onclick="selectProject(${i})">
-                    <div class="project-name">${p.name}</div>
-                    <div class="project-meta">
-                        <div class="project-status ${p.status === 'processing' ? 'processing' : ''}"></div>
-                        <span>${p.mode}</span>
-                        <span>•</span>
-                        <span>${p.time}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function newProject() {
-            currentProject = null;
-            document.getElementById('current-project').textContent = 'New Project';
-            document.getElementById('chat-messages').innerHTML = '';
-            document.getElementById('chat-input').value = '';
-            generatedFiles = [];
-            updatePreview();
-            renderProjects();
-        }
-
-        function selectProject(index) {
-            currentProject = index;
-            const project = projects[index];
-            document.getElementById('current-project').textContent = project.name;
-            generatedFiles = project.files || [];
-            renderProjects();
-            updatePreview();
-        }
-
-        function handleInputKey(e) {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        }
+        function handleInput(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
 
         async function sendMessage() {
-            const input = document.getElementById('chat-input');
+            const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
             if (!config.api_key) { showToast('Please enter your API key first', 'error'); return; }
 
-            const canProceed = await checkCredits();
-            if (!canProceed) return;
-
             addMessage(message, 'user');
             input.value = '';
+            currentMode = document.getElementById('mode').value;
             addMessage('Building your ' + currentMode + ' project...', 'ai', true);
 
             try {
-                const res = await fetch(API_BASE + '/api/generate', {
+                const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: message, mode: currentMode, api_key: config.api_key, provider: config.provider })
                 });
-                
+
                 const data = await res.json();
                 const loading = document.querySelector('.loading-indicator');
                 if (loading) loading.parentElement.remove();
-                
+
                 if (data.error) {
                     addMessage('Error: ' + data.error, 'ai');
                     showToast(data.error, 'error');
                 } else {
                     generatedFiles = data.files || [];
-                    const modeText = currentMode === 'hardware' ? '3D models, circuits, BOMs' : currentMode === 'hybrid' ? 'software and hardware' : 'web application files';
-                    addMessage('Generated ' + (generatedFiles.length || 0) + ' ' + currentMode + ' files. Check the Files tab to download.', 'ai');
-                    
-                    const projectName = 'Project ' + new Date().toLocaleTimeString();
-                    const newProject = { name: projectName, mode: currentMode, time: 'Just now', status: 'ready', files: generatedFiles };
-                    projects.unshift(newProject);
-                    currentProject = 0;
-                    saveProjects();
-                    renderProjects();
-                    document.getElementById('current-project').textContent = projectName;
-                    document.getElementById('download-btn').disabled = false;
-                    
-                    updatePreview();
-                    loadCredits();
+                    projectData = data;
+                    addMessage('Generated ' + (generatedFiles.length || 0) + ' files! Check the tabs to view.', 'ai');
+                    updateTabs();
                     showToast('Build complete!', 'success');
                 }
             } catch (e) {
@@ -570,66 +504,102 @@
             const container = document.getElementById('chat-messages');
             const div = document.createElement('div');
             div.className = 'message ' + role;
-            
             if (loading) {
                 div.innerHTML = '<div class="message-content"><div class="loading-indicator"><div class="loading-dots"><span></span><span></span></div>Building...</div></div>';
             } else {
                 div.innerHTML = '<div class="message-content">' + content + '</div>';
             }
-            
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
 
-        function setPreviewTab(tab) {
-            document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.getElementById('preview-placeholder').style.display = 'none';
-            document.getElementById('preview-frame').classList.remove('active');
-            document.getElementById('files-view').classList.remove('active');
-            
-            if (tab === 'preview') {
-                document.getElementById('preview-placeholder').style.display = 'flex';
-            } else if (tab === 'files') {
-                renderFiles();
-                document.getElementById('files-view').classList.add('active');
-            }
+        function updateTabs() {
+            const tabsContainer = document.getElementById('browserTabs');
+            tabsContainer.innerHTML = '';
+            const showHardware = currentMode === 'hardware' || currentMode === 'hybrid';
+            const tabs = [
+                { id: 'preview', label: '📁 Files' },
+                { id: '3d', label: '🎲 3D', show: showHardware },
+                { id: 'diagram', label: '🔌 Diagram', show: showHardware },
+                { id: 'bom', label: '📋 BOM' },
+                { id: 'code', label: '💻 Code' },
+                { id: 'instructions', label: '📖 Instructions' }
+            ];
+
+            tabs.forEach(tab => {
+                if (tab.show === false) return;
+                const tabEl = document.createElement('div');
+                tabEl.className = 'browser-tab' + (tab.id === 'preview' ? ' active' : '');
+                tabEl.dataset.tab = tab.id;
+                tabEl.onclick = () => switchTab(tab.id);
+                tabEl.textContent = tab.label;
+                tabsContainer.appendChild(tabEl);
+            });
+
+            updateTabContent();
         }
 
-        function renderFiles() {
-            const view = document.getElementById('files-view');
-            if (generatedFiles.length === 0) {
-                view.innerHTML = '<div class="empty-state"><h3 class="empty-state-title">No files</h3><p class="empty-state-desc">Build a project first</p></div>';
-                return;
-            }
-            view.innerHTML = '<div class="file-tree">' + generatedFiles.map(f => 
-                '<div class="file-item" onclick="downloadFile(\'' + f.name + '\')"><span class="file-icon">📄</span><span class="file-name">' + f.name + '</span><span class="file-type">' + f.type + '</span></div>'
-            ).join('') + '</div>';
+        function switchTab(tabId) {
+            document.querySelectorAll('.browser-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.browser-tab[data-tab="' + tabId + '"]')?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + tabId)?.classList.add('active');
         }
 
-        function updatePreview() {
-            document.getElementById('download-btn').disabled = generatedFiles.length === 0;
+        function updateTabContent() {
+            const bomTab = document.getElementById('tab-bom');
+            bomTab.innerHTML = '<div class="bom-list">' + 
+                (generatedFiles.length > 0 ? 
+                '<div class="bom-item" onclick="this.classList.toggle(\'checked\')"><div class="bom-checkbox">✓</div><div class="bom-name">Arduino Uno R3</div><div class="bom-qty">x1</div></div><div class="bom-item" onclick="this.classList.toggle(\'checked\')"><div class="bom-checkbox">✓</div><div class="bom-name">Breadboard</div><div class="bom-qty">x1</div></div><div class="bom-item" onclick="this.classList.toggle(\'checked\')"><div class="bom-checkbox">✓</div><div class="bom-name">Jumper Wires</div><div class="bom-qty">x10</div></div><div class="bom-item" onclick="this.classList.toggle(\'checked\')"><div class="bom-checkbox">✓</div><div class="bom-name">LED</div><div class="bom-qty">x5</div></div><div class="bom-item" onclick="this.classList.toggle(\'checked\')"><div class="bom-checkbox">✓</div><div class="bom-name">Resistor 220Ω</div><div class="bom-qty">x5</div></div>' :
+                '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Bill of Materials</div><div class="empty-desc">Build a project to see the BOM.</div></div>') + '</div>';
+
+            const codeBrowser = document.getElementById('codeBrowser');
             if (generatedFiles.length > 0) {
-                document.getElementById('preview-placeholder').textContent = 'Switch to Files tab to download';
+                const tree = document.getElementById('fileTree');
+                tree.innerHTML = generatedFiles.map((f, i) => '<div class="file-tree-item" onclick="viewFile(' + i + ')">📄 ' + f.name + '</div>').join('');
+            }
+
+            const instructionsTab = document.getElementById('tab-instructions');
+            instructionsTab.innerHTML = '<div class="instructions-view">' + getInstructions() + '</div>';
+        }
+
+        function getInstructions() {
+            if (currentMode === 'software') {
+                return '<div class="instruction-step"><h3>1. Open the Project</h3><p>Navigate to the Files tab and open index.html to view your web application.</p></div><div class="instruction-step"><h3>2. Customize</h3><p>Edit the HTML, CSS, and JavaScript files to modify the application.</p></div><div class="instruction-step"><h3>3. Run Locally</h3><p>Open index.html in any web browser or use a local server.</p></div>';
+            } else {
+                return '<div class="instruction-step"><h3>1. View the Circuit Diagram</h3><p>Go to the Diagram tab to see the circuit connections.</p></div><div class="instruction-step"><h3>2. Check the BOM</h3><p>Go to the BOM tab to see all components needed.</p></div><div class="instruction-step"><h3>3. Build</h3><p>Assemble the circuit and upload the code to your microcontroller.</p></div>';
             }
         }
 
-        function downloadFile(filename) {
-            showToast('Download: ' + filename, 'success');
+        function viewFile(index) {
+            document.querySelectorAll('.file-tree-item').forEach((el, i) => el.classList.toggle('active', i === index));
+            const file = generatedFiles[index];
+            document.getElementById('codeViewer').textContent = 'File: ' + file.name + '\n\n(File content would be displayed here)';
         }
 
-        function downloadAll() {
+        function shareProject() { document.getElementById('shareModal').classList.add('active'); }
+        function closeShareModal() { document.getElementById('shareModal').classList.remove('active'); }
+
+        function shareTo(platform) {
+            const url = 'https://protoforge.dev';
+            const text = 'Check out this project I built with ProtoForge!';
+            let link = '';
+            if (platform === 'x') link = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+            else if (platform === 'facebook') link = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+            else if (platform === 'linkedin') link = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+            else if (platform === 'whatsapp') link = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + url);
+            else if (platform === 'email') link = 'mailto:?subject=Check this out&body=' + encodeURIComponent(text + '\n\n' + url);
+            window.open(link, '_blank');
+            closeShareModal();
+        }
+
+        function downloadProject() {
             if (generatedFiles.length === 0) { showToast('No files to download', 'error'); return; }
             showToast('Preparing download...', 'success');
         }
 
-        function shareProject() {
-            showToast('Share feature coming soon', 'success');
-        }
-
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
+            const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
             toast.textContent = message;
@@ -637,7 +607,7 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        init();
+        loadConfig();
     </script>
 </body>
 </html>
