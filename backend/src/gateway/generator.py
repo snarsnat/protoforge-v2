@@ -116,6 +116,10 @@ class ProtoForgeGenerator:
             print(f"[{self.provider}] Response: {resp.text[:200]}")
             
             if resp.status_code == 429:
+                error_data = resp.json() if resp.text else {}
+                error_msg = error_data.get('error', {}).get('message', resp.text[:200])
+                if 'insufficient balance' in error_msg or 'suspended' in error_msg:
+                    raise Exception(f"{self.provider} account suspended due to insufficient balance. Please add credits at {self.provider}.ai platform.")
                 raise Exception(f"{self.provider} rate limit exceeded. Wait and try again.")
             elif resp.status_code == 401:
                 raise Exception(f"Invalid API key for {self.provider}. Check your key or account balance.")
