@@ -1,416 +1,420 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProtoForge // AI Prototyping Engine</title>
-    <link rel="stylesheet" href="/static/main.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <title>ProtoForge v2</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
-        /* ============================================
-           ANTI-TROPE DESIGN SYSTEM
-           Deliberately breaking from AI product clichés
-           ============================================ */
-        
         :root {
-            /* NO purple/teal - Using bold orange-red */
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #252526;
+            --bg-tertiary: #2d2d30;
+            --bg-input: #3c3c3c;
+            --bg-hover: #2a2d2e;
+
+            --text-primary: #cccccc;
+            --text-secondary: #858585;
+            --text-muted: #6a6a6a;
+
             --accent: #ff3e00;
             --accent-hover: #ff5722;
-            --accent-dim: #cc3100;
-            
-            /* NO safe corporate grays - Using deep blacks */
-            --bg-primary: #080808;
-            --bg-secondary: #111111;
-            --bg-tertiary: #1a1a1a;
-            --bg-elevated: #222222;
-            
-            /* NO soft whites - High contrast */
-            --text-primary: #f5f5f5;
-            --text-secondary: #888888;
-            --text-muted: #444444;
-            
-            /* NO rounded - Sharp edges */
-            --border: #333333;
-            
-            /* NO friendly fonts - Monospace */
-            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+            --border-subtle: #454545;
+            --border-focus: #ff3e00;
+
+            --divider-width: 5px;
+            --divider-color: #ff3e00;
+
+            --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+
+            --sidebar-width: 340px;
         }
 
-        /* ============================================
-           RESET - Sharp edges, NO border-radius
-           ============================================ */
-        *, *::before, *::after {
-            box-sizing: border-box;
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e8e8e8;
+            --bg-input: #ffffff;
+            --bg-hover: #e5e5e5;
+
+            --text-primary: #1e1e1e;
+            --text-secondary: #616161;
+            --text-muted: #8e8e8e;
+
+            --border-subtle: #d4d4d4;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            border-radius: 0 !important; /* FORCE sharp edges */
+            box-sizing: border-box;
         }
-
-        html { font-size: 16px; }
 
         body {
             font-family: var(--font-mono);
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.4;
-            min-height: 100vh;
-            overflow: hidden;
-            /* NO subtle shadows, NO frosted glass */
-        }
-
-        /* ============================================
-           LAYOUT - NO hero sections
-           ============================================ */
-        .app-container {
-            display: flex;
-            flex-direction: column;
+            font-size: 13px;
+            line-height: 1.5;
             height: 100vh;
-            background: var(--bg-primary);
-        }
-
-        /* Top Bar - Functional, not decorative */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background: var(--bg-secondary);
-            border-bottom: 2px solid var(--border);
-        }
-
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        /* NO gradient backgrounds */
-        .config-group {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            background: transparent;
-            padding: 0;
-        }
-
-        .config-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 500;
-        }
-
-        .config-group select,
-        .config-group input {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            padding: 0.3rem 0.5rem;
-            outline: none;
-            /* NO rounded corners */
-        }
-
-        .config-group input { width: 140px; }
-
-        /* Type selector - NO rounded buttons */
-        .type-selector {
-            display: flex;
-            border: 1px solid var(--border);
-        }
-
-        .type-btn {
-            background: var(--bg-primary);
-            color: var(--text-muted);
-            border: none;
-            border-right: 1px solid var(--border);
-            padding: 0.3rem 0.6rem;
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-
-        .type-btn:last-child { border-right: none; }
-
-        .type-btn.active {
-            background: var(--accent);
-            color: white;
-        }
-
-        .type-btn:not(.active):hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        /* Logo - NO sparkle, NO gradient */
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            font-weight: 700;
-            font-size: 0.9rem;
-            letter-spacing: -0.03em;
-        }
-
-        .logo-icon {
-            font-size: 1rem;
-            /* NO gradient text */
-        }
-
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* NO "friendly" button styles */
-        .btn-share,
-        .btn-download {
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            padding: 0.3rem 0.6rem;
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-        }
-
-        .btn-download {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-            font-weight: 600;
-        }
-
-        .btn-download:hover {
-            background: var(--accent-hover);
-        }
-
-        /* ============================================
-           MAIN AREA - NO card-based layout
-           ============================================ */
-        .main-area {
-            display: flex;
-            flex: 1;
+            width: 100vw;
             overflow: hidden;
-            border-top: 1px solid var(--border);
         }
 
-        /* Sidebar */
+        .app-container {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            grid-template-rows: 1fr;
+            height: 100vh;
+            width: 100vw;
+        }
+
         .sidebar {
-            width: 260px;
             background: var(--bg-secondary);
-            border-right: 2px solid var(--border);
             display: flex;
             flex-direction: column;
+            border-right: var(--divider-width) solid var(--divider-color);
+            overflow: hidden;
         }
 
         .sidebar-header {
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-tertiary);
         }
 
-        .sidebar-header h3 {
-            font-size: 0.6rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+        .sidebar-title {
+            font-size: 11px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
 
-        .model-select {
+        .config-group {
+            margin-bottom: 16px;
+        }
+
+        .config-group:last-child { margin-bottom: 0; }
+
+        .config-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .config-select {
             width: 100%;
+            padding: 8px 10px;
             font-family: var(--font-mono);
-            font-size: 0.65rem;
-            background: var(--bg-primary);
+            font-size: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
             color: var(--text-primary);
-            border: 1px solid var(--border);
-            padding: 0.4rem;
+            cursor: pointer;
+            outline: none;
+            border-radius: 0;
+        }
+
+        .config-select:focus { border-color: var(--border-focus); }
+
+        .config-input {
+            width: 100%;
+            padding: 8px 10px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            outline: none;
+            border-radius: 0;
+        }
+
+        .config-input:focus { border-color: var(--border-focus); }
+
+        .project-toggle {
+            display: flex;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .project-toggle-btn {
+            flex: 1;
+            padding: 8px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
             cursor: pointer;
         }
 
-        .chat-area {
+        .project-toggle-btn:not(:last-child) { border-right: 1px solid var(--border-subtle); }
+
+        .project-toggle-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .chat-section {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 0.75rem;
             overflow: hidden;
+            min-height: 0;
         }
 
-        .chat-welcome {
-            padding: 0.5rem 0;
-            margin-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .chat-welcome h2 {
-            font-size: 0.8rem;
+        .chat-header {
+            padding: 10px 16px;
+            font-size: 10px;
             font-weight: 600;
-            margin-bottom: 0.15rem;
-            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
-        .chat-welcome p {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-        }
-
-        /* Starter Projects - NO card grids */
-        .starter-projects {
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
-            margin-bottom: 0.75rem;
-            max-height: 160px;
-            overflow-y: auto;
+            gap: 8px;
         }
 
-        /* NO rounded corners, NO hover lifts */
-        .starter-btn {
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            padding: 0.4rem 0.5rem;
-            text-align: left;
-            cursor: pointer;
-            transition: border-color 0.1s;
+        .chat-message {
+            padding: 10px 12px;
+            border: 1px solid var(--border-subtle);
+            font-size: 12px;
+            line-height: 1.5;
         }
 
-        .starter-btn:hover {
+        .chat-message.user {
             border-color: var(--accent);
+            border-left: 3px solid var(--accent);
         }
 
-        .starter-btn .category {
-            font-size: 0.5rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+        .chat-message.ai {
+            border-color: var(--border-subtle);
+            background: var(--bg-tertiary);
+        }
+
+        .chat-message-label {
+            font-size: 9px;
             font-weight: 600;
-        }
-
-        .starter-btn .name {
-            font-size: 0.65rem;
-            color: var(--text-primary);
-            margin: 0.15rem 0;
-            font-weight: 500;
-        }
-
-        .starter-btn .desc {
-            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-muted);
-            line-height: 1.3;
+            margin-bottom: 4px;
         }
 
-        /* Chat Input */
-        .chat-input-area {
-            margin-top: auto;
-        }
-
-        .chat-input {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            padding: 0.5rem;
-            resize: none;
-            min-height: 50px;
-            outline: none;
-        }
-
-        .chat-input:focus {
+        .chat-message.loading {
             border-color: var(--accent);
+            background: var(--bg-tertiary);
         }
 
-        .chat-input::placeholder {
-            color: var(--text-muted);
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
         }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .chat-input-section {
+            padding: 12px;
+            border-top: 1px solid var(--border-subtle);
+            background: var(--bg-tertiary);
+        }
+
+        .chat-textarea {
+            width: 100%;
+            min-height: 80px;
+            max-height: 150px;
+            padding: 10px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            resize: vertical;
+            outline: none;
+            border-radius: 0;
+        }
+
+        .chat-textarea:focus { border-color: var(--border-focus); }
 
         .chat-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 0.35rem;
+            margin-top: 8px;
         }
 
-        .chat-hint {
-            font-size: 0.5rem;
-            color: var(--text-muted);
-        }
-
-        /* NO big CTA buttons */
-        .btn-send {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.35rem 0.75rem;
+        .send-btn {
+            padding: 8px 20px;
             font-family: var(--font-mono);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 11px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--accent);
+            border: none;
+            color: #fff;
             cursor: pointer;
+            border-radius: 0;
         }
 
-        .btn-send:hover {
-            background: var(--accent-hover);
-        }
+        .send-btn:hover { background: var(--accent-hover); }
 
-        /* Workspace */
-        .workspace {
-            flex: 1;
+        .main-area {
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-
-        /* NO pill-shaped tabs */
-        .workspace-tabs {
-            display: flex;
-            gap: 0;
-            background: var(--bg-secondary);
-            border-bottom: 2px solid var(--border);
-        }
-
-        .workspace-tab {
-            background: transparent;
-            color: var(--text-muted);
-            border: none;
-            padding: 0.5rem 0.75rem;
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-        }
-
-        .workspace-tab:hover {
-            color: var(--text-secondary);
-        }
-
-        .workspace-tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-
-        .workspace-content {
-            flex: 1;
-            overflow: auto;
-            padding: 1rem;
             background: var(--bg-primary);
         }
 
-        /* Empty State - NO marketing copy */
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn {
+            padding: 6px 14px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 0;
+        }
+
+        .header-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .header-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .theme-toggle {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .theme-toggle:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .tab-bar {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--divider-color);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: -2px;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .tab-pane.active { display: block; }
+
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -418,538 +422,554 @@
             justify-content: center;
             height: 100%;
             text-align: center;
-            border: 1px dashed var(--border);
-            padding: 2rem;
-        }
-
-        .empty-state h3 {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
         }
 
-        .empty-state p {
-            font-size: 0.7rem;
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .empty-state-text {
+            font-size: 12px;
             color: var(--text-muted);
             max-width: 350px;
-            line-height: 1.5;
         }
 
-        /* Generated Content */
         .generated-content { display: none; }
-        .generated-content.show { display: block; }
+        .generated-content.visible { display: block; }
 
-        /* 3D Model View */
-        .model-view {
+        .content-section { margin-bottom: 32px; }
+
+        .content-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .diagram-container {
             background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            min-height: 350px;
+            border: 1px solid var(--border-subtle);
+            padding: 20px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .diagram-container svg { max-width: 100%; height: auto; }
+
+        .model-viewer {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            height: 400px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .model-placeholder {
-            text-align: center;
-            color: var(--text-muted);
-        }
-
-        .model-placeholder p {
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .model-placeholder small {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-        }
-
-        /* Diagram View */
-        .diagram-view {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            padding: 0.75rem;
-            min-height: 350px;
-            overflow: auto;
-        }
-
-        /* BOM View - NO "Most Popular" badges */
-        .bom-view table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-        }
-
-        .bom-view th,
-        .bom-view td {
-            padding: 0.5rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .bom-view th {
-            color: var(--accent);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 600;
-        }
-
-        .bom-view .total-row {
-            border-top: 2px solid var(--accent);
-            font-weight: 600;
-        }
-
-        .bom-view .total-row td {
-            padding-top: 0.75rem;
-        }
-
-        /* Instructions View */
-        .instructions-view {
-            font-size: 0.75rem;
-            line-height: 1.6;
-        }
-
-        .instructions-view h4 {
-            color: var(--accent);
-            margin: 1rem 0 0.5rem;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-        }
-
-        .instructions-view h4:first-child { margin-top: 0; }
-
-        .instructions-view p {
-            color: var(--text-secondary);
-        }
-
-        .instructions-view ol {
-            padding-left: 1rem;
-            color: var(--text-secondary);
-        }
-
-        .instructions-view li {
-            margin-bottom: 0.35rem;
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(8, 8, 8, 0.95);
-            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            border: 2px solid var(--accent);
+            margin-bottom: 24px;
         }
 
-        .loading-overlay.show { display: flex; }
+        .model-placeholder { text-align: center; color: var(--text-muted); }
 
-        .loading-spinner {
-            width: 30px;
-            height: 30px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 0.75rem;
+        .model-placeholder svg {
+            width: 64px;
+            height: 64px;
+            fill: var(--accent);
+            margin-bottom: 16px;
+            opacity: 0.6;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .bom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 24px;
         }
 
-        .loading-text {
-            font-size: 0.7rem;
+        .bom-table th, .bom-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .bom-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
         }
 
-        .loading-steps {
-            margin-top: 1rem;
+        .instruction-list {
             display: flex;
-            gap: 1.5rem;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .loading-step {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .loading-step.active { color: var(--accent); }
-
-        .loading-step::before { content: '[ ] '; }
-        .loading-step.active::before { content: '[●] '; }
-
-        /* Footer - NO "made with love" */
-        .footer {
+        .instruction-step {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.4rem;
+            gap: 16px;
+            padding: 16px;
             background: var(--bg-secondary);
-            border-top: 2px solid var(--border);
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--accent);
         }
 
-        .footer-divider { color: var(--border); }
-
-        /* Scrollbar - Sharp */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .sidebar { width: 220px; }
+        .step-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 40px;
         }
 
-        @media (max-width: 700px) {
-            .main-area { flex-direction: column; }
-            .sidebar { width: 100%; max-height: 40vh; }
-            .top-bar { flex-wrap: wrap; gap: 0.5rem; }
-            .config-group { flex-wrap: wrap; }
+        .step-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-subtle); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (max-width: 800px) {
+            :root { --sidebar-width: 280px; }
+        }
+
+        @media (max-width: 600px) {
+            .app-container { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="top-bar-left">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">AI Configuration</div>
+
                 <div class="config-group">
-                    <span class="config-label">Model:</span>
-                    <select id="top-model">
-                        <option value="gpt4">GPT-4</option>
-                        <option value="claude">Claude 3</option>
-                        <option value="deepseek">DeepSeek</option>
+                    <label class="config-label">AI Model</label>
+                    <select class="config-select" id="modelSelect">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="claude-3-5">Claude 3.5 Sonnet</option>
+                        <option value="deepseek-v2">DeepSeek V2</option>
+                        <option value="minimax">MiniMax</option>
                     </select>
                 </div>
+
                 <div class="config-group">
-                    <span class="config-label">Key:</span>
-                    <input type="password" id="top-apikey" placeholder="sk-..." value="sk-xxxx">
+                    <label class="config-label">API Key</label>
+                    <input type="password" class="config-input" id="apiKey" placeholder="sk-...">
                 </div>
+
                 <div class="config-group">
-                    <span class="config-label">Type:</span>
-                    <div class="type-selector">
-                        <button class="type-btn" data-type="software">Software</button>
-                        <button class="type-btn active" data-type="hardware">Hardware</button>
-                        <button class="type-btn" data-type="hybrid">Hybrid</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="logo">
-                <span class="logo-icon">⚡</span>
-                <span>PROTOFORGE</span>
-            </div>
-            
-            <div class="top-bar-right">
-                <button class="btn-share">Share</button>
-                <button class="btn-download" onclick="downloadZip()">↓.zip</button>
-            </div>
-        </div>
-
-        <!-- Main Area -->
-        <div class="main-area">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <h3>// AI Config</h3>
-                    <select class="model-select" id="sidebar-model">
-                        <option value="gpt4">GPT-4</option>
-                        <option value="claude">Claude 3</option>
-                        <option value="deepseek">DeepSeek</option>
-                    </select>
-                </div>
-                
-                <div class="chat-area">
-                    <div class="chat-welcome">
-                        <h2>ProtoForge</h2>
-                        <p>Describe your project to generate prototypes.</p>
-                    </div>
-                    
-                    <!-- Starter Projects -->
-                    <div class="starter-projects">
-                        <button class="starter-btn" onclick="useStarter('Smart Home', 'Mood Lamp', 'Gesture-controlled lighting')">
-                            <div class="category">Smart Home</div>
-                            <div class="name">Mood Lamp</div>
-                            <div class="desc">Gesture-controlled</div>
-                        </button>
-                        <button class="starter-btn" onclick="useStarter('Robotics', 'Rover', 'Self-balancing robot')">
-                            <div class="category">Robotics</div>
-                            <div class="name">Self-Balancing Rover</div>
-                            <div class="desc">IMU stabilization</div>
-                        </button>
-                        <button class="starter-btn" onclick="useStarter('Wearables', 'Wristband', 'Fitness tracker')">
-                            <div class="category">Wearables</div>
-                            <div class="name">Fitness Wristband</div>
-                            <div class="desc">Heart-rate monitoring</div>
-                        </button>
-                        <button class="starter-btn" onclick="useStarter('Plant', 'Plant Monitor', 'Temp & water alerts')">
-                            <div class="category">Plant</div>
-                            <div class="name">Smart Plant Monitor</div>
-                            <div class="desc">Temperature & water</div>
-                        </button>
-                        <button class="starter-btn" onclick="useStarter('Games', 'Reaction Game', 'Reflex testing')">
-                            <div class="category">Games</div>
-                            <div class="name">Arcade Reaction</div>
-                            <div class="desc">Fast reflex game</div>
-                        </button>
-                    </div>
-                    
-                    <div class="chat-input-area">
-                        <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build...">smart plant monitor with temperature and water level sensors</textarea>
-                        <div class="chat-actions">
-                            <span class="chat-hint">Enter to send</span>
-                            <button class="btn-send" onclick="generate()">Send</button>
-                        </div>
+                    <label class="config-label">Project Type</label>
+                    <div class="project-toggle">
+                        <button class="project-toggle-btn" data-type="software">Software</button>
+                        <button class="project-toggle-btn active" data-type="hardware">Hardware</button>
+                        <button class="project-toggle-btn" data-type="hybrid">Hybrid</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Workspace -->
-            <div class="workspace">
-                <div class="workspace-tabs">
-                    <button class="workspace-tab active" data-tab="model">3D Model</button>
-                    <button class="workspace-tab" data-tab="diagram">Diagram</button>
-                    <button class="workspace-tab" data-tab="bom">BOM</button>
-                    <button class="workspace-tab" data-tab="assemble">Assemble</button>
-                </div>
-                
-                <div class="workspace-content">
-                    <!-- Empty State -->
-                    <div class="empty-state" id="empty-state">
-                        <h3>No Model Generated</h3>
-                        <p>Describe your hardware project to generate a 3D model, circuit diagram, BOM, and assembly instructions.</p>
+            <div class="chat-section">
+                <div class="chat-header">Chat</div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message ai">
+                        <div class="chat-message-label">ProtoForge</div>
+                        Ready to forge. Describe your project and I'll generate the prototypes.
                     </div>
-                    
-                    <!-- Generated Content -->
-                    <div class="generated-content" id="generated-content">
-                        <div class="tab-panel" id="panel-model">
-                            <div class="model-view">
-                                <div class="model-placeholder">
-                                    <p>3D Model Generated</p>
-                                    <small>enclosure.obj | enclosure.stl</small>
-                                </div>
+                </div>
+                <div class="chat-input-section">
+                    <textarea class="chat-textarea" id="chatInput" placeholder="Describe what you want to build..."></textarea>
+                    <div class="chat-actions">
+                        <span style="font-size: 10px; color: var(--text-muted);">Enter to send</span>
+                        <button class="send-btn" id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-area">
+            <header class="top-header">
+                <div class="logo">PROTOFORGE</div>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>
+                    </button>
+                    <button class="header-btn" id="shareBtn">Share</button>
+                    <button class="header-btn primary" id="downloadBtn">Download .zip</button>
+                </div>
+            </header>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="model">3D Model</button>
+                <button class="tab-btn" data-tab="diagram">Diagram</button>
+                <button class="tab-btn" data-tab="bom">BOM</button>
+                <button class="tab-btn" data-tab="instructions">Instructions</button>
+                <button class="tab-btn" data-tab="code">Code</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- 3D Model Tab -->
+                <div class="tab-pane active" id="tab-model">
+                    <div class="empty-state" id="model-empty">
+                        <div class="empty-state-title">NO MODEL GENERATED</div>
+                        <div class="empty-state-text">Describe your project in the chat to generate a 3D model.</div>
+                    </div>
+                    <div class="generated-content" id="model-content">
+                        <div class="content-section">
+                            <div class="content-section-title">3D Model Preview</div>
+                            <div class="model-viewer">
+                                <div class="model-canvas" id="model-canvas"></div>
                             </div>
                         </div>
-                        
-                        <div class="tab-panel" id="panel-diagram" style="display: none;">
-                            <div class="diagram-view">
-                                <div class="mermaid" id="mermaid-chart">
-```mermaid
-flowchart TB
-    subgraph Power["POWER"]
-        USB["USB 5V"]
-        VCC["VCC +5V"]
-        GND["GND"]
-    end
-    
-    subgraph Controller["CONTROLLER"]
-        ESP32["ESP32"]
-    end
-    
-    subgraph Sensors["SENSORS"]
-        DHT22["DHT22 Temp"]
-        Water["Water Level"]
-    end
-    
-    subgraph Outputs["OUTPUTS"]
-        OLED["OLED Display"]
-        LED["Status LED"]
-        Buzzer["Buzzer"]
-    end
-    
-    USB --> VCC
-    USB --> GND
-    VCC --> ESP32
-    ESP32 --> GND
-    DHT22 --> ESP32
-    Water --> ESP32
-    ESP32 --> OLED
-    ESP32 --> LED
-    ESP32 --> Buzzer
-    
-    style Power fill:#333,color:#fff
-    style Controller fill:#222,color:#fff
-    style Sensors fill:#111,color:#fff
-    style Outputs fill:#000,color:#fff
-```
-                                </div>
-                            </div>
+                        <div class="content-section">
+                            <div class="content-section-title">Model Specifications</div>
+                            <div class="code-block" id="model-specs"></div>
                         </div>
-                        
-                        <div class="tab-panel" id="panel-bom" style="display: none;">
-                            <div class="bom-view">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Component</th>
-                                            <th>Qty</th>
-                                            <th>Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td>ESP32 Dev Board</td><td>1x</td><td>$8.00</td></tr>
-                                        <tr><td>DHT22 Sensor</td><td>1x</td><td>$6.00</td></tr>
-                                        <tr><td>Water Level Sensor</td><td>1x</td><td>$3.00</td></tr>
-                                        <tr><td>OLED 0.96"</td><td>1x</td><td>$4.00</td></tr>
-                                        <tr><td>RGB LED</td><td>1x</td><td>$1.00</td></tr>
-                                        <tr><td>Buzzer 5V</td><td>1x</td><td>$1.50</td></tr>
-                                        <tr><td>USB Cable</td><td>1x</td><td>$3.00</td></tr>
-                                        <tr><td>Jumper Wires</td><td>1x</td><td>$2.00</td></tr>
-                                        <tr><td>Breadboard</td><td>1x</td><td>$5.00</td></tr>
-                                        <tr class="total-row"><td>TOTAL</td><td></td><td style="color:var(--accent)">$33.50</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    </div>
+                </div>
+
+                <!-- Diagram Tab -->
+                <div class="tab-pane" id="tab-diagram">
+                    <div class="empty-state" id="diagram-empty">
+                        <div class="empty-state-title">NO DIAGRAM GENERATED</div>
+                        <div class="empty-state-text">Describe your circuit or system to generate a wiring diagram.</div>
+                    </div>
+                    <div class="generated-content" id="diagram-content">
+                        <div class="content-section">
+                            <div class="content-section-title">System Diagram (Mermaid.js)</div>
+                            <div class="diagram-container" id="mermaid-diagram"></div>
                         </div>
-                        
-                        <div class="tab-panel" id="panel-assemble" style="display: none;">
-                            <div class="instructions-view">
-                                <h4>// Step 1: Wire Sensors</h4>
-                                <p>DHT22 Data → GPIO4<br>Water Level → GPIO34<br>VCC 3.3V, GND</p>
-                                
-                                <h4>// Step 2: Connect Outputs</h4>
-                                <p>OLED SDA→21, SCL→22<br>LED→23, Buzzer→18</p>
-                                
-                                <h4>// Step 3: Upload Code</h4>
-                                <ol>
-                                    <li>Install Arduino IDE + ESP32</li>
-                                    <li>Libraries: DHT, OLED, PubSubClient</li>
-                                    <li>Configure WiFi + MQTT</li>
-                                    <li>Upload</li>
-                                </ol>
-                                
-                                <h4>// Step 4: Enclosure</h4>
-                                <p>3D print enclosure.stl<br>Mount components</p>
-                            </div>
+                    </div>
+                </div>
+
+                <!-- BOM Tab -->
+                <div class="tab-pane" id="tab-bom">
+                    <div class="empty-state" id="bom-empty">
+                        <div class="empty-state-title">BILL OF MATERIALS</div>
+                        <div class="empty-state-text">Your component list will appear here.</div>
+                    </div>
+                    <div class="generated-content" id="bom-content">
+                        <div class="content-section">
+                            <div class="content-section-title">Components List</div>
+                            <table class="bom-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Component</th>
+                                        <th>Quantity</th>
+                                        <th>Reference</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bom-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Tab -->
+                <div class="tab-pane" id="tab-instructions">
+                    <div class="empty-state" id="instructions-empty">
+                        <div class="empty-state-title">NO INSTRUCTIONS</div>
+                        <div class="empty-state-text">Assembly instructions will appear here.</div>
+                    </div>
+                    <div class="generated-content" id="instructions-content">
+                        <div class="content-section">
+                            <div class="content-section-title">Assembly Instructions</div>
+                            <div class="instruction-list" id="instruction-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Tab -->
+                <div class="tab-pane" id="tab-code">
+                    <div class="empty-state" id="code-empty">
+                        <div class="empty-state-title">NO CODE GENERATED</div>
+                        <div class="empty-state-text">Source code will appear here.</div>
+                    </div>
+                    <div class="generated-content" id="code-content">
+                        <div class="content-section">
+                            <div class="content-section-title">Generated Source Code</div>
+                            <div class="code-block" id="source-code"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <span>ProtoForge</span>
-            <span class="footer-divider">|</span>
-            <span>Your API key</span>
-        </div>
+        </main>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Generating...</div>
-        <div class="loading-steps">
-            <div class="loading-step active" id="step1">Analyzing</div>
-            <div class="loading-step" id="step2">Designing</div>
-            <div class="loading-step" id="step3">Building</div>
-            <div class="loading-step" id="step4">Done</div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script>
-        mermaid.initialize({ 
-            startOnLoad: true,
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
             theme: 'dark',
-            securityLevel: 'loose',
-            flowchart: { curve: 'linear' }
-        });
-
-        // Type selector
-        document.querySelectorAll('.type-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // Workspace tabs
-        document.querySelectorAll('.workspace-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                const tabName = this.dataset.tab;
-                document.querySelectorAll('.tab-panel').forEach(panel => {
-                    panel.style.display = 'none';
-                });
-                document.getElementById('panel-' + tabName).style.display = 'block';
-            });
-        });
-
-        // Starter project
-        function useStarter(category, name, desc) {
-            const input = document.getElementById('chat-input');
-            input.value = `make me a ${name.toLowerCase()} - ${desc}`;
-            generate();
-        }
-
-        // Download
-        function downloadZip() {
-            alert('Downloading protoforge-project.zip...');
-        }
-
-        // Generate
-        function generate() {
-            const prompt = document.getElementById('chat-input').value.trim();
-            if (!prompt) return;
-
-            const overlay = document.getElementById('loading-overlay');
-            overlay.classList.add('show');
-            
-            let step = 1;
-            const interval = setInterval(() => {
-                document.querySelectorAll('.loading-step').forEach((s, i) => {
-                    s.classList.toggle('active', i < step);
-                });
-                step++;
-                if (step > 4) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        overlay.classList.remove('show');
-                        showResults();
-                    }, 600);
-                }
-            }, 800);
-        }
-
-        function showResults() {
-            document.getElementById('empty-state').style.display = 'none';
-            document.getElementById('generated-content').classList.add('show');
-        }
-
-        // Enter to send
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                generate();
+            themeVariables: {
+                primaryColor: '#ff3e00',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#ff3e00',
+                lineColor: '#ff3e00',
+                secondaryColor: '#2d2d30',
+                tertiaryColor: '#252526'
             }
         });
 
-        // Auto-run demo
-        window.addEventListener('load', function() {
-            setTimeout(generate, 400);
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            if (window.currentDiagram) renderMermaid(window.currentDiagram);
+        });
+
+        // Project Type Toggle
+        const projectToggleBtns = document.querySelectorAll('.project-toggle-btn');
+        projectToggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                projectToggleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Tab Navigation
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            });
+        });
+
+        // Chat
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        let projectData = {
+            name: '',
+            type: 'hardware',
+            components: [],
+            instructions: [],
+            code: '',
+            diagram: '',
+            specs: ''
+        };
+
+        let currentProjectId = null;
+
+        function addMessage(content, isUser = false, isLoading = false) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${isUser ? 'user' : 'ai'}${isLoading ? ' loading' : ''}`;
+
+            if (isLoading) {
+                msg.innerHTML = `
+                    <div class="chat-message-label">ProtoForge</div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+            } else {
+                msg.innerHTML = `<div class="chat-message-label">${isUser ? 'You' : 'ProtoForge'}</div>${content}`;
+            }
+
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return msg;
+        }
+
+        async function processMessage(message) {
+            addMessage(message, true);
+            const loadingMsg = addMessage('', false, true);
+
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                loadingMsg.remove();
+                addMessage('Please enter your API key in the configuration panel first.');
+                return;
+            }
+
+            const projectType = document.querySelector('.project-toggle-btn.active').dataset.type;
+            const model = document.getElementById('modelSelect').value;
+
+            try {
+                // Call backend API
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: message,
+                        mode: projectType,
+                        model: model,
+                        api_key: apiKey
+                    })
+                });
+
+                const data = await response.json();
+
+                loadingMsg.remove();
+
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`);
+                    return;
+                }
+
+                currentProjectId = data.project_id;
+                projectData = {
+                    name: message.split(' ').slice(0, 3).join(' '),
+                    type: projectType,
+                    components: data.components || [],
+                    instructions: data.instructions || [],
+                    code: data.code || '',
+                    diagram: data.diagram || '',
+                    specs: data.specs || ''
+                };
+
+                addMessage(`Generated your ${projectType} project! Check the tabs for 3D model, diagram, BOM, instructions, and code.`);
+                displayGeneratedContent();
+
+            } catch (error) {
+                loadingMsg.remove();
+                addMessage(`Error: ${error.message}. Make sure the backend is running.`);
+            }
+        }
+
+        async function renderMermaid(diagramCode) {
+            const container = document.getElementById('mermaid-diagram');
+            if (!container) return;
+            try {
+                const { svg } = await mermaid.render('mermaid-svg', diagramCode);
+                container.innerHTML = svg;
+                window.currentDiagram = diagramCode;
+            } catch (error) {
+                container.innerHTML = `<pre class="code-block">${diagramCode}</pre>`;
+            }
+        }
+
+        function displayGeneratedContent() {
+            // 3D Model
+            document.getElementById('model-empty').style.display = 'none';
+            document.getElementById('model-content').classList.add('visible');
+            document.getElementById('model-canvas').innerHTML = `
+                <div class="model-placeholder">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <div style="margin-top:12px;font-size:12px;color:var(--accent)">3D Model Generated</div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${projectData.name}</div>
+                </div>
+            `;
+            document.getElementById('model-specs').textContent = projectData.specs;
+
+            // Diagram
+            document.getElementById('diagram-empty').style.display = 'none';
+            document.getElementById('diagram-content').classList.add('visible');
+            if (projectData.diagram) renderMermaid(projectData.diagram);
+
+            // BOM
+            document.getElementById('bom-empty').style.display = 'none';
+            document.getElementById('bom-content').classList.add('visible');
+            const bomBody = document.getElementById('bom-body');
+            bomBody.innerHTML = projectData.components.map((comp, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${comp.name || comp.component}</td>
+                    <td>${comp.qty || comp.quantity || 1}</td>
+                    <td>${comp.ref || comp.reference || '-'}</td>
+                    <td>${comp.notes || '-'}</td>
+                </tr>
+            `).join('');
+
+            // Instructions
+            document.getElementById('instructions-empty').style.display = 'none';
+            document.getElementById('instructions-content').classList.add('visible');
+            document.getElementById('instruction-list').innerHTML = projectData.instructions.map((step, i) => `
+                <div class="instruction-step">
+                    <div class="step-number">${i + 1}</div>
+                    <div class="step-content">
+                        <h4>${step.title}</h4>
+                        <p>${step.desc || step.description}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Code
+            document.getElementById('code-empty').style.display = 'none';
+            document.getElementById('code-content').classList.add('visible');
+            document.getElementById('source-code').textContent = projectData.code;
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                chatInput.value = '';
+                processMessage(message);
+            }
+        });
+
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (message) {
+                    chatInput.value = '';
+                    processMessage(message);
+                }
+            }
+        });
+
+        // Share
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            alert('Share functionality');
+        });
+
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (currentProjectId) {
+                window.location.href = `/api/download/${currentProjectId}`;
+            } else {
+                alert('Generate a project first!');
+            }
         });
     </script>
 </body>
