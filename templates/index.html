@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProtoForge // AI Prototyping Engine</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1c1c1c;
+            --bg-elevated: #222222;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #ff3e00;
+            --accent-hover: #ff5722;
+            --accent-dim: #cc3100;
+            --accent-glow: rgba(255, 62, 0, 0.3);
+            --border: #333333;
+            --border-focus: #ff3e00;
+            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html { font-size: 16px; }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .config-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .config-group select,
+        .config-group input {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            outline: none;
+        }
+
+        .config-group select:focus,
+        .config-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .config-group input {
+            width: 180px;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 0;
+        }
+
+        .type-btn {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .type-btn:first-child { border-right: none; }
+        .type-btn:last-child { border-left: none; }
+
+        .type-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .type-btn:hover:not(.active) {
+            background: var(--bg-tertiary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-icon { font-size: 1.25rem; }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-share,
+        .btn-download {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .btn-share:hover,
+        .btn-download:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-download {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: var(--accent-hover);
+            color: white;
+        }
+
+        /* Main Content Area */
+        .main-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h3 {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-select {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .chat-welcome {
+            text-align: center;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .chat-welcome h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .chat-welcome p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Starter Projects - Schematik Style */
+        .starter-projects {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .starter-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .starter-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .starter-btn .category {
+            font-size: 0.6rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .starter-btn .name {
+            font-size: 0.7rem;
+            color: var(--text-primary);
+            margin: 0.25rem 0;
+            font-weight: 500;
+        }
+
+        .starter-btn .desc {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .chat-input-area {
+            margin-top: auto;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.75rem;
+            resize: none;
+            min-height: 60px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .chat-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .chat-hint {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .btn-send {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .btn-send:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .workspace-tabs {
+            display: flex;
+            gap: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1rem;
+        }
+
+        .workspace-tab {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .workspace-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .workspace-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .workspace-content {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* Generated Content Display */
+        .generated-content {
+            display: none;
+        }
+
+        .generated-content.show {
+            display: block;
+        }
+
+        /* 3D Model View */
+        .model-view {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .model-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .model-placeholder p {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-placeholder small {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Diagram View */
+        .diagram-view {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            min-height: 400px;
+            overflow: auto;
+        }
+
+        /* BOM View */
+        .bom-view table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .bom-view th,
+        .bom-view td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bom-view th {
+            color: var(--accent);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bom-view .total-row {
+            border-top: 2px solid var(--accent);
+            font-weight: 600;
+        }
+
+        .bom-view .total-row td {
+            padding-top: 1rem;
+        }
+
+        /* Instructions View */
+        .instructions-view {
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+
+        .instructions-view h4 {
+            color: var(--accent);
+            margin: 1.5rem 0 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .instructions-view h4:first-child {
+            margin-top: 0;
+        }
+
+        .instructions-view ol {
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .instructions-view li {
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions-view p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 10, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-steps {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .loading-step {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .loading-step.active {
+            color: var(--accent);
+        }
+
+        .loading-step::before {
+            content: '○ ';
+        }
+
+        .loading-step.active::before {
+            content: '● ';
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .footer-divider { color: var(--border); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { width: 240px; }
+            .starter-projects { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .main-area { flex-direction: column; }
+            .sidebar { width: 100%; max-height: 50vh; }
+            .top-bar { flex-wrap: wrap; }
+            .config-group { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="config-group">
+                    <span class="config-label">Model:</span>
+                    <select id="top-model">
+                        <option value="gpt4">GPT-4</option>
+                        <option value="claude">Claude 3</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="minimax">MiniMax</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <span class="config-label">API Key:</span>
+                    <input type="password" id="top-apikey" placeholder="sk-..." value="sk-simulated-key">
+                </div>
+                <div class="config-group">
+                    <span class="config-label">Type:</span>
+                    <div class="type-selector">
+                        <button class="type-btn" data-type="software">Software</button>
+                        <button class="type-btn active" data-type="hardware">Hardware</button>
+                        <button class="type-btn" data-type="hybrid">Hybrid</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span>PROTOFORGE</span>
+            </div>
+            
+            <div class="top-bar-right">
+                <button class="btn-share">Share</button>
+                <button class="btn-download" onclick="downloadZip()">↓ Download .zip</button>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main-area">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3>// AI Configuration</h3>
+                    <select class="model-select" id="sidebar-model">
+                        <option value="gpt4">GPT-4</option>
+                        <option value="claude">Claude 3</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="minimax">MiniMax</option>
+                    </select>
+                </div>
+                
+                <div class="chat-area">
+                    <div class="chat-welcome">
+                        <h2>ProtoForge</h2>
+                        <p>Ready to forge. Describe your project and I'll generate the prototypes.</p>
+                    </div>
+                    
+                    <!-- Starter Projects - Schematik Style -->
+                    <div class="starter-projects">
+                        <button class="starter-btn" onclick="useStarter('Smart Home', 'Gesture-Controlled Mood Lamp', 'Wave to cycle colors, hold to dim, and save favorite lighting scenes.')">
+                            <div class="category">Smart Home</div>
+                            <div class="name">Gesture-Controlled Mood Lamp</div>
+                            <div class="desc">Wave to cycle colors, hold to dim</div>
+                        </button>
+                        <button class="starter-btn" onclick="useStarter('Robotics', 'Self-Balancing Rover', 'IMU-based stabilization with live battery and tilt stats on OLED.')">
+                            <div class="category">Robotics</div>
+                            <div class="name">Self-Balancing Rover</div>
+                            <div class="desc">IMU-based stabilization</div>
+                        </button>
+                        <button class="starter-btn" onclick="useStarter('Wearables', 'Fitness Wristband', 'Heart-rate sampling, step estimate, and low-power status display.')">
+                            <div class="category">Wearables</div>
+                            <div class="name">Fitness Wristband</div>
+                            <div class="desc">Heart-rate & step tracking</div>
+                        </button>
+                        <button class="starter-btn" onclick="useStarter('Communication', 'ESP32 Kids Phone', 'Kid-safe mini phone with big buttons, approved contacts, and SOS mode.')">
+                            <div class="category">Communication</div>
+                            <div class="name">ESP32 Kids Phone</div>
+                            <div class="desc">Big buttons, SOS mode</div>
+                        </button>
+                        <button class="starter-btn" onclick="useStarter('Plant', 'Smart Plant Monitor', 'Temperature and humidity monitoring with watering alerts.')">
+                            <div class="category">Plant</div>
+                            <div class="name">Smart Plant Monitor</div>
+                            <div class="desc">Temp, humidity, watering alerts</div>
+                        </button>
+                        <button class="starter-btn" onclick="useStarter('Games', 'Arcade Reaction Tower', 'Fast reflex game with score tracking and LED flashes.')">
+                            <div class="category">Games</div>
+                            <div class="name">Arcade Reaction Tower</div>
+                            <div class="desc">Reflex game with scoring</div>
+                        </button>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build..." rows="3">make me a smart plant monitor that checks temperature and water level and sends alerts</textarea>
+                        <div class="chat-actions">
+                            <span class="chat-hint">Press Enter to send</span>
+                            <button class="btn-send" onclick="generate()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="workspace">
+                <div class="workspace-tabs">
+                    <button class="workspace-tab active" data-tab="model">3D Model</button>
+                    <button class="workspace-tab" data-tab="diagram">Diagram</button>
+                    <button class="workspace-tab" data-tab="bom">BOM</button>
+                    <button class="workspace-tab" data-tab="assemble">Assemble</button>
+                </div>
+                
+                <div class="workspace-content">
+                    <!-- Empty State -->
+                    <div class="empty-state" id="empty-state">
+                        <h3>NO MODEL GENERATED</h3>
+                        <p>Tab content will show text saying prompt something to see stuff here if nothing is built. Describe your hardware project in the chat to generate a 3D model.</p>
+                    </div>
+                    
+                    <!-- Generated Content -->
+                    <div class="generated-content" id="generated-content">
+                        <!-- 3D Model Tab -->
+                        <div class="tab-panel" id="panel-model">
+                            <div class="model-view">
+                                <div class="model-placeholder">
+                                    <p>🎲 3D Model Generated</p>
+                                    <small>enclosure.obj | enclosure.stl</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diagram Tab -->
+                        <div class="tab-panel" id="panel-diagram" style="display: none;">
+                            <div class="diagram-view">
+                                <div class="mermaid" id="mermaid-chart">
+```mermaid
+flowchart TB
+    subgraph Power["⚡ Power Source"]
+        USB["🔌 USB 5V"]
+        VCC["📍 VCC +5V"]
+        GND["📍 GND"]
+    end
+    
+    subgraph Controller["🧠 Controller"]
+        ESP32["🎛️ ESP32 Dev Board"]
+    end
+    
+    subgraph Sensors["📟 Sensors"]
+        DHT22["🌡️ DHT22 Temp/Humidity"]
+        WaterLevel["💧 Water Level Sensor"]
+    end
+    
+    subgraph Outputs["📤 Outputs"]
+        OLED["📺 OLED Display"]
+        LED["🔴 Status LED"]
+        Buzzer["🔔 Buzzer"]
+    end
+    
+    subgraph Communication["📡 Communication"]
+        WiFi["📶 WiFi Module"]
+        MQTT["📨 MQTT"]
+    end
+    
+    USB --> VCC
+    USB --> GND
+    
+    VCC --> ESP32
+    ESP32 --> GND
+    
+    DHT22 --> ESP32
+    WaterLevel --> ESP32
+    
+    ESP32 --> OLED
+    ESP32 --> LED
+    ESP32 --> Buzzer
+    
+    ESP32 --> WiFi
+    WiFi --> MQTT
+    
+    style Power fill:#ff6b35,color:#fff
+    style Controller fill:#004e89,color:#fff
+    style Sensors fill:#7bc043,color:#fff
+    style Outputs fill:#ee4037,color:#fff
+    style Communication fill:#9b59b6,color:#fff
+```
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- BOM Tab -->
+                        <div class="tab-panel" id="panel-bom" style="display: none;">
+                            <div class="bom-view">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Component</th>
+                                            <th>Qty</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>ESP32 Dev Board</td>
+                                            <td>1x</td>
+                                            <td>$8.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>DHT22 Temperature/Humidity Sensor</td>
+                                            <td>1x</td>
+                                            <td>$6.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Water Level Sensor (Capacitive)</td>
+                                            <td>1x</td>
+                                            <td>$3.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>OLED Display 0.96" I2C</td>
+                                            <td>1x</td>
+                                            <td>$4.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>RGB LED (WS2812)</td>
+                                            <td>1x</td>
+                                            <td>$1.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Buzzer 5V</td>
+                                            <td>1x</td>
+                                            <td>$1.50</td>
+                                        </tr>
+                                        <tr>
+                                            <td>USB Cable (Micro-USB)</td>
+                                            <td>1x</td>
+                                            <td>$3.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Jumper Wires (Pack)</td>
+                                            <td>1x</td>
+                                            <td>$2.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Breadboard</td>
+                                            <td>1x</td>
+                                            <td>$5.00</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td>TOTAL</td>
+                                            <td></td>
+                                            <td style="color: var(--accent);">$33.50</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Assemble Tab -->
+                        <div class="tab-panel" id="panel-assemble" style="display: none;">
+                            <div class="instructions-view">
+                                <h4>// STEP 1: WIRE THE SENSORS</h4>
+                                <p>• DHT22 Data Pin → ESP32 GPIO4 (D2)<br>
+                                • DHT22 VCC → ESP32 3.3V<br>
+                                • DHT22 GND → ESP32 GND<br>
+                                • Water Level Signal → ESP32 GPIO34 (ADC)<br>
+                                • Water Level VCC → ESP32 3.3V<br>
+                                • Water Level GND → ESP32 GND</p>
+                                
+                                <h4>// STEP 2: CONNECT OUTPUTS</h4>
+                                <p>• OLED SDA → ESP32 GPIO21<br>
+                                • OLED SCL → ESP32 GPIO22<br>
+                                • RGB LED Data → ESP32 GPIO23<br>
+                                • Buzzer + → ESP32 GPIO18<br>
+                                • Buzzer - → ESP32 GND</p>
+                                
+                                <h4>// STEP 3: UPLOAD CODE</h4>
+                                <ol>
+                                    <li>Install Arduino IDE or PlatformIO</li>
+                                    <li>Add ESP32 board support</li>
+                                    <li>Install libraries: DHT sensor, Adafruit OLED, PubSubClient</li>
+                                    <li>Open main.py and configure WiFi credentials</li>
+                                    <li>Upload to ESP32</li>
+                                </ol>
+                                
+                                <h4>// STEP 4: CONFIGURE MQTT</h4>
+                                <p>• Set your MQTT broker URL in config.json<br>
+                                • Topics: plant/monitor/temperature, plant/monitor/humidity, plant/monitor/water<br>
+                                • Configure alerts threshold in code</p>
+                                
+                                <h4>// STEP 5: ENCLOSURE</h4>
+                                <p>• 3D print enclosure using enclosure.stl<br>
+                                • Cut holes for sensors, display, and cables<br>
+                                • Mount ESP32 with standoffs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>Created by ProtoForge</span>
+            <span class="footer-divider">|</span>
+            <span>Your API key, your data</span>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Generating your project...</div>
+        <div class="loading-steps">
+            <div class="loading-step active" id="step1">Analyzing</div>
+            <div class="loading-step" id="step2">Designing</div>
+            <div class="loading-step" id="step3">Building</div>
+            <div class="loading-step" id="step4">Finalizing</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            securityLevel: 'loose'
+        });
+
+        // Type selector
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Workspace tabs
+        document.querySelectorAll('.workspace-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const tabName = this.dataset.tab;
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    panel.style.display = 'none';
+                });
+                document.getElementById('panel-' + tabName).style.display = 'block';
+            });
+        });
+
+        // Use starter project
+        function useStarter(category, name, desc) {
+            const input = document.getElementById('chat-input');
+            input.value = `make me a ${name.toLowerCase()} - ${desc}`;
+            generate();
+        }
+
+        // Download
+        function downloadZip() {
+            alert('📦 Downloading protoforge-project.zip...\n\nContains:\n• circuit.md\n• components.md\n• enclosure.obj\n• enclosure.stl\n• BOM.md\n• README.md\n• main.py\n• config.json');
+        }
+
+        // Generate
+        function generate() {
+            const prompt = document.getElementById('chat-input').value.trim();
+            if (!prompt) return;
+
+            // Show loading
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.add('show');
+            
+            // Animate steps
+            let step = 1;
+            const interval = setInterval(() => {
+                document.querySelectorAll('.loading-step').forEach((s, i) => {
+                    s.classList.toggle('active', i < step);
+                });
+                step++;
+                if (step > 4) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        overlay.classList.remove('show');
+                        showResults();
+                    }, 800);
+                }
+            }, 1000);
+        }
+
+        // Show results
+        function showResults() {
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('generated-content').classList.add('show');
+        }
+
+        // Enter to send
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generate();
+            }
+        });
+
+        // Auto-run on load for demo
+        window.addEventListener('load', function() {
+            setTimeout(generate, 500);
+        });
+    </script>
+</body>
+</html>

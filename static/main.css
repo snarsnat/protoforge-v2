@@ -1,0 +1,87 @@
+/* ProtoForge - Integrated UI CSS
+ * Combined ProtoForge + Schematik styles
+ */
+
+:root {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #141414;
+    --bg-tertiary: #1c1c1c;
+    --bg-elevated: #222222;
+    --text-primary: #f0f0f0;
+    --text-secondary: #888888;
+    --text-muted: #555555;
+    --accent: #ff3e00;
+    --accent-hover: #ff5722;
+    --accent-dim: #cc3100;
+    --accent-glow: rgba(255, 62, 0, 0.3);
+    --border: #333333;
+    --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+/* This file complements the inline styles in index.html */
+/* Most styles are now inline for the integrated UI */
+
+/* Additional responsive adjustments */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 260px;
+    }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 220px;
+    }
+    
+    .starter-projects {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Mermaid diagram adjustments */
+.mermaid {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+}
+
+/* Animation for starter buttons */
+.starter-btn {
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.starter-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Loading animation */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 var(--accent-glow);
+    }
+    50% {
+        box-shadow: 0 0 20px 5px var(--accent-glow);
+    }
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite, pulse-glow 2s ease-in-out infinite;
+}
