@@ -883,7 +883,7 @@
  const model = document.getElementById('modelSelect').value;
 
  try {
- const response = await fetch('/api/generate', {
+ const response = await fetch('http://localhost:7777/api/generate', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
@@ -1009,7 +1009,7 @@
 
  document.getElementById('downloadBtn').addEventListener('click', () => {
  if (currentProjectId) {
- window.location.href = `/api/download/${currentProjectId}`;
+ window.location.href = `http://localhost:7777/api/download/${currentProjectId}`;
  } else {
  alert('Generate a project first!');
  }
