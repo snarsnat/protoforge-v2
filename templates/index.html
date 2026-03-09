@@ -7,27 +7,43 @@
     <link rel="stylesheet" href="/static/main.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     <style>
+        /* ============================================
+           ANTI-TROPE DESIGN SYSTEM
+           Deliberately breaking from AI product clichés
+           ============================================ */
+        
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #141414;
-            --bg-tertiary: #1c1c1c;
-            --bg-elevated: #222222;
-            --text-primary: #f0f0f0;
-            --text-secondary: #888888;
-            --text-muted: #555555;
+            /* NO purple/teal - Using bold orange-red */
             --accent: #ff3e00;
             --accent-hover: #ff5722;
             --accent-dim: #cc3100;
-            --accent-glow: rgba(255, 62, 0, 0.3);
+            
+            /* NO safe corporate grays - Using deep blacks */
+            --bg-primary: #080808;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --bg-elevated: #222222;
+            
+            /* NO soft whites - High contrast */
+            --text-primary: #f5f5f5;
+            --text-secondary: #888888;
+            --text-muted: #444444;
+            
+            /* NO rounded - Sharp edges */
             --border: #333333;
-            --border-focus: #ff3e00;
-            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+            
+            /* NO friendly fonts - Monospace */
+            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'IBM Plex Mono', monospace;
         }
 
+        /* ============================================
+           RESET - Sharp edges, NO border-radius
+           ============================================ */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            border-radius: 0 !important; /* FORCE sharp edges */
         }
 
         html { font-size: 16px; }
@@ -36,184 +52,188 @@
             font-family: var(--font-mono);
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.5;
+            line-height: 1.4;
             min-height: 100vh;
             overflow: hidden;
+            /* NO subtle shadows, NO frosted glass */
         }
 
-        /* Main Layout */
+        /* ============================================
+           LAYOUT - NO hero sections
+           ============================================ */
         .app-container {
             display: flex;
             flex-direction: column;
             height: 100vh;
+            background: var(--bg-primary);
         }
 
-        /* Top Bar */
+        /* Top Bar - Functional, not decorative */
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            gap: 1rem;
+            border-bottom: 2px solid var(--border);
         }
 
         .top-bar-left {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
+        /* NO gradient backgrounds */
         .config-group {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.35rem;
+            background: transparent;
+            padding: 0;
         }
 
         .config-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+            font-size: 0.65rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            font-weight: 500;
         }
 
         .config-group select,
         .config-group input {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             background: var(--bg-primary);
             color: var(--text-primary);
             border: 1px solid var(--border);
-            padding: 0.35rem 0.75rem;
+            padding: 0.3rem 0.5rem;
             outline: none;
+            /* NO rounded corners */
         }
 
-        .config-group select:focus,
-        .config-group input:focus {
-            border-color: var(--accent);
-        }
+        .config-group input { width: 140px; }
 
-        .config-group input {
-            width: 180px;
-        }
-
+        /* Type selector - NO rounded buttons */
         .type-selector {
             display: flex;
-            gap: 0;
+            border: 1px solid var(--border);
         }
 
         .type-btn {
             background: var(--bg-primary);
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            padding: 0.35rem 0.75rem;
+            color: var(--text-muted);
+            border: none;
+            border-right: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.1s;
         }
 
-        .type-btn:first-child { border-right: none; }
-        .type-btn:last-child { border-left: none; }
+        .type-btn:last-child { border-right: none; }
 
         .type-btn.active {
             background: var(--accent);
             color: white;
-            border-color: var(--accent);
         }
 
-        .type-btn:hover:not(.active) {
+        .type-btn:not(.active):hover {
             background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
+        /* Logo - NO sparkle, NO gradient */
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: -0.02em;
+            gap: 0.35rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: -0.03em;
         }
 
-        .logo-icon { font-size: 1.25rem; }
+        .logo-icon {
+            font-size: 1rem;
+            /* NO gradient text */
+        }
 
         .top-bar-right {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
+        /* NO "friendly" button styles */
         .btn-share,
         .btn-download {
             background: var(--bg-tertiary);
-            color: var(--text-primary);
+            color: var(--text-secondary);
             border: 1px solid var(--border);
-            padding: 0.35rem 0.75rem;
+            padding: 0.3rem 0.6rem;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .btn-share:hover,
-        .btn-download:hover {
-            border-color: var(--accent);
-            color: var(--accent);
         }
 
         .btn-download {
             background: var(--accent);
             border-color: var(--accent);
             color: white;
+            font-weight: 600;
         }
 
         .btn-download:hover {
             background: var(--accent-hover);
-            color: white;
         }
 
-        /* Main Content Area */
+        /* ============================================
+           MAIN AREA - NO card-based layout
+           ============================================ */
         .main-area {
             display: flex;
             flex: 1;
             overflow: hidden;
+            border-top: 1px solid var(--border);
         }
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
+            border-right: 2px solid var(--border);
             display: flex;
             flex-direction: column;
         }
 
         .sidebar-header {
-            padding: 1rem;
+            padding: 0.75rem;
             border-bottom: 1px solid var(--border);
         }
 
         .sidebar-header h3 {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+            font-size: 0.6rem;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
             margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
         .model-select {
             width: 100%;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             background: var(--bg-primary);
             color: var(--text-primary);
             border: 1px solid var(--border);
-            padding: 0.5rem;
+            padding: 0.4rem;
             cursor: pointer;
         }
 
@@ -221,44 +241,46 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 1rem;
+            padding: 0.75rem;
             overflow: hidden;
         }
 
         .chat-welcome {
-            text-align: center;
-            padding: 1rem 0;
-            margin-bottom: 1rem;
+            padding: 0.5rem 0;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .chat-welcome h2 {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+            color: var(--text-primary);
         }
 
         .chat-welcome p {
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
         }
 
-        /* Starter Projects - Schematik Style */
+        /* Starter Projects - NO card grids */
         .starter-projects {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            max-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-bottom: 0.75rem;
+            max-height: 160px;
             overflow-y: auto;
         }
 
+        /* NO rounded corners, NO hover lifts */
         .starter-btn {
-            background: var(--bg-tertiary);
+            background: var(--bg-primary);
             border: 1px solid var(--border);
-            padding: 0.5rem;
+            padding: 0.4rem 0.5rem;
             text-align: left;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: border-color 0.1s;
         }
 
         .starter-btn:hover {
@@ -266,25 +288,27 @@
         }
 
         .starter-btn .category {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            font-weight: 600;
         }
 
         .starter-btn .name {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-primary);
-            margin: 0.25rem 0;
+            margin: 0.15rem 0;
             font-weight: 500;
         }
 
         .starter-btn .desc {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             color: var(--text-muted);
             line-height: 1.3;
         }
 
+        /* Chat Input */
         .chat-input-area {
             margin-top: auto;
         }
@@ -295,10 +319,10 @@
             border: 1px solid var(--border);
             color: var(--text-primary);
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            padding: 0.75rem;
+            font-size: 0.65rem;
+            padding: 0.5rem;
             resize: none;
-            min-height: 60px;
+            min-height: 50px;
             outline: none;
         }
 
@@ -314,22 +338,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 0.5rem;
+            margin-top: 0.35rem;
         }
 
         .chat-hint {
-            font-size: 0.65rem;
+            font-size: 0.5rem;
             color: var(--text-muted);
         }
 
+        /* NO big CTA buttons */
         .btn-send {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.35rem 0.75rem;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
             cursor: pointer;
         }
 
@@ -345,29 +372,30 @@
             overflow: hidden;
         }
 
+        /* NO pill-shaped tabs */
         .workspace-tabs {
             display: flex;
             gap: 0;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 0 1rem;
+            border-bottom: 2px solid var(--border);
         }
 
         .workspace-tab {
             background: transparent;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             border: none;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
+            margin-bottom: -2px;
         }
 
         .workspace-tab:hover {
-            color: var(--text-primary);
+            color: var(--text-secondary);
         }
 
         .workspace-tab.active {
@@ -378,10 +406,11 @@
         .workspace-content {
             flex: 1;
             overflow: auto;
-            padding: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-primary);
         }
 
-        /* Empty State */
+        /* Empty State - NO marketing copy */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -389,35 +418,35 @@
             justify-content: center;
             height: 100%;
             text-align: center;
+            border: 1px dashed var(--border);
+            padding: 2rem;
         }
 
         .empty-state h3 {
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 0.8rem;
+            font-weight: 600;
             margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .empty-state p {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            max-width: 400px;
-            line-height: 1.6;
+            max-width: 350px;
+            line-height: 1.5;
         }
 
-        /* Generated Content Display */
-        .generated-content {
-            display: none;
-        }
-
-        .generated-content.show {
-            display: block;
-        }
+        /* Generated Content */
+        .generated-content { display: none; }
+        .generated-content.show { display: block; }
 
         /* 3D Model View */
         .model-view {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            min-height: 400px;
+            min-height: 350px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -425,16 +454,16 @@
 
         .model-placeholder {
             text-align: center;
-            color: var(--text-secondary);
+            color: var(--text-muted);
         }
 
         .model-placeholder p {
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
         }
 
         .model-placeholder small {
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
         }
 
@@ -442,30 +471,31 @@
         .diagram-view {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            padding: 1rem;
-            min-height: 400px;
+            padding: 0.75rem;
+            min-height: 350px;
             overflow: auto;
         }
 
-        /* BOM View */
+        /* BOM View - NO "Most Popular" badges */
         .bom-view table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
         .bom-view th,
         .bom-view td {
-            padding: 0.75rem;
+            padding: 0.5rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
 
         .bom-view th {
             color: var(--accent);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            font-weight: 600;
         }
 
         .bom-view .total-row {
@@ -474,66 +504,64 @@
         }
 
         .bom-view .total-row td {
-            padding-top: 1rem;
+            padding-top: 0.75rem;
         }
 
         /* Instructions View */
         .instructions-view {
-            font-size: 0.85rem;
-            line-height: 1.8;
+            font-size: 0.75rem;
+            line-height: 1.6;
         }
 
         .instructions-view h4 {
             color: var(--accent);
-            margin: 1.5rem 0 0.75rem;
-            font-size: 0.8rem;
+            margin: 1rem 0 0.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
         }
 
-        .instructions-view h4:first-child {
-            margin-top: 0;
+        .instructions-view h4:first-child { margin-top: 0; }
+
+        .instructions-view p {
+            color: var(--text-secondary);
         }
 
         .instructions-view ol {
-            padding-left: 1.5rem;
+            padding-left: 1rem;
             color: var(--text-secondary);
         }
 
         .instructions-view li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
         }
 
-        .instructions-view p {
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
-        }
-
-        /* Loading State */
+        /* Loading Overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(10, 10, 10, 0.9);
+            background: rgba(8, 8, 8, 0.95);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            border: 2px solid var(--accent);
         }
 
-        .loading-overlay.show {
-            display: flex;
-        }
+        .loading-overlay.show { display: flex; }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--border);
             border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 0.75rem;
         }
 
         @keyframes spin {
@@ -541,60 +569,62 @@
         }
 
         .loading-text {
-            font-size: 0.875rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .loading-steps {
-            margin-top: 1.5rem;
+            margin-top: 1rem;
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .loading-step {
-            font-size: 0.7rem;
+            font-size: 0.55rem;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .loading-step.active {
-            color: var(--accent);
-        }
+        .loading-step.active { color: var(--accent); }
 
-        .loading-step::before {
-            content: '○ ';
-        }
+        .loading-step::before { content: '[ ] '; }
+        .loading-step.active::before { content: '[●] '; }
 
-        .loading-step.active::before {
-            content: '● ';
-        }
-
-        /* Footer */
+        /* Footer - NO "made with love" */
         .footer {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1rem;
-            padding: 0.5rem;
+            gap: 0.75rem;
+            padding: 0.4rem;
             background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            font-size: 0.65rem;
+            border-top: 2px solid var(--border);
+            font-size: 0.55rem;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .footer-divider { color: var(--border); }
 
+        /* Scrollbar - Sharp */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
         /* Responsive */
-        @media (max-width: 1024px) {
-            .sidebar { width: 240px; }
-            .starter-projects { grid-template-columns: 1fr; }
+        @media (max-width: 900px) {
+            .sidebar { width: 220px; }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
             .main-area { flex-direction: column; }
-            .sidebar { width: 100%; max-height: 50vh; }
-            .top-bar { flex-wrap: wrap; }
+            .sidebar { width: 100%; max-height: 40vh; }
+            .top-bar { flex-wrap: wrap; gap: 0.5rem; }
             .config-group { flex-wrap: wrap; }
         }
     </style>
@@ -610,12 +640,11 @@
                         <option value="gpt4">GPT-4</option>
                         <option value="claude">Claude 3</option>
                         <option value="deepseek">DeepSeek</option>
-                        <option value="minimax">MiniMax</option>
                     </select>
                 </div>
                 <div class="config-group">
-                    <span class="config-label">API Key:</span>
-                    <input type="password" id="top-apikey" placeholder="sk-..." value="sk-simulated-key">
+                    <span class="config-label">Key:</span>
+                    <input type="password" id="top-apikey" placeholder="sk-..." value="sk-xxxx">
                 </div>
                 <div class="config-group">
                     <span class="config-label">Type:</span>
@@ -634,7 +663,7 @@
             
             <div class="top-bar-right">
                 <button class="btn-share">Share</button>
-                <button class="btn-download" onclick="downloadZip()">↓ Download .zip</button>
+                <button class="btn-download" onclick="downloadZip()">↓.zip</button>
             </div>
         </div>
 
@@ -643,59 +672,53 @@
             <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-header">
-                    <h3>// AI Configuration</h3>
+                    <h3>// AI Config</h3>
                     <select class="model-select" id="sidebar-model">
                         <option value="gpt4">GPT-4</option>
                         <option value="claude">Claude 3</option>
                         <option value="deepseek">DeepSeek</option>
-                        <option value="minimax">MiniMax</option>
                     </select>
                 </div>
                 
                 <div class="chat-area">
                     <div class="chat-welcome">
                         <h2>ProtoForge</h2>
-                        <p>Ready to forge. Describe your project and I'll generate the prototypes.</p>
+                        <p>Describe your project to generate prototypes.</p>
                     </div>
                     
-                    <!-- Starter Projects - Schematik Style -->
+                    <!-- Starter Projects -->
                     <div class="starter-projects">
-                        <button class="starter-btn" onclick="useStarter('Smart Home', 'Gesture-Controlled Mood Lamp', 'Wave to cycle colors, hold to dim, and save favorite lighting scenes.')">
+                        <button class="starter-btn" onclick="useStarter('Smart Home', 'Mood Lamp', 'Gesture-controlled lighting')">
                             <div class="category">Smart Home</div>
-                            <div class="name">Gesture-Controlled Mood Lamp</div>
-                            <div class="desc">Wave to cycle colors, hold to dim</div>
+                            <div class="name">Mood Lamp</div>
+                            <div class="desc">Gesture-controlled</div>
                         </button>
-                        <button class="starter-btn" onclick="useStarter('Robotics', 'Self-Balancing Rover', 'IMU-based stabilization with live battery and tilt stats on OLED.')">
+                        <button class="starter-btn" onclick="useStarter('Robotics', 'Rover', 'Self-balancing robot')">
                             <div class="category">Robotics</div>
                             <div class="name">Self-Balancing Rover</div>
-                            <div class="desc">IMU-based stabilization</div>
+                            <div class="desc">IMU stabilization</div>
                         </button>
-                        <button class="starter-btn" onclick="useStarter('Wearables', 'Fitness Wristband', 'Heart-rate sampling, step estimate, and low-power status display.')">
+                        <button class="starter-btn" onclick="useStarter('Wearables', 'Wristband', 'Fitness tracker')">
                             <div class="category">Wearables</div>
                             <div class="name">Fitness Wristband</div>
-                            <div class="desc">Heart-rate & step tracking</div>
+                            <div class="desc">Heart-rate monitoring</div>
                         </button>
-                        <button class="starter-btn" onclick="useStarter('Communication', 'ESP32 Kids Phone', 'Kid-safe mini phone with big buttons, approved contacts, and SOS mode.')">
-                            <div class="category">Communication</div>
-                            <div class="name">ESP32 Kids Phone</div>
-                            <div class="desc">Big buttons, SOS mode</div>
-                        </button>
-                        <button class="starter-btn" onclick="useStarter('Plant', 'Smart Plant Monitor', 'Temperature and humidity monitoring with watering alerts.')">
+                        <button class="starter-btn" onclick="useStarter('Plant', 'Plant Monitor', 'Temp & water alerts')">
                             <div class="category">Plant</div>
                             <div class="name">Smart Plant Monitor</div>
-                            <div class="desc">Temp, humidity, watering alerts</div>
+                            <div class="desc">Temperature & water</div>
                         </button>
-                        <button class="starter-btn" onclick="useStarter('Games', 'Arcade Reaction Tower', 'Fast reflex game with score tracking and LED flashes.')">
+                        <button class="starter-btn" onclick="useStarter('Games', 'Reaction Game', 'Reflex testing')">
                             <div class="category">Games</div>
-                            <div class="name">Arcade Reaction Tower</div>
-                            <div class="desc">Reflex game with scoring</div>
+                            <div class="name">Arcade Reaction</div>
+                            <div class="desc">Fast reflex game</div>
                         </button>
                     </div>
                     
                     <div class="chat-input-area">
-                        <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build..." rows="3">make me a smart plant monitor that checks temperature and water level and sends alerts</textarea>
+                        <textarea class="chat-input" id="chat-input" placeholder="Describe what you want to build...">smart plant monitor with temperature and water level sensors</textarea>
                         <div class="chat-actions">
-                            <span class="chat-hint">Press Enter to send</span>
+                            <span class="chat-hint">Enter to send</span>
                             <button class="btn-send" onclick="generate()">Send</button>
                         </div>
                     </div>
@@ -714,81 +737,66 @@
                 <div class="workspace-content">
                     <!-- Empty State -->
                     <div class="empty-state" id="empty-state">
-                        <h3>NO MODEL GENERATED</h3>
-                        <p>Tab content will show text saying prompt something to see stuff here if nothing is built. Describe your hardware project in the chat to generate a 3D model.</p>
+                        <h3>No Model Generated</h3>
+                        <p>Describe your hardware project to generate a 3D model, circuit diagram, BOM, and assembly instructions.</p>
                     </div>
                     
                     <!-- Generated Content -->
                     <div class="generated-content" id="generated-content">
-                        <!-- 3D Model Tab -->
                         <div class="tab-panel" id="panel-model">
                             <div class="model-view">
                                 <div class="model-placeholder">
-                                    <p>🎲 3D Model Generated</p>
+                                    <p>3D Model Generated</p>
                                     <small>enclosure.obj | enclosure.stl</small>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Diagram Tab -->
                         <div class="tab-panel" id="panel-diagram" style="display: none;">
                             <div class="diagram-view">
                                 <div class="mermaid" id="mermaid-chart">
 ```mermaid
 flowchart TB
-    subgraph Power["⚡ Power Source"]
-        USB["🔌 USB 5V"]
-        VCC["📍 VCC +5V"]
-        GND["📍 GND"]
+    subgraph Power["POWER"]
+        USB["USB 5V"]
+        VCC["VCC +5V"]
+        GND["GND"]
     end
     
-    subgraph Controller["🧠 Controller"]
-        ESP32["🎛️ ESP32 Dev Board"]
+    subgraph Controller["CONTROLLER"]
+        ESP32["ESP32"]
     end
     
-    subgraph Sensors["📟 Sensors"]
-        DHT22["🌡️ DHT22 Temp/Humidity"]
-        WaterLevel["💧 Water Level Sensor"]
+    subgraph Sensors["SENSORS"]
+        DHT22["DHT22 Temp"]
+        Water["Water Level"]
     end
     
-    subgraph Outputs["📤 Outputs"]
-        OLED["📺 OLED Display"]
-        LED["🔴 Status LED"]
-        Buzzer["🔔 Buzzer"]
-    end
-    
-    subgraph Communication["📡 Communication"]
-        WiFi["📶 WiFi Module"]
-        MQTT["📨 MQTT"]
+    subgraph Outputs["OUTPUTS"]
+        OLED["OLED Display"]
+        LED["Status LED"]
+        Buzzer["Buzzer"]
     end
     
     USB --> VCC
     USB --> GND
-    
     VCC --> ESP32
     ESP32 --> GND
-    
     DHT22 --> ESP32
-    WaterLevel --> ESP32
-    
+    Water --> ESP32
     ESP32 --> OLED
     ESP32 --> LED
     ESP32 --> Buzzer
     
-    ESP32 --> WiFi
-    WiFi --> MQTT
-    
-    style Power fill:#ff6b35,color:#fff
-    style Controller fill:#004e89,color:#fff
-    style Sensors fill:#7bc043,color:#fff
-    style Outputs fill:#ee4037,color:#fff
-    style Communication fill:#9b59b6,color:#fff
+    style Power fill:#333,color:#fff
+    style Controller fill:#222,color:#fff
+    style Sensors fill:#111,color:#fff
+    style Outputs fill:#000,color:#fff
 ```
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- BOM Tab -->
                         <div class="tab-panel" id="panel-bom" style="display: none;">
                             <div class="bom-view">
                                 <table>
@@ -800,97 +808,39 @@ flowchart TB
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>ESP32 Dev Board</td>
-                                            <td>1x</td>
-                                            <td>$8.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>DHT22 Temperature/Humidity Sensor</td>
-                                            <td>1x</td>
-                                            <td>$6.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Water Level Sensor (Capacitive)</td>
-                                            <td>1x</td>
-                                            <td>$3.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>OLED Display 0.96" I2C</td>
-                                            <td>1x</td>
-                                            <td>$4.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>RGB LED (WS2812)</td>
-                                            <td>1x</td>
-                                            <td>$1.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Buzzer 5V</td>
-                                            <td>1x</td>
-                                            <td>$1.50</td>
-                                        </tr>
-                                        <tr>
-                                            <td>USB Cable (Micro-USB)</td>
-                                            <td>1x</td>
-                                            <td>$3.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Jumper Wires (Pack)</td>
-                                            <td>1x</td>
-                                            <td>$2.00</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Breadboard</td>
-                                            <td>1x</td>
-                                            <td>$5.00</td>
-                                        </tr>
-                                        <tr class="total-row">
-                                            <td>TOTAL</td>
-                                            <td></td>
-                                            <td style="color: var(--accent);">$33.50</td>
-                                        </tr>
+                                        <tr><td>ESP32 Dev Board</td><td>1x</td><td>$8.00</td></tr>
+                                        <tr><td>DHT22 Sensor</td><td>1x</td><td>$6.00</td></tr>
+                                        <tr><td>Water Level Sensor</td><td>1x</td><td>$3.00</td></tr>
+                                        <tr><td>OLED 0.96"</td><td>1x</td><td>$4.00</td></tr>
+                                        <tr><td>RGB LED</td><td>1x</td><td>$1.00</td></tr>
+                                        <tr><td>Buzzer 5V</td><td>1x</td><td>$1.50</td></tr>
+                                        <tr><td>USB Cable</td><td>1x</td><td>$3.00</td></tr>
+                                        <tr><td>Jumper Wires</td><td>1x</td><td>$2.00</td></tr>
+                                        <tr><td>Breadboard</td><td>1x</td><td>$5.00</td></tr>
+                                        <tr class="total-row"><td>TOTAL</td><td></td><td style="color:var(--accent)">$33.50</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         
-                        <!-- Assemble Tab -->
                         <div class="tab-panel" id="panel-assemble" style="display: none;">
                             <div class="instructions-view">
-                                <h4>// STEP 1: WIRE THE SENSORS</h4>
-                                <p>• DHT22 Data Pin → ESP32 GPIO4 (D2)<br>
-                                • DHT22 VCC → ESP32 3.3V<br>
-                                • DHT22 GND → ESP32 GND<br>
-                                • Water Level Signal → ESP32 GPIO34 (ADC)<br>
-                                • Water Level VCC → ESP32 3.3V<br>
-                                • Water Level GND → ESP32 GND</p>
+                                <h4>// Step 1: Wire Sensors</h4>
+                                <p>DHT22 Data → GPIO4<br>Water Level → GPIO34<br>VCC 3.3V, GND</p>
                                 
-                                <h4>// STEP 2: CONNECT OUTPUTS</h4>
-                                <p>• OLED SDA → ESP32 GPIO21<br>
-                                • OLED SCL → ESP32 GPIO22<br>
-                                • RGB LED Data → ESP32 GPIO23<br>
-                                • Buzzer + → ESP32 GPIO18<br>
-                                • Buzzer - → ESP32 GND</p>
+                                <h4>// Step 2: Connect Outputs</h4>
+                                <p>OLED SDA→21, SCL→22<br>LED→23, Buzzer→18</p>
                                 
-                                <h4>// STEP 3: UPLOAD CODE</h4>
+                                <h4>// Step 3: Upload Code</h4>
                                 <ol>
-                                    <li>Install Arduino IDE or PlatformIO</li>
-                                    <li>Add ESP32 board support</li>
-                                    <li>Install libraries: DHT sensor, Adafruit OLED, PubSubClient</li>
-                                    <li>Open main.py and configure WiFi credentials</li>
-                                    <li>Upload to ESP32</li>
+                                    <li>Install Arduino IDE + ESP32</li>
+                                    <li>Libraries: DHT, OLED, PubSubClient</li>
+                                    <li>Configure WiFi + MQTT</li>
+                                    <li>Upload</li>
                                 </ol>
                                 
-                                <h4>// STEP 4: CONFIGURE MQTT</h4>
-                                <p>• Set your MQTT broker URL in config.json<br>
-                                • Topics: plant/monitor/temperature, plant/monitor/humidity, plant/monitor/water<br>
-                                • Configure alerts threshold in code</p>
-                                
-                                <h4>// STEP 5: ENCLOSURE</h4>
-                                <p>• 3D print enclosure using enclosure.stl<br>
-                                • Cut holes for sensors, display, and cables<br>
-                                • Mount ESP32 with standoffs</p>
+                                <h4>// Step 4: Enclosure</h4>
+                                <p>3D print enclosure.stl<br>Mount components</p>
                             </div>
                         </div>
                     </div>
@@ -900,21 +850,21 @@ flowchart TB
 
         <!-- Footer -->
         <div class="footer">
-            <span>Created by ProtoForge</span>
+            <span>ProtoForge</span>
             <span class="footer-divider">|</span>
-            <span>Your API key, your data</span>
+            <span>Your API key</span>
         </div>
     </div>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Generating your project...</div>
+        <div class="loading-text">Generating...</div>
         <div class="loading-steps">
             <div class="loading-step active" id="step1">Analyzing</div>
             <div class="loading-step" id="step2">Designing</div>
             <div class="loading-step" id="step3">Building</div>
-            <div class="loading-step" id="step4">Finalizing</div>
+            <div class="loading-step" id="step4">Done</div>
         </div>
     </div>
 
@@ -923,7 +873,8 @@ flowchart TB
         mermaid.initialize({ 
             startOnLoad: true,
             theme: 'dark',
-            securityLevel: 'loose'
+            securityLevel: 'loose',
+            flowchart: { curve: 'linear' }
         });
 
         // Type selector
@@ -939,7 +890,6 @@ flowchart TB
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                
                 const tabName = this.dataset.tab;
                 document.querySelectorAll('.tab-panel').forEach(panel => {
                     panel.style.display = 'none';
@@ -948,7 +898,7 @@ flowchart TB
             });
         });
 
-        // Use starter project
+        // Starter project
         function useStarter(category, name, desc) {
             const input = document.getElementById('chat-input');
             input.value = `make me a ${name.toLowerCase()} - ${desc}`;
@@ -957,7 +907,7 @@ flowchart TB
 
         // Download
         function downloadZip() {
-            alert('📦 Downloading protoforge-project.zip...\n\nContains:\n• circuit.md\n• components.md\n• enclosure.obj\n• enclosure.stl\n• BOM.md\n• README.md\n• main.py\n• config.json');
+            alert('Downloading protoforge-project.zip...');
         }
 
         // Generate
@@ -965,11 +915,9 @@ flowchart TB
             const prompt = document.getElementById('chat-input').value.trim();
             if (!prompt) return;
 
-            // Show loading
             const overlay = document.getElementById('loading-overlay');
             overlay.classList.add('show');
             
-            // Animate steps
             let step = 1;
             const interval = setInterval(() => {
                 document.querySelectorAll('.loading-step').forEach((s, i) => {
@@ -981,12 +929,11 @@ flowchart TB
                     setTimeout(() => {
                         overlay.classList.remove('show');
                         showResults();
-                    }, 800);
+                    }, 600);
                 }
-            }, 1000);
+            }, 800);
         }
 
-        // Show results
         function showResults() {
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('generated-content').classList.add('show');
@@ -1000,9 +947,9 @@ flowchart TB
             }
         });
 
-        // Auto-run on load for demo
+        // Auto-run demo
         window.addEventListener('load', function() {
-            setTimeout(generate, 500);
+            setTimeout(generate, 400);
         });
     </script>
 </body>
