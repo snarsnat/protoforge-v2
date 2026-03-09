@@ -233,6 +233,32 @@ async def reload_memory():
     return {"success": True}
 
 
+@app.post("/api/test-key")
+async def test_api_key(request: GenerateRequest):
+    """Test if an API key works"""
+    try:
+        from src.gateway.generator import ProtoForgeGenerator
+        
+        generator = ProtoForgeGenerator(
+            api_key=request.api_key,
+            provider=request.provider
+        )
+        
+        # Try a simple call
+        response = generator._call_ai(
+            system_prompt="You are a helpful assistant. Reply with just 'OK' if you understand.",
+            user_prompt="Reply with 'OK'"
+        )
+        
+        if "ok" in response.lower():
+            return {"success": True, "message": "API key works!", "response": response[:100]}
+        else:
+            return {"success": True, "message": "API key accepted but response unexpected", "response": response[:100]}
+            
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
 @app.post("/api/generate")
 async def generate(request: GenerateRequest):
     """Generate a prototype using AI"""

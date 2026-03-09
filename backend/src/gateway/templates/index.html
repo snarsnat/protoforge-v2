@@ -1,738 +1,1054 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <title>ProtoForge</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --surface: #111111;
-            --surface-2: #1a1a1a;
-            --border: #222222;
-            --text: #f0f0f0;
-            --text-2: #888888;
-            --text-3: #555555;
-            --accent: #ff3e00;
-            --accent-hover: #ff5722;
-        }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>ProtoForge v2</title>
+ <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+ <link rel="icon" href="/favicon.ico" type="image/x-icon">
+ <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+ <style>
+ :root {
+ --bg-primary: #1e1e1e;
+ --bg-secondary: #252526;
+ --bg-tertiary: #2d2d30;
+ --bg-input: #3c3c3c;
+ --bg-hover: #2a2d2e;
 
-        [data-theme="light"] {
-            --bg: #ffffff;
-            --surface: #f5f5f5;
-            --surface-2: #eeeeee;
-            --border: #e0e0e0;
-            --text: #0a0a0a;
-            --text-2: #555555;
-            --text-3: #999999;
-            --accent: #ff3e00;
-            --accent-hover: #d32f2f;
-        }
+ --text-primary: #cccccc;
+ --text-secondary: #858585;
+ --text-muted: #6a6a6a;
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+ --accent: #ff3e00;
+ --accent-hover: #ff5722;
 
-        body {
-            font-family: 'IBM Plex Mono', monospace;
-            background: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-            font-size: 13px;
-            transition: all 0.3s ease;
-        }
+ --border-subtle: #454545;
+ --border-focus: #ff3e00;
 
-        .app { display: flex; height: 100vh; }
+ --divider-width: 5px;
+ --divider-color: #ff3e00;
 
-        /* Sidebar */
-        .sidebar {
-            width: 320px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 32px 24px;
-        }
+ --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
+ --sidebar-width: 340px;
+ }
 
-        .logo-icon {
-            font-size: 24px;
-        }
+ [data-theme="light"] {
+ --bg-primary: #ffffff;
+ --bg-secondary: #f5f5f5;
+ --bg-tertiary: #e8e8e8;
+ --bg-input: #ffffff;
+ --bg-hover: #e5e5e5;
 
-        .logo-text {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
+ --text-primary: #1e1e1e;
+ --text-secondary: #616161;
+ --text-muted: #8e8e8e;
 
-        .tagline {
-            font-size: 11px;
-            color: var(--text-3);
-            margin-bottom: 32px;
-        }
+ --border-subtle: #d4d4d4;
+ }
 
-        .section { margin-bottom: 24px; }
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ }
 
-        .label {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-3);
-            margin-bottom: 8px;
-        }
+ body {
+ font-family: var(--font-mono);
+ background: var(--bg-primary);
+ color: var(--text-primary);
+ font-size: 13px;
+ line-height: 1.5;
+ height: 100vh;
+ width: 100vw;
+ overflow: hidden;
+ }
 
-        select, input {
-            width: 100%;
-            padding: 12px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
+ .app-container {
+ display: grid;
+ grid-template-columns: var(--sidebar-width) 1fr;
+ grid-template-rows: 1fr;
+ height: 100vh;
+ width: 100vw;
+ }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+ .sidebar {
+ background: var(--bg-secondary);
+ display: flex;
+ flex-direction: column;
+ border-right: var(--divider-width) solid var(--divider-color);
+ overflow: hidden;
+ }
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--accent);
-            border: none;
-            color: white;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            margin-top: 16px;
-        }
+ .sidebar-header {
+ padding: 16px;
+ border-bottom: 1px solid var(--border-subtle);
+ background: var(--bg-tertiary);
+ }
 
-        .btn:hover { background: var(--accent-hover); }
+ .sidebar-title {
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: var(--text-secondary);
+ margin-bottom: 16px;
+ }
 
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
+ .config-group {
+ margin-bottom: 16px;
+ }
 
-        .btn-outline:hover {
-            background: var(--accent);
-            color: white;
-        }
+ .config-group:last-child {
+ margin-bottom: 0;
+ }
 
-        /* Main */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px;
-        }
+ .config-label {
+ font-size: 10px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: var(--text-secondary);
+ margin-bottom: 6px;
+ display: block;
+ }
 
-        .main-title {
-            font-size: 42px;
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 12px;
-        }
+ .config-select {
+ width: 100%;
+ padding: 8px 10px;
+ font-family: var(--font-mono);
+ font-size: 12px;
+ background: var(--bg-input);
+ border: 1px solid var(--border-subtle);
+ color: var(--text-primary);
+ cursor: pointer;
+ outline: none;
+ border-radius: 0;
+ }
 
-        .main-subtitle {
-            font-size: 14px;
-            color: var(--text-2);
-            margin-bottom: 40px;
-            max-width: 500px;
-        }
+ .config-select:focus {
+ border-color: var(--border-focus);
+ }
 
-        .chat-container {
-            width: 100%;
-            max-width: 800px;
-        }
+ .config-input {
+ width: 100%;
+ padding: 8px 10px;
+ font-family: var(--font-mono);
+ font-size: 12px;
+ background: var(--bg-input);
+ border: 1px solid var(--border-subtle);
+ color: var(--text-primary);
+ outline: none;
+ border-radius: 0;
+ }
 
-        .chat-messages {
-            height: 300px;
-            overflow-y: auto;
-            margin-bottom: 16px;
-            text-align: left;
-        }
+ .config-input:focus {
+ border-color: var(--border-focus);
+ }
 
-        .message {
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            background: var(--surface-2);
-            border-left: 3px solid var(--accent);
-        }
+ .project-toggle {
+ display: flex;
+ border: 1px solid var(--border-subtle);
+ }
 
-        .message.user {
-            background: var(--accent);
-            color: white;
-            border-left: none;
-        }
+ .project-toggle-btn {
+ flex: 1;
+ padding: 8px;
+ font-family: var(--font-mono);
+ font-size: 10px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ background: transparent;
+ border: none;
+ color: var(--text-secondary);
+ cursor: pointer;
+ }
 
-        .chat-input-wrap {
-            display: flex;
-            gap: 8px;
-        }
+ .project-toggle-btn:not(:last-child) {
+ border-right: 1px solid var(--border-subtle);
+ }
 
-        .chat-input {
-            flex: 1;
-            padding: 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 13px;
-            resize: none;
-            min-height: 50px;
-        }
+ .project-toggle-btn.active {
+ background: var(--accent);
+ color: #fff;
+ }
 
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+ .chat-section {
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ overflow: hidden;
+ min-height: 0;
+ }
 
-        .send-btn {
-            padding: 16px 24px;
-            background: var(--accent);
-            border: none;
-            color: white;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+ .chat-header {
+ padding: 10px 16px;
+ font-size: 10px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: var(--text-secondary);
+ background: var(--bg-tertiary);
+ border-bottom: 1px solid var(--border-subtle);
+ }
 
-        .send-btn:hover { background: var(--accent-hover); }
+ .chat-messages {
+ flex: 1;
+ overflow-y: auto;
+ padding: 12px;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
+ }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
+ .chat-message {
+ padding: 10px 12px;
+ border: 1px solid var(--border-subtle);
+ font-size: 12px;
+ line-height: 1.5;
+ }
 
-        .theme-toggle:hover { border-color: var(--accent); }
+ .chat-message.user {
+ border-color: var(--accent);
+ border-left: 3px solid var(--accent);
+ }
 
-        /* Loading */
-        .loading {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-2);
-            padding: 12px;
-        }
+ .chat-message.ai {
+ border-color: var(--border-subtle);
+ background: var(--bg-tertiary);
+ }
 
-        .dots { display: flex; gap: 4px; }
-        .dots span {
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            animation: bounce 1.4s infinite ease-in-out;
-        }
+ .chat-message-label {
+ font-size: 9px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: var(--text-muted);
+ margin-bottom: 4px;
+ }
 
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
+ .chat-message.loading {
+ border-color: var(--accent);
+ background: var(--bg-tertiary);
+ }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            background: var(--surface-2);
-            border: 1px solid var(--accent);
-            color: var(--text);
-            font-size: 12px;
-            z-index: 1000;
-        }
+ .typing-indicator {
+ display: flex;
+ gap: 4px;
+ margin-top: 8px;
+ }
 
-        .toast.error { border-color: #ff1744; }
-        .toast.success { border-color: #00c853; }
+ .typing-dot {
+ width: 6px;
+ height: 6px;
+ background: var(--accent);
+ animation: typing 1.4s infinite;
+ }
 
-        /* Preview Panel */
-        .preview-panel {
-            display: none;
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 40px;
-        }
+ .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+ .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-        .preview-panel.active { display: block; }
+ @keyframes typing {
+ 0%, 100% { opacity: 0.3; }
+ 50% { opacity: 1; }
+ }
 
-        .preview-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            margin-bottom: 16px;
-        }
+ .chat-input-section {
+ padding: 12px;
+ border-top: 1px solid var(--border-subtle);
+ background: var(--bg-tertiary);
+ }
 
-        .preview-tabs {
-            display: flex;
-            gap: 4px;
-        }
+ .chat-textarea {
+ width: 100%;
+ min-height: 80px;
+ max-height: 150px;
+ padding: 10px;
+ font-family: var(--font-mono);
+ font-size: 12px;
+ background: var(--bg-input);
+ border: 1px solid var(--border-subtle);
+ color: var(--text-primary);
+ resize: vertical;
+ outline: none;
+ border-radius: 0;
+ }
 
-        .preview-tab {
-            padding: 8px 16px;
-            background: transparent;
-            border: none;
-            color: var(--text-2);
-            font-family: inherit;
-            font-size: 11px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
+ .chat-textarea:focus {
+ border-color: var(--border-focus);
+ }
 
-        .preview-tab.active {
-            background: var(--accent);
-            color: white;
-        }
+ .chat-actions {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-top: 8px;
+ }
 
-        .preview-actions {
-            display: flex;
-            gap: 8px;
-        }
+ .send-btn {
+ padding: 8px 20px;
+ font-family: var(--font-mono);
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ background: var(--accent);
+ border: none;
+ color: #fff;
+ cursor: pointer;
+ border-radius: 0;
+ }
 
-        .preview-btn {
-            padding: 8px 16px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 11px;
-            cursor: pointer;
-        }
+ .send-btn:hover {
+ background: var(--accent-hover);
+ }
 
-        .preview-btn:hover { border-color: var(--accent); }
+ .main-area {
+ display: flex;
+ flex-direction: column;
+ overflow: hidden;
+ background: var(--bg-primary);
+ }
 
-        .preview-btn.primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
+ .top-header {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 12px 20px;
+ background: var(--bg-tertiary);
+ border-bottom: 1px solid var(--border-subtle);
+ }
 
-        .preview-content {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            min-height: 400px;
-            padding: 20px;
-        }
+ .logo {
+ font-size: 16px;
+ font-weight: 600;
+ color: var(--accent);
+ letter-spacing: -0.5px;
+ }
 
-        .file-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-        }
+ .header-actions {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ }
 
-        .file-item {
-            padding: 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            cursor: pointer;
-        }
+ .header-btn {
+ padding: 6px 14px;
+ font-family: var(--font-mono);
+ font-size: 11px;
+ font-weight: 500;
+ background: transparent;
+ border: 1px solid var(--border-subtle);
+ color: var(--text-primary);
+ cursor: pointer;
+ border-radius: 0;
+ }
 
-        .file-item:hover { border-color: var(--accent); }
+ .header-btn:hover {
+ border-color: var(--accent);
+ color: var(--accent);
+ }
 
-        .file-name { font-size: 12px; margin-bottom: 4px; }
-        .file-type { font-size: 10px; color: var(--text-3); text-transform: uppercase; }
+ .header-btn.primary {
+ background: var(--accent);
+ border-color: var(--accent);
+ color: #fff;
+ }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-2);
-        }
+ .theme-toggle {
+ width: 32px;
+ height: 32px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ cursor: pointer;
+ border: 1px solid var(--border-subtle);
+ background: transparent;
+ color: var(--text-secondary);
+ }
 
-        .empty-icon { font-size: 48px; margin-bottom: 16px; }
-    </style>
+ .theme-toggle:hover {
+ color: var(--accent);
+ border-color: var(--accent);
+ }
+
+ .theme-toggle svg {
+ width: 16px;
+ height: 16px;
+ fill: currentColor;
+ }
+
+ .tab-bar {
+ display: flex;
+ background: var(--bg-secondary);
+ border-bottom: 2px solid var(--divider-color);
+ overflow-x: auto;
+ }
+
+ .tab-btn {
+ padding: 12px 24px;
+ font-family: var(--font-mono);
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ background: transparent;
+ border: none;
+ color: var(--text-secondary);
+ cursor: pointer;
+ border-right: 1px solid var(--border-subtle);
+ }
+
+ .tab-btn:hover {
+ color: var(--text-primary);
+ background: var(--bg-hover);
+ }
+
+ .tab-btn.active {
+ color: var(--text-primary);
+ background: var(--bg-primary);
+ border-bottom: 2px solid var(--accent);
+ margin-bottom: -2px;
+ }
+
+ .tab-content {
+ flex: 1;
+ overflow: hidden;
+ display: flex;
+ flex-direction: column;
+ }
+
+ .tab-pane {
+ display: none;
+ flex: 1;
+ overflow-y: auto;
+ padding: 24px;
+ }
+
+ .tab-pane.active {
+ display: block;
+ }
+
+ .empty-state {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ height: 100%;
+ text-align: center;
+ color: var(--text-muted);
+ }
+
+ .empty-state-title {
+ font-size: 16px;
+ font-weight: 600;
+ color: var(--text-secondary);
+ margin-bottom: 8px;
+ }
+
+ .empty-state-text {
+ font-size: 12px;
+ color: var(--text-muted);
+ max-width: 350px;
+ }
+
+ .generated-content {
+ display: none;
+ }
+
+ .generated-content.visible {
+ display: block;
+ }
+
+ .content-section {
+ margin-bottom: 32px;
+ }
+
+ .content-section-title {
+ font-size: 12px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: var(--accent);
+ margin-bottom: 16px;
+ padding-bottom: 8px;
+ border-bottom: 1px solid var(--border-subtle);
+ }
+
+ .diagram-container {
+ background: var(--bg-secondary);
+ border: 1px solid var(--border-subtle);
+ padding: 20px;
+ margin-bottom: 24px;
+ overflow-x: auto;
+ }
+
+ .diagram-container svg {
+ max-width: 100%;
+ height: auto;
+ }
+
+ .model-viewer {
+ background: var(--bg-secondary);
+ border: 1px solid var(--border-subtle);
+ height: 400px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ margin-bottom: 24px;
+ position: relative;
+ overflow: hidden;
+ }
+
+ .model-canvas {
+ width: 100%;
+ height: 100%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+
+ .model-placeholder {
+ text-align: center;
+ color: var(--text-muted);
+ }
+
+ .model-placeholder svg {
+ width: 64px;
+ height: 64px;
+ fill: var(--accent);
+ margin-bottom: 16px;
+ opacity: 0.6;
+ }
+
+ .bom-table {
+ width: 100%;
+ border-collapse: collapse;
+ font-size: 12px;
+ margin-bottom: 24px;
+ }
+
+ .bom-table th,
+ .bom-table td {
+ padding: 10px 12px;
+ text-align: left;
+ border: 1px solid var(--border-subtle);
+ }
+
+ .bom-table th {
+ background: var(--bg-tertiary);
+ font-weight: 600;
+ font-size: 10px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: var(--text-secondary);
+ }
+
+ .instruction-list {
+ display: flex;
+ flex-direction: column;
+ gap: 16px;
+ }
+
+ .instruction-step {
+ display: flex;
+ gap: 16px;
+ padding: 16px;
+ background: var(--bg-secondary);
+ border: 1px solid var(--border-subtle);
+ border-left: 3px solid var(--accent);
+ }
+
+ .step-number {
+ font-size: 24px;
+ font-weight: 600;
+ color: var(--accent);
+ min-width: 40px;
+ }
+
+ .step-content h4 {
+ font-size: 14px;
+ font-weight: 600;
+ margin-bottom: 8px;
+ color: var(--text-primary);
+ }
+
+ .step-content p {
+ font-size: 12px;
+ color: var(--text-secondary);
+ line-height: 1.6;
+ }
+
+ .code-block {
+ background: var(--bg-tertiary);
+ border: 1px solid var(--border-subtle);
+ padding: 16px;
+ font-family: var(--font-mono);
+ font-size: 11px;
+ overflow-x: auto;
+ white-space: pre-wrap;
+ line-height: 1.6;
+ margin-bottom: 24px;
+ }
+
+ ::-webkit-scrollbar {
+ width: 8px;
+ height: 8px;
+ }
+
+ ::-webkit-scrollbar-track {
+ background: var(--bg-secondary);
+ }
+
+ ::-webkit-scrollbar-thumb {
+ background: var(--border-subtle);
+ }
+
+ ::-webkit-scrollbar-thumb:hover {
+ background: var(--accent);
+ }
+
+ @media (max-width: 800px) {
+ :root {
+ --sidebar-width: 280px;
+ }
+ }
+
+ @media (max-width: 600px) {
+ .app-container {
+ grid-template-columns: 1fr;
+ }
+ .sidebar {
+ display: none;
+ }
+ }
+ </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()">
-        <span id="theme-icon">☀</span>
-    </button>
+ <div class="app-container">
+ <aside class="sidebar">
+ <div class="sidebar-header">
+ <div class="sidebar-title">AI Configuration</div>
 
-    <div class="app">
-        <aside class="sidebar">
-            <div class="logo">
-                <span class="logo-icon">🔥</span>
-                <span class="logo-text">PROTOFORGE</span>
-            </div>
-            <p class="tagline">Connect an AI model to get started</p>
+ <div class="config-group">
+ <label class="config-label">AI Model</label>
+ <select class="config-select" id="modelSelect">
+ <option value="gpt-4o">GPT-4o</option>
+ <option value="claude-3-5">Claude 3.5 Sonnet</option>
+ <option value="deepseek-v2">DeepSeek V2</option>
+ <option value="minimax">MiniMax</option>
+ </select>
+ </div>
 
-            <div class="section">
-                <div class="label">Provider</div>
-                <select id="provider">
-                    <option value="ollama">Ollama (Free)</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="deepseek">DeepSeek</option>
-                    <option value="kimi">Kimi</option>
-                    <option value="minimax">MiniMax</option>
-                    <option value="groq">Groq</option>
-                    <option value="together">Together AI</option>
-                    <option value="siliconflow">SiliconFlow</option>
-                    <option value="qwen">Qwen</option>
-                </select>
-            </div>
+ <div class="config-group">
+ <label class="config-label">API Key</label>
+ <input type="password" class="config-input" id="apiKey" placeholder="sk-...">
+ <button class="send-btn" id="testKeyBtn" style="margin-top:8px;width:100%;">Test Key</button>
+ <div id="testKeyResult" style="font-size:10px;margin-top:4px;"></div>
+ </div>
 
-            <div class="section">
-                <div class="label">Model</div>
-                <select id="model">
-                    <option value="">Select model...</option>
-                </select>
-            </div>
+ <div class="config-group">
+ <label class="config-label">Project Type</label>
+ <div class="project-toggle">
+ <button class="project-toggle-btn active" data-type="software">Software</button>
+ <button class="project-toggle-btn" data-type="hardware">Hardware</button>
+ <button class="project-toggle-btn" data-type="hybrid">Hybrid</button>
+ </div>
+ </div>
+ </div>
 
-            <div class="section">
-                <div class="label">API Key</div>
-                <input type="password" id="apiKey" placeholder="Enter API key...">
-            </div>
+ <div class="chat-section">
+ <div class="chat-header">Chat</div>
+ <div class="chat-messages" id="chatMessages">
+ <div class="chat-message ai">
+ <div class="chat-message-label">ProtoForge</div>
+ Ready to forge. Describe your project and I'll generate the prototypes.
+ </div>
+ </div>
+ <div class="chat-input-section">
+ <textarea class="chat-textarea" id="chatInput" placeholder="Describe what you want to build..."></textarea>
+ <div class="chat-actions">
+ <span style="font-size: 10px; color: var(--text-muted);">Enter to send</span>
+ <button class="send-btn" id="sendBtn">Send</button>
+ </div>
+ </div>
+ </div>
+ </aside>
 
-            <div class="section">
-                <div class="label">Mode</div>
-                <select id="mode">
-                    <option value="software">Software</option>
-                    <option value="hardware">Hardware</option>
-                    <option value="hybrid">Hybrid</option>
-                </select>
-            </div>
+ <main class="main-area">
+ <header class="top-header">
+ <div class="logo"><img src="/favicon.png" style="height:24px;margin-right:8px;vertical-align:middle;">PROTOFORGE</div>
+ <div class="header-actions">
+ <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+ <svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+ </button>
+ <button class="header-btn" id="shareBtn">Share</button>
+ <button class="header-btn primary" id="downloadBtn">Download .zip</button>
+ </div>
+ </header>
 
-            <button class="btn" onclick="connect()">Connect</button>
-            <button class="btn btn-outline" onclick="testKey()" style="margin-top: 8px;">Test Key</button>
-        </aside>
+ <div class="tab-bar">
+ <button class="tab-btn active" data-tab="model">3D Model</button>
+ <button class="tab-btn" data-tab="diagram">Diagram</button>
+ <button class="tab-btn" data-tab="bom">BOM</button>
+ <button class="tab-btn" data-tab="instructions">Instructions</button>
+ <button class="tab-btn" data-tab="code">Code</button>
+ </div>
 
-        <main class="main">
-            <h1 class="main-title">What would you like to build?</h1>
-            <p class="main-subtitle">Describe your project and the AI will generate code, schematics, and instructions.</p>
+ <div class="tab-content">
+ <div class="tab-pane active" id="tab-model">
+ <div class="empty-state" id="model-empty">
+ <div class="empty-state-title">NO MODEL GENERATED</div>
+ <div class="empty-state-text">Describe your project in the chat to generate a 3D model.</div>
+ </div>
+ <div class="generated-content" id="model-content">
+ <div class="content-section">
+ <div class="content-section-title">3D Model Preview</div>
+ <div class="model-viewer">
+ <div class="model-canvas" id="model-canvas"></div>
+ </div>
+ </div>
+ <div class="content-section">
+ <div class="content-section-title">Model Specifications</div>
+ <div class="code-block" id="model-specs"></div>
+ </div>
+ </div>
+ </div>
 
-            <div class="chat-container">
-                <div class="chat-messages" id="messages">
-                    <div class="message">
-                        Welcome to ProtoForge. Connect your API key and describe what you want to build.
-                    </div>
-                </div>
-                <div class="chat-input-wrap">
-                    <textarea class="chat-input" id="chatInput" placeholder="I want to build a..." rows="1" onkeydown="handleKey(event)"></textarea>
-                    <button class="send-btn" onclick="send()">Build</button>
-                </div>
-            </div>
+ <div class="tab-pane" id="tab-diagram">
+ <div class="empty-state" id="diagram-empty">
+ <div class="empty-state-title">NO DIAGRAM GENERATED</div>
+ <div class="empty-state-text">Describe your circuit or system to generate a wiring diagram.</div>
+ </div>
+ <div class="generated-content" id="diagram-content">
+ <div class="content-section">
+ <div class="content-section-title">System Diagram (Mermaid.js)</div>
+ <div class="diagram-container" id="mermaid-diagram"></div>
+ </div>
+ </div>
+ </div>
 
-            <div class="preview-panel" id="previewPanel">
-                <div class="preview-header">
-                    <div class="preview-tabs">
-                        <button class="preview-tab active" onclick="setTab('files')">Files</button>
-                        <button class="preview-tab" onclick="setTab('code')">Code</button>
-                        <button class="preview-tab" onclick="setTab('bom')">BOM</button>
-                        <button class="preview-tab" onclick="setTab('instructions')">Instructions</button>
-                    </div>
-                    <div class="preview-actions">
-                        <button class="preview-btn" onclick="share()">Share</button>
-                        <button class="preview-btn primary" onclick="download()">Download</button>
-                    </div>
-                </div>
-                <div class="preview-content" id="previewContent">
-                    <div class="empty-state">
-                        <div class="empty-icon">📁</div>
-                        <div>Build something to see your files here</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+ <div class="tab-pane" id="tab-bom">
+ <div class="empty-state" id="bom-empty">
+ <div class="empty-state-title">BILL OF MATERIALS</div>
+ <div class="empty-state-text">Your component list will appear here.</div>
+ </div>
+ <div class="generated-content" id="bom-content">
+ <div class="content-section">
+ <div class="content-section-title">Components List</div>
+ <table class="bom-table">
+ <thead>
+ <tr>
+ <th>#</th>
+ <th>Component</th>
+ <th>Quantity</th>
+ <th>Reference</th>
+ <th>Notes</th>
+ </tr>
+ </thead>
+ <tbody id="bom-body"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
 
-    <div class="toast" id="toast" style="display: none;"></div>
+ <div class="tab-pane" id="tab-instructions">
+ <div class="empty-state" id="instructions-empty">
+ <div class="empty-state-title">NO INSTRUCTIONS</div>
+ <div class="empty-state-text">Assembly instructions will appear here.</div>
+ </div>
+ <div class="generated-content" id="instructions-content">
+ <div class="content-section">
+ <div class="content-section-title">Assembly Instructions</div>
+ <div class="instruction-list" id="instruction-list"></div>
+ </div>
+ </div>
+ </div>
 
-    <script>
-        let config = { provider: 'ollama', api_key: '', model: '' };
-        let files = [];
+ <div class="tab-pane" id="tab-code">
+ <div class="empty-state" id="code-empty">
+ <div class="empty-state-title">NO CODE GENERATED</div>
+ <div class="empty-state-text">Source code will appear here.</div>
+ </div>
+ <div class="generated-content" id="code-content">
+ <div class="content-section">
+ <div class="content-section-title">Generated Source Code</div>
+ <div class="code-block" id="source-code"></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </main>
+ </div>
 
-        // Models per provider
-        const models = {
-            ollama: ['llama3.2:3b', 'qwen2.5-coder:3b', 'qwen2.5-coder:7b', 'phi3:latest'],
-            openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4'],
-            anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
-            deepseek: ['deepseek-chat', 'deepseek-coder'],
-            kimi: ['kimi-k2-turbo-preview', 'moonshot-v1-8k'],
-            minimax: ['abab6.5s-chat'],
-            groq: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768'],
-            together: ['meta-llama/Llama-3.3-70B-Instruct-Turbo-Free'],
-            siliconflow: ['Qwen/Qwen2.5-7B-Instruct'],
-            qwen: ['qwen-turbo', 'qwen-plus']
-        };
+ <script>
+ // Initialize Mermaid
+ mermaid.initialize({
+ startOnLoad: false,
+ theme: 'dark',
+ themeVariables: {
+ primaryColor: '#ff3e00',
+ primaryTextColor: '#ffffff',
+ primaryBorderColor: '#ff3e00',
+ lineColor: '#ff3e00',
+ secondaryColor: '#2d2d30',
+ tertiaryColor: '#252526'
+ }
+ });
 
-        // Theme
-        function toggleTheme() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            if (html.getAttribute('data-theme') === 'light') {
-                html.setAttribute('data-theme', 'dark');
-                icon.textContent = '☀';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                html.setAttribute('data-theme', 'light');
-                icon.textContent = '☾';
-                localStorage.setItem('theme', 'light');
-            }
-        }
+ // Theme Toggle
+ const themeToggle = document.getElementById('themeToggle');
+ const html = document.documentElement;
 
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('theme-icon').textContent = savedTheme === 'light' ? '☾' : '☀';
+ themeToggle.addEventListener('click', () => {
+ const currentTheme = html.getAttribute('data-theme');
+ const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+ html.setAttribute('data-theme', newTheme);
+ if (window.currentDiagram) renderMermaid(window.currentDiagram);
+ });
 
-        // Provider change
-        document.getElementById('provider').addEventListener('change', function() {
-            const provider = this.value;
-            const modelSelect = document.getElementById('model');
-            modelSelect.innerHTML = '<option value="">Select model...</option>';
-            
-            if (models[provider]) {
-                models[provider].forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m;
-                    opt.textContent = m;
-                    modelSelect.appendChild(opt);
-                });
-            }
-            
-            config.provider = provider;
-            localStorage.setItem('protoforge_config', JSON.stringify(config));
-        });
+ // Project Type Toggle
+ const projectToggleBtns = document.querySelectorAll('.project-toggle-btn');
+ projectToggleBtns.forEach(btn => {
+ btn.addEventListener('click', () => {
+ projectToggleBtns.forEach(b => b.classList.remove('active'));
+ btn.classList.add('active');
+ });
+ });
 
-        document.getElementById('model').addEventListener('change', function() {
-            config.model = this.value;
-            localStorage.setItem('protoforge_config', JSON.stringify(config));
-        });
+ // Tab Navigation
+ const tabBtns = document.querySelectorAll('.tab-btn');
+ const tabPanes = document.querySelectorAll('.tab-pane');
 
-        // Load config
-        function loadConfig() {
-            const saved = localStorage.getItem('protoforge_config');
-            if (saved) {
-                config = JSON.parse(saved);
-                document.getElementById('provider').value = config.provider;
-                document.getElementById('apiKey').value = config.api_key || '';
-                document.getElementById('model').value = config.model || '';
-                
-                // Trigger provider change to populate models
-                document.getElementById('provider').dispatchEvent(new Event('change'));
-            }
-        }
+ tabBtns.forEach(btn => {
+ btn.addEventListener('click', () => {
+ const tabId = btn.dataset.tab;
+ tabBtns.forEach(b => b.classList.remove('active'));
+ tabPanes.forEach(p => p.classList.remove('active'));
+ btn.classList.add('active');
+ document.getElementById(`tab-${tabId}`).classList.add('active');
+ });
+ });
 
-        function connect() {
-            const apiKey = document.getElementById('apiKey').value;
-            const provider = document.getElementById('provider').value;
-            const model = document.getElementById('model').value;
-            
-            if (!apiKey && provider !== 'ollama') {
-                showToast('Please enter an API key', 'error');
-                return;
-            }
-            
-            if (!model) {
-                showToast('Please select a model', 'error');
-                return;
-            }
-            
-            config = { provider, api_key: apiKey, model };
-            localStorage.setItem('protoforge_config', JSON.stringify(config));
-            showToast('Connected to ' + provider, 'success');
-        }
+ // Chat
+ const chatInput = document.getElementById('chatInput');
+ const sendBtn = document.getElementById('sendBtn');
+ const chatMessages = document.getElementById('chatMessages');
 
-        async function testKey() {
-            const apiKey = document.getElementById('apiKey').value;
-            const provider = document.getElementById('provider').value;
-            
-            if (!apiKey && provider !== 'ollama') {
-                showToast('Please enter an API key', 'error');
-                return;
-            }
-            
-            showToast('Testing...', 'success');
-            
-            try {
-                const res = await fetch('/api/test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ api_key: apiKey || 'test', provider })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    showToast('API key works!', 'success');
-                } else {
-                    showToast(data.error || 'API key failed', 'error');
-                }
-            } catch (e) {
-                showToast('Test failed: ' + e.message, 'error');
-            }
-        }
+ let projectData = {
+ name: '',
+ type: 'software',
+ components: [],
+ instructions: [],
+ code: '',
+ diagram: '',
+ specs: ''
+ };
 
-        function handleKey(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                send();
-            }
-        }
+ let currentProjectId = null;
 
-        async function send() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (!config.model && config.provider !== 'ollama') {
-                showToast('Please connect first', 'error');
-                return;
-            }
+ function addMessage(content, isUser = false, isLoading = false) {
+ const msg = document.createElement('div');
+ msg.className = `chat-message ${isUser ? 'user' : 'ai'}${isLoading ? ' loading' : ''}`;
 
-            addMessage(msg, 'user');
-            input.value = '';
-            addMessage('Building...', 'ai', true);
+ if (isLoading) {
+ msg.innerHTML = `
+ <div class="chat-message-label">ProtoForge</div>
+ <div class="typing-indicator">
+ <div class="typing-dot"></div>
+ <div class="typing-dot"></div>
+ <div class="typing-dot"></div>
+ </div>
+ `;
+ } else {
+ msg.innerHTML = `<div class="chat-message-label">${isUser ? 'You' : 'ProtoForge'}</div>${content}`;
+ }
 
-            try {
-                const res = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        prompt: msg,
-                        mode: document.getElementById('mode').value,
-                        api_key: config.api_key || 'test',
-                        provider: config.provider
-                    })
-                });
+ chatMessages.appendChild(msg);
+ chatMessages.scrollTop = chatMessages.scrollHeight;
+ return msg;
+ }
 
-                const data = await res.json();
-                const loading = document.querySelector('.loading');
-                if (loading) loading.parentElement.remove();
+ async function processMessage(message) {
+ addMessage(message, true);
+ const loadingMsg = addMessage('', false, true);
 
-                if (data.error) {
-                    addMessage('Error: ' + data.error, 'ai');
-                    showToast(data.error, 'error');
-                } else {
-                    files = data.files || [];
-                    addMessage('Generated ' + files.length + ' files!', 'ai');
-                    showPreview();
-                    showToast('Build complete!', 'success');
-                }
-            } catch (e) {
-                addMessage('Error: ' + e.message, 'ai');
-                showToast('Build failed', 'error');
-            }
-        }
+ const apiKey = document.getElementById('apiKey').value;
+ if (!apiKey) {
+ loadingMsg.remove();
+ addMessage('Please enter your API key in the configuration panel first.');
+ return;
+ }
 
-        function addMessage(content, role, loading = false) {
-            const container = document.getElementById('messages');
-            const div = document.createElement('div');
-            div.className = 'message ' + role;
-            if (loading) {
-                div.innerHTML = '<div class="loading"><div class="dots"><span></span><span></span></div>Building...</div>';
-            } else {
-                div.textContent = content;
-            }
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
+ const projectType = document.querySelector('.project-toggle-btn.active').dataset.type;
+ const model = document.getElementById('modelSelect').value;
 
-        function showPreview() {
-            document.getElementById('previewPanel').classList.add('active');
-            renderFiles();
-        }
+ try {
+ const response = await fetch('http://localhost:7777/api/generate', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ prompt: message,
+ mode: projectType,
+ api_key: apiKey,
+ provider: model
+ })
+ });
 
-        function setTab(tab) {
-            document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (tab === 'files') renderFiles();
-            else if (tab === 'code') renderCode();
-            else if (tab === 'bom') renderBOM();
-            else if (tab === 'instructions') renderInstructions();
-        }
+ const data = await response.json();
+ loadingMsg.remove();
 
-        function renderFiles() {
-            const content = document.getElementById('previewContent');
-            if (files.length === 0) {
-                content.innerHTML = '<div class="empty-state"><div class="empty-icon">📁</div><div>No files generated yet</div></div>';
-                return;
-            }
-            
-            content.innerHTML = '<div class="file-list">' + files.map(f => 
-                '<div class="file-item"><div class="file-name">' + f.name + '</div><div class="file-type">' + (f.type || 'file') + '</div></div>'
-            ).join('') + '</div>';
-        }
+ if (data.error) {
+ addMessage(`Error: ${data.error}`);
+ return;
+ }
 
-        function renderCode() {
-            const content = document.getElementById('previewContent');
-            if (files.length === 0) {
-                content.innerHTML = '<div class="empty-state"><div class="empty-icon">💻</div><div>No code to display</div></div>';
-                return;
-            }
-            
-            content.innerHTML = '<div class="file-list">' + files.map(f => 
-                '<div class="file-item"><div class="file-name">' + f.name + '</div><pre style="font-size:11px;margin-top:8px;white-space:pre-wrap;">// File content here</pre></div>'
-            ).join('') + '</div>';
-        }
+ currentProjectId = data.project_id;
+ projectData = {
+ name: message.split(' ').slice(0, 3).join(' '),
+ type: projectType,
+ components: data.components || [],
+ instructions: data.instructions || [],
+ code: data.code || '',
+ diagram: data.diagram || '',
+ specs: data.specs || ''
+ };
 
-        function renderBOM() {
-            const content = document.getElementById('previewContent');
-            content.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>BOM available for hardware projects</div></div>';
-        }
+ addMessage(`Generated your ${projectType} project! Check the tabs for 3D model, diagram, BOM, instructions, and code.`);
+ displayGeneratedContent();
 
-        function renderInstructions() {
-            const content = document.getElementById('previewContent');
-            const mode = document.getElementById('mode').value;
-            
-            if (mode === 'software') {
-                content.innerHTML = '<div style="padding:20px;"><h3 style="margin-bottom:16px;">Instructions</h3><ol style="line-height:2;"><li>Open index.html in your browser</li><li>Customize the code as needed</li><li>Deploy to your preferred hosting</li></ol></div>';
-            } else {
-                content.innerHTML = '<div style="padding:20px;"><h3 style="margin-bottom:16px;">Hardware Build Instructions</h3><ol style="line-height:2;"><li>View the circuit diagram</li><li>Gather all BOM components</li><li>Assemble the circuit</li><li>Upload code to microcontroller</li></ol></div>';
-            }
-        }
+ } catch (error) {
+ loadingMsg.remove();
+ addMessage(`Error: ${error.message}. Make sure the backend is running on port 8001.`);
+ }
+ }
 
-        function share() {
-            showToast('Share feature coming soon', 'success');
-        }
+ async function renderMermaid(diagramCode) {
+ const container = document.getElementById('mermaid-diagram');
+ if (!container) return;
+ try {
+ const { svg } = await mermaid.render('mermaid-svg', diagramCode);
+ container.innerHTML = svg;
+ window.currentDiagram = diagramCode;
+ } catch (error) {
+ container.innerHTML = `<pre class="code-block">${diagramCode}</pre>`;
+ }
+ }
 
-        function download() {
-            if (files.length === 0) {
-                showToast('No files to download', 'error');
-                return;
-            }
-            showToast('Preparing download...', 'success');
-        }
+ function displayGeneratedContent() {
+ document.getElementById('model-empty').style.display = 'none';
+ document.getElementById('model-content').classList.add('visible');
 
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast ' + type;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        }
+ const canvas = document.getElementById('model-canvas');
+ canvas.innerHTML = `
+ <div class="model-placeholder">
+ <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+ <div style="margin-top:12px;font-size:12px;color:var(--accent)">3D Model Generated</div>
+ <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${projectData.name}</div>
+ </div>
+ `;
+ document.getElementById('model-specs').textContent = projectData.specs;
 
-        loadConfig();
-    </script>
+ document.getElementById('diagram-empty').style.display = 'none';
+ document.getElementById('diagram-content').classList.add('visible');
+ if (projectData.diagram) renderMermaid(projectData.diagram);
+
+ document.getElementById('bom-empty').style.display = 'none';
+ document.getElementById('bom-content').classList.add('visible');
+
+ const bomBody = document.getElementById('bom-body');
+ bomBody.innerHTML = projectData.components.map((comp, i) => `
+ <tr>
+ <td>${i + 1}</td>
+ <td>${comp.name || comp.component || '-'}</td>
+ <td>${comp.qty || comp.quantity || 1}</td>
+ <td>${comp.ref || comp.reference || '-'}</td>
+ <td>${comp.notes || '-'}</td>
+ </tr>
+ `).join('');
+
+ document.getElementById('instructions-empty').style.display = 'none';
+ document.getElementById('instructions-content').classList.add('visible');
+ document.getElementById('instruction-list').innerHTML = projectData.instructions.map((step, i) => `
+ <div class="instruction-step">
+ <div class="step-number">${i + 1}</div>
+ <div class="step-content">
+ <h4>${step.title}</h4>
+ <p>${step.desc || step.description || ''}</p>
+ </div>
+ </div>
+ `).join('');
+
+ document.getElementById('code-empty').style.display = 'none';
+ document.getElementById('code-content').classList.add('visible');
+ document.getElementById('source-code').textContent = projectData.code;
+ }
+
+ // Event Listeners
+ sendBtn.addEventListener('click', () => {
+ const message = chatInput.value.trim();
+ if (message) {
+ chatInput.value = '';
+ processMessage(message);
+ }
+ });
+
+ chatInput.addEventListener('keydown', (e) => {
+ if (e.key === 'Enter' && !e.shiftKey) {
+ e.preventDefault();
+ const message = chatInput.value.trim();
+ if (message) {
+ chatInput.value = '';
+ processMessage(message);
+ }
+ }
+ });
+
+ document.getElementById('shareBtn').addEventListener('click', () => {
+ alert('Share functionality');
+ });
+
+ // Test API Key
+ document.getElementById('testKeyBtn').addEventListener('click', async () => {
+ const apiKey = document.getElementById('apiKey').value;
+ const model = document.getElementById('modelSelect').value;
+ const resultDiv = document.getElementById('testKeyResult');
+ 
+ if (!apiKey) {
+ resultDiv.innerHTML = '<span style="color:var(--accent)">Please enter an API key first</span>';
+ return;
+ }
+ 
+ resultDiv.innerHTML = '<span style="color:var(--text-muted)">Testing...</span>';
+ 
+ try {
+ const response = await fetch('http://localhost:7777/api/test-key', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ api_key: apiKey, provider: model })
+ });
+ 
+ const data = await response.json();
+ 
+ if (data.success) {
+ resultDiv.innerHTML = '<span style="color:#10b981">✓ ' + data.message + '</span>';
+ } else {
+ resultDiv.innerHTML = '<span style="color:var(--accent)">✗ ' + data.message + '</span>';
+ }
+ } catch (error) {
+ resultDiv.innerHTML = '<span style="color:var(--accent)">Error: ' + error.message + '</span>';
+ }
+ });
+
+ document.getElementById('downloadBtn').addEventListener('click', () => {
+ if (currentProjectId) {
+ window.location.href = `http://localhost:7777/api/download/${currentProjectId}`;
+ } else {
+ alert('Generate a project first!');
+ }
+ });
+ </script>
 </body>
 </html>
