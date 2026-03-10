@@ -7,6 +7,10 @@ flask-cors>=4.0.0
 python-dotenv>=1.1.0
 requests>=2.31.0
 
+# Server (FastAPI for gateway)
+fastapi>=0.115.0
+uvicorn>=0.30.0
+
 # LangChain & AI
 langchain>=0.3.0
 langchain-core>=0.3.0
