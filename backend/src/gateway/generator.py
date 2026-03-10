@@ -12,14 +12,15 @@ from typing import Dict, Any, Optional
 
 
 # Provider configurations - OpenAI-compatible endpoints
+# Models selected for free tier compatibility where available
 PROVIDERS = {
     "openai": {
         "base_url": "https://api.openai.com/v1",
-        "model": "gpt-4o"
+        "model": "gpt-4o-mini"  # Cheaper, works with free trial credits
     },
     "anthropic": {
         "base_url": "https://api.anthropic.com/v1",
-        "model": "claude-3-5-sonnet-20241022",
+        "model": "claude-3-haiku-20240307",  # Cheapest Claude model
         "auth_header": "x-api-key",
         "auth_type": "anthropic"
     },
@@ -41,7 +42,7 @@ PROVIDERS = {
     },
     "zhipu": {
         "base_url": "https://open.bigmodel.cn/api/paas/v4",
-        "model": "glm-4"
+        "model": "glm-4-flash"  # Free tier model
     },
     "qwen": {
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -57,11 +58,11 @@ PROVIDERS = {
     },
     "together": {
         "base_url": "https://api.together.xyz/v1",
-        "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
+        "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"  # Free tier model
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
-        "model": "llama-3.3-70b-versatile"
+        "model": "llama-3.1-8b-instant"  # Free tier model
     },
     "ollama": {
         "base_url": "http://localhost:11434",
@@ -119,21 +120,48 @@ class ProtoForgeGenerator:
             resp = requests.post(url, headers=headers, json=payload, timeout=120)
             
             print(f"[{self.provider}] Status: {resp.status_code}")
-            print(f"[{self.provider}] Response: {resp.text[:200]}")
+            print(f"[{self.provider}] Response: {resp.text[:500]}")
+            
+            # Try to parse error response
+            error_detail = ""
+            try:
+                error_data = resp.json() if resp.text else {}
+                if 'error' in error_data:
+                    if isinstance(error_data['error'], dict):
+                        error_detail = error_data['error'].get('message', str(error_data['error']))
+                    else:
+                        error_detail = str(error_data['error'])
+            except:
+                error_detail = resp.text[:300]
             
             if resp.status_code == 429:
-                error_data = resp.json() if resp.text else {}
-                error_msg = error_data.get('error', {}).get('message', resp.text[:200])
-                if 'insufficient balance' in error_msg or 'suspended' in error_msg:
-                    raise Exception(f"{self.provider} account suspended due to insufficient balance. Please add credits at {self.provider}.ai platform.")
-                raise Exception(f"{self.provider} rate limit exceeded. Wait and try again.")
+                # Rate limit - could be free tier limit or actual rate limit
+                if 'insufficient balance' in error_detail.lower() or 'suspended' in error_detail.lower():
+                    raise Exception(f"{self.provider}: Account has insufficient balance or is suspended. Add credits at {self.provider} platform.")
+                elif 'quota' in error_detail.lower() or 'limit' in error_detail.lower():
+                    raise Exception(f"{self.provider}: Rate limit exceeded. {error_detail}")
+                else:
+                    raise Exception(f"{self.provider}: Rate limit or quota exceeded. {error_detail}")
             elif resp.status_code == 401:
-                raise Exception(f"Invalid API key for {self.provider}. Check your key or account balance.")
+                # Authentication failed - could be invalid key or key needs activation
+                if 'billing' in error_detail.lower() or 'payment' in error_detail.lower():
+                    raise Exception(f"{self.provider}: API key requires billing setup. {error_detail}")
+                else:
+                    raise Exception(f"{self.provider}: Invalid or inactive API key. {error_detail}")
             elif resp.status_code == 400:
-                error_data = resp.json() if resp.text else {}
-                raise Exception(f"{self.provider} error: {error_data.get('error', {}).get('message', resp.text[:200])}")
+                # Bad request - often wrong model for the tier
+                if 'model' in error_detail.lower():
+                    raise Exception(f"{self.provider}: Model not available. {error_detail}")
+                else:
+                    raise Exception(f"{self.provider}: Request error. {error_detail}")
+            elif resp.status_code == 403:
+                # Forbidden - often free tier restrictions
+                if 'free' in error_detail.lower() or 'tier' in error_detail.lower():
+                    raise Exception(f"{self.provider}: Free tier restriction. {error_detail}")
+                else:
+                    raise Exception(f"{self.provider}: Access forbidden. {error_detail}")
             elif resp.status_code != 200:
-                raise Exception(f"{self.provider} error ({resp.status_code}): {resp.text[:200]}")
+                raise Exception(f"{self.provider} error ({resp.status_code}): {error_detail or resp.text[:300]}")
             
             return resp.json()['choices'][0]['message']['content']
             

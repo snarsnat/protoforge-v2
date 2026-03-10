@@ -635,9 +635,15 @@
  <div class="config-group">
  <label class="config-label">AI Model</label>
  <select class="config-select" id="modelSelect">
- <option value="gpt-4o">GPT-4o</option>
- <option value="claude-3-5">Claude 3.5 Sonnet</option>
- <option value="deepseek-v2">DeepSeek V2</option>
+ <option value="groq">Groq (Free Tier)</option>
+ <option value="together">Together AI (Free Tier)</option>
+ <option value="siliconflow">SiliconFlow (Free Tier)</option>
+ <option value="deepseek">DeepSeek</option>
+ <option value="qwen">Qwen</option>
+ <option value="kimi">Kimi (Moonshot)</option>
+ <option value="zhipu">Zhipu (GLM)</option>
+ <option value="openai">OpenAI</option>
+ <option value="anthropic">Anthropic</option>
  <option value="minimax">MiniMax</option>
  </select>
  </div>
@@ -886,7 +892,7 @@
  const model = document.getElementById('modelSelect').value;
 
  try {
- const response = await fetch('http://localhost:7777/api/generate', {
+ const response = await fetch('http://localhost:8001/api/generate', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
@@ -1024,7 +1030,7 @@
  resultDiv.innerHTML = '<span style="color:var(--text-muted)">Testing...</span>';
  
  try {
- const response = await fetch('http://localhost:7777/api/test-key', {
+ const response = await fetch('http://localhost:8001/api/test-key', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({ api_key: apiKey, provider: model })
@@ -1044,7 +1050,7 @@
 
  document.getElementById('downloadBtn').addEventListener('click', () => {
  if (currentProjectId) {
- window.location.href = `http://localhost:7777/api/download/${currentProjectId}`;
+ window.location.href = `http://localhost:8001/api/download/${currentProjectId}`;
  } else {
  alert('Generate a project first!');
  }
