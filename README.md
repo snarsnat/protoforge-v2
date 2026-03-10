@@ -34,30 +34,60 @@ cd protoforge-v2
 
 ```bash
 cd backend
-pip install -r ../requirements.txt
+pip3 install -r ../requirements.txt
+```
+
+**Note:** If you're using conda, make sure to install in your conda environment:
+```bash
+conda activate your-env  # if using conda
+pip3 install -r ../requirements.txt
 ```
 
 ### 3. Run the Server
 
 ```bash
+cd backend
 PYTHONPATH=. python3 -m src.gateway.app
 ```
 
+Server will start on `http://localhost:8001`
+
 ### 4. Open in Browser
 
-```
-http://localhost:8001
-```
+Navigate to **http://localhost:8001** in your browser.
+
+> **Troubleshooting:** If you see "Failed to fetch" errors, hard refresh your browser (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows) to clear cached files.
 
 ---
 
 ## API Configuration
 
+### 🆓 Free Tier API Keys (Recommended)
+
+These providers offer **free tier** API keys that work great with ProtoForge:
+
+| Provider | Free Tier Details | Get Key |
+|----------|------------------|---------|
+| **Groq** | Free, fast inference | [groq.com](https://console.groq.com/keys) |
+| **Together AI** | Free credits on signup | [together.ai](https://api.together.xyz/settings/api-keys) |
+| **SiliconFlow** | Free tier available | [siliconflow.cn](https://cloud.siliconflow.cn/account/ak) |
+| **DeepSeek** | Free credits | [platform.deepseek.com](https://platform.deepseek.com/api-keys) |
+
 ### Test Your API Key
 
-Before building, test your API key to make sure it works:
+Use the **"Test Key"** button in the UI, or test via curl:
 
 ```bash
+# Test Groq (recommended for free tier)
+curl -X POST http://localhost:8001/api/test \
+  -H "Content-Type: application/json" \
+  -d '{"api_key": "YOUR_GROQ_KEY", "provider": "groq"}'
+
+# Test Together AI
+curl -X POST http://localhost:8001/api/test \
+  -H "Content-Type: application/json" \
+  -d '{"api_key": "YOUR_TOGETHER_KEY", "provider": "together"}'
+
 # Test OpenAI
 curl -X POST http://localhost:8001/api/test \
   -H "Content-Type: application/json" \
@@ -67,83 +97,33 @@ curl -X POST http://localhost:8001/api/test \
 curl -X POST http://localhost:8001/api/test \
   -H "Content-Type: application/json" \
   -d '{"api_key": "YOUR_ANTHROPIC_KEY", "provider": "anthropic"}'
-
-# Test DeepSeek
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_DEEPSEEK_KEY", "provider": "deepseek"}'
-
-# Test MiniMax
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_MINIMAX_KEY", "provider": "minimax"}'
-
-# Test Kimi (Moonshot)
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_KIMI_KEY", "provider": "kimi"}'
-
-# Test Zhipu (GLM)
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_ZHIPU_KEY", "provider": "zhipu"}'
-
-# Test Qwen
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_QWEN_KEY", "provider": "qwen"}'
-
-# Test Volcano Engine
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_VOLCENGINE_KEY", "provider": "volcengine"}'
-
-# Test SiliconFlow
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_SILICONFLOW_KEY", "provider": "siliconflow"}'
-
-# Test Together AI
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_TOGETHER_KEY", "provider": "together"}'
-
-# Test Groq
-curl -X POST http://localhost:8001/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"api_key": "YOUR_GROQ_KEY", "provider": "groq"}'
 ```
 
-If you get `{"success": true, ...}`, your key works! If you get billing errors, check your API key has credits available.
+**Expected responses:**
+- ✅ `{"success": true, ...}` - Your key works!
+- ❌ `{"success": false, "error": "..."}` - Check the error message for details
+
+**Common issues:**
+- "Invalid API Key" → Double-check your key, no extra spaces
+- "Rate limit exceeded" → Wait a bit, free tiers have limits
+- "Model not available" → The selected model may require paid tier
 
 ---
 
-## Getting an API Key
+## Supported Providers
 
-Many providers offer **free tier** API keys:
+ProtoForge supports **13+ AI providers**. Free tier keys work great!
 
-| Provider | Free Tier | Link |
-|----------|-----------|------|
-| **OpenAI** | $5 credit | [platform.openai.com](https://platform.openai.com) |
-| **Anthropic** | $5 credit | [console.anthropic.com](https://console.anthropic.com) |
-| **DeepSeek** | Yes | [platform.deepseek.com](https://platform.deepseek.com) |
-| **MiniMax** | Yes | [platform.minimax.io](https://platform.minimax.io) |
-| **Kimi (Moonshot)** | Yes | [platform.moonshot.ai](https://platform.moonshot.ai) |
-| **Zhipu (GLM)** | Yes | [open.bigmodel.cn](https://open.bigmodel.cn) |
-| **Qwen** | Yes | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
-| **SiliconFlow** | Yes | [siliconflow.cn](https://siliconflow.cn) |
-| **Together AI** | Yes | [together.ai](https://together.ai) |
-| **Groq** | Yes | [groq.com](https://groq.com) |
-| **Volcano Engine** | Yes | [console.volcengine.com](https://console.volcengine.com) |
+### ✅ Recommended (Free Tier Friendly)
+- **Groq** - Fast, free inference (Llama models)
+- **Together AI** - Free credits, many models
+- **SiliconFlow** - Free tier available
+- **DeepSeek** - Free credits on signup
 
-### Free Tier API Keys
+### ✅ Also Supported
+- OpenAI, Anthropic, MiniMax, Kimi (Moonshot), Zhipu (GLM), Qwen, VolcEngine, Ollama (local)
 
-Free tier API keys work exactly like paid keys - they use the same API endpoints. The difference is:
-- **Rate limits** - Fewer requests per minute
-- **Usage caps** - Limited spend per month
-- **Model restrictions** - Some free tiers only work with specific models
-
-ProtoForge passes your key directly to the provider. No proxying, no storage.
+**Note:** ProtoForge uses your API key directly - no proxying, no storage. Keys are sent straight to the provider.
 
 ---
 
