@@ -12,61 +12,61 @@ from typing import Dict, Any, Optional
 
 
 # Provider configurations - OpenAI-compatible endpoints
-# Models selected for free tier compatibility where available
+# Models selected for FREE TIER compatibility
 PROVIDERS = {
     "openai": {
         "base_url": "https://api.openai.com/v1",
-        "model": "gpt-4o-mini"  # Cheaper, works with free trial credits
+        "model": "gpt-3.5-turbo"  # Free tier: $5 credit, NO gpt-4/gpt-4o
     },
     "anthropic": {
         "base_url": "https://api.anthropic.com/v1",
-        "model": "claude-3-haiku-20240307",  # Cheapest Claude model
+        "model": "claude-instant-1.2",  # Free tier is instant, NOT sonnet
         "auth_header": "x-api-key",
         "auth_type": "anthropic"
     },
     "deepseek": {
         "base_url": "https://api.deepseek.com",
-        "model": "deepseek-chat"
+        "model": "deepseek-chat"  # V3, free tier but rate limited
     },
     "kimi": {
         "base_url": "https://api.moonshot.ai/v1",
-        "model": "kimi-k2-turbo-preview"
+        "model": "moonshot-v1-8k"  # Free tier, NOT kimi-k2.5
     },
     "moonshot": {
         "base_url": "https://api.moonshot.ai/v1", 
-        "model": "kimi-k2-turbo-preview"
+        "model": "moonshot-v1-8k"
     },
     "minimax": {
         "base_url": "https://api.minimax.chat/v1",
-        "model": "abab6.5s-chat"
+        "model": "abab6.5s-chat"  # or abab6-chat
     },
     "zhipu": {
         "base_url": "https://open.bigmodel.cn/api/paas/v4",
-        "model": "glm-4-flash"  # Free tier model
+        "model": "glm-4-flash"  # Free tier is glm-4-flash, NOT glm-4
     },
     "qwen": {
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "model": "qwen-turbo"
+        "model": "qwen-turbo"  # or qwen2.5-7b-instruct
     },
     "volcengine": {
         "base_url": "https://ark.cn-beijing.volces.com/api/v3",
-        "model": "doubao-seed-1-8-251228"
+        "model": "doubao-lite-4k"  # Uses endpoint IDs, this is a lite model
     },
     "siliconflow": {
         "base_url": "https://api.siliconflow.cn/v1",
-        "model": "Qwen/Qwen2.5-7B-Instruct"
+        "model": "deepseek-ai/DeepSeek-V2.5"  # Chinese provider, very generous
     },
     "together": {
         "base_url": "https://api.together.xyz/v1",
-        "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"  # Free tier model
+        "model": "meta-llama/Llama-3.2-3B-Instruct"  # Free tier model
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
-        "model": "llama-3.1-8b-instant"  # Free tier model
+        "model": "llama-3.1-8b-instant"  # Very generous: 20 req/min
     },
     "ollama": {
         "base_url": "http://localhost:11434",
-        "model": "llama3.2:3b"
+        "model": "llama3.2"  # Local, completely free
     }
 }
 

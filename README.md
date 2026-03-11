@@ -66,20 +66,34 @@ Navigate to **http://localhost:8001** in your browser.
 
 These providers offer **free tier** API keys that work great with ProtoForge:
 
-| Provider | Free Tier Model | Details | Get Key |
-|----------|----------------|---------|---------|
-| **Groq** | `llama-3.1-8b-instant` | Free, fast inference | [groq.com](https://console.groq.com/keys) |
-| **Together AI** | `Llama-3.3-70B-Instruct-Turbo-Free` | Free credits on signup | [together.ai](https://api.together.xyz/settings/api-keys) |
-| **SiliconFlow** | `Qwen2.5-7B-Instruct` | Free tier available | [siliconflow.cn](https://cloud.siliconflow.cn/account/ak) |
-| **DeepSeek** | `deepseek-chat` | Free credits on signup | [platform.deepseek.com](https://platform.deepseek.com/api-keys) |
-| **Zhipu (GLM)** | `glm-4-flash` | Free tier available | [bigmodel.cn](https://open.bigmodel.cn/) |
-| **Qwen** | `qwen-turbo` | Free tier available | [dashscope.aliyun.com](https://dashscope.aliyun.com/) |
-| **Kimi (Moonshot)** | `kimi-k2-turbo-preview` | Free credits on signup | [moonshot.ai](https://platform.moonshot.ai/) |
-| **OpenAI** | `gpt-4o-mini` | Free trial credits | [platform.openai.com](https://platform.openai.com/) |
-| **Anthropic** | `claude-3-haiku-20240307` | Free credits on signup | [anthropic.com](https://console.anthropic.com/) |
-| **MiniMax** | `abab6.5s-chat` | Free tier available | [minimax.chat](https://api.minimax.chat/) |
-| **VolcEngine** | `doubao-seed-1-8-251228` | Free tier available | [volces.com](https://www.volces.com/) |
-| **Ollama** | `llama3.2:3b` | Local, completely free | [ollama.ai](https://ollama.ai/) |
+| Provider | Free Tier Model | Notes |
+|----------|-----------------|-------|
+| **Groq** | `llama-3.1-8b-instant` or `mixtral-8x7b-32768` | Very generous free tier, 20 req/min |
+| **Together AI** | `meta-llama/Llama-3.2-3B-Instruct` or any model with "free" label | Limited daily tokens |
+| **SiliconFlow** | `deepseek-ai/DeepSeek-V2.5` or `Qwen/Qwen2.5-7B-Instruct` | Chinese provider, very generous |
+| **DeepSeek** | `deepseek-chat` (V3) or `deepseek-coder` | Has free tier but rate limited |
+| **Zhipu (GLM)** | `glm-4-flash` (specifically the -flash suffix) | Free tier is `glm-4-flash`, NOT `glm-4` |
+| **Qwen** | `qwen-turbo` or `qwen2.5-7b-instruct` | Alibaba, free tier is specific models |
+| **Kimi** | `moonshot-v1-8k` | Moonshot free tier, NOT `kimi-k2.5` |
+| **OpenAI** | `gpt-3.5-turbo` | $5 credit, NO gpt-4/gpt-4o |
+| **Anthropic** | `claude-instant-1.2` | Free tier is instant, NOT sonnet |
+| **MiniMax** | `abab6.5s-chat` or `abab6-chat` | Check their docs, often changes |
+| **VolcEngine** | `doubao-lite-4k` or `ep-202...` (endpoint ID) | ByteDance, uses endpoint IDs not model names |
+| **Ollama** | Any local model (`llama3.2`, `qwen2.5`, etc.) | Runs locally, completely free |
+
+**Get your free API keys:**
+- Groq: [groq.com](https://console.groq.com/keys)
+- Together AI: [together.ai](https://api.together.xyz/settings/api-keys)
+- SiliconFlow: [siliconflow.cn](https://cloud.siliconflow.cn/account/ak)
+- DeepSeek: [platform.deepseek.com](https://platform.deepseek.com/api-keys)
+- Zhipu: [bigmodel.cn](https://open.bigmodel.cn/)
+- Qwen: [dashscope.aliyun.com](https://dashscope.aliyun.com/)
+- Kimi: [moonshot.ai](https://platform.moonshot.ai/)
+- OpenAI: [platform.openai.com](https://platform.openai.com/)
+- Anthropic: [anthropic.com](https://console.anthropic.com/)
+- MiniMax: [minimax.chat](https://api.minimax.chat/)
+- VolcEngine: [volces.com](https://www.volces.com/)
+- Ollama: [ollama.ai](https://ollama.ai/) (local installation)
 
 ### Test Your API Key
 
