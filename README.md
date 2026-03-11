@@ -66,12 +66,20 @@ Navigate to **http://localhost:8001** in your browser.
 
 These providers offer **free tier** API keys that work great with ProtoForge:
 
-| Provider | Free Tier Details | Get Key |
-|----------|------------------|---------|
-| **Groq** | Free, fast inference | [groq.com](https://console.groq.com/keys) |
-| **Together AI** | Free credits on signup | [together.ai](https://api.together.xyz/settings/api-keys) |
-| **SiliconFlow** | Free tier available | [siliconflow.cn](https://cloud.siliconflow.cn/account/ak) |
-| **DeepSeek** | Free credits | [platform.deepseek.com](https://platform.deepseek.com/api-keys) |
+| Provider | Free Tier Model | Details | Get Key |
+|----------|----------------|---------|---------|
+| **Groq** | `llama-3.1-8b-instant` | Free, fast inference | [groq.com](https://console.groq.com/keys) |
+| **Together AI** | `Llama-3.3-70B-Instruct-Turbo-Free` | Free credits on signup | [together.ai](https://api.together.xyz/settings/api-keys) |
+| **SiliconFlow** | `Qwen2.5-7B-Instruct` | Free tier available | [siliconflow.cn](https://cloud.siliconflow.cn/account/ak) |
+| **DeepSeek** | `deepseek-chat` | Free credits on signup | [platform.deepseek.com](https://platform.deepseek.com/api-keys) |
+| **Zhipu (GLM)** | `glm-4-flash` | Free tier available | [bigmodel.cn](https://open.bigmodel.cn/) |
+| **Qwen** | `qwen-turbo` | Free tier available | [dashscope.aliyun.com](https://dashscope.aliyun.com/) |
+| **Kimi (Moonshot)** | `kimi-k2-turbo-preview` | Free credits on signup | [moonshot.ai](https://platform.moonshot.ai/) |
+| **OpenAI** | `gpt-4o-mini` | Free trial credits | [platform.openai.com](https://platform.openai.com/) |
+| **Anthropic** | `claude-3-haiku-20240307` | Free credits on signup | [anthropic.com](https://console.anthropic.com/) |
+| **MiniMax** | `abab6.5s-chat` | Free tier available | [minimax.chat](https://api.minimax.chat/) |
+| **VolcEngine** | `doubao-seed-1-8-251228` | Free tier available | [volces.com](https://www.volces.com/) |
+| **Ollama** | `llama3.2:3b` | Local, completely free | [ollama.ai](https://ollama.ai/) |
 
 ### Test Your API Key
 
