@@ -215,7 +215,7 @@ class ProtoForgeGenerator:
         }
         
         payload = {
-            'model': 'glm-4',
+            'model': self.config['model'],  # Uses glm-4-flash (free tier)
             'messages': [
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user}
@@ -246,7 +246,7 @@ class ProtoForgeGenerator:
         }
         
         payload = {
-            'model': 'doubao-seed-1-8-251228',
+            'model': self.config['model'],  # Uses doubao-lite-4k (free tier)
             'messages': [
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user}
@@ -277,7 +277,7 @@ class ProtoForgeGenerator:
         }
         
         payload = {
-            'model': 'abab6.5s-chat',
+            'model': self.config['model'],  # Uses abab6.5s-chat (free tier)
             'messages': [
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user}
