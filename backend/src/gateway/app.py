@@ -65,6 +65,11 @@ class TestApiRequest(BaseModel):
     provider: str = "openai"
 
 
+class AutoDetectRequest(BaseModel):
+    api_key: str
+    provider: str = "openai"
+
+
 # Routes
 @app.get("/")
 async def root():
@@ -98,13 +103,16 @@ async def health():
 @app.post("/api/test")
 async def test_api(request: TestApiRequest):
     """Test an API key with a simple request"""
-    from src.gateway.generator import ProtoForgeGenerator
+    from src.gateway.generator import ProtoForgeGenerator, PROVIDERS
     
     try:
         generator = ProtoForgeGenerator(
             api_key=request.api_key,
             provider=request.provider
         )
+        
+        # Get the model from config
+        model_name = generator.config.get('model', 'unknown')
         
         # Make a simple test call
         response = generator._call_ai(
@@ -115,6 +123,7 @@ async def test_api(request: TestApiRequest):
         return {
             "success": True,
             "provider": request.provider,
+            "model": model_name,
             "response": response[:100]
         }
     except Exception as e:
@@ -123,6 +132,73 @@ async def test_api(request: TestApiRequest):
             "provider": request.provider,
             "error": str(e)
         }
+
+
+@app.post("/api/auto-detect")
+async def auto_detect_model(request: AutoDetectRequest):
+    """Auto-detect the best free tier model for a provider"""
+    from src.gateway.generator import ProtoForgeGenerator, PROVIDERS
+    
+    # Free tier models to try for each provider
+    FREE_MODELS = {
+        "groq": ["llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+        "together": ["meta-llama/Llama-3.2-3B-Instruct", "meta-llama/Llama-3-8B-Instruct"],
+        "siliconflow": ["deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-7B-Instruct"],
+        "deepseek": ["deepseek-chat"],
+        "zhipu": ["glm-4-flash"],
+        "qwen": ["qwen-turbo", "qwen2.5-7b-instruct"],
+        "kimi": ["moonshot-v1-8k"],
+        "minimax": ["abab6.5s-chat", "abab6-chat"],
+        "volcengine": ["doubao-lite-4k"],
+        "openai": ["gpt-3.5-turbo"],
+        "anthropic": ["claude-instant-1.2"],
+        "ollama": ["llama3.2", "qwen2.5"],
+    }
+    
+    provider = request.provider.lower()
+    models_to_try = FREE_MODELS.get(provider, [])
+    
+    if not models_to_try:
+        return {
+            "success": False,
+            "error": f"No free tier models known for provider: {provider}"
+        }
+    
+    for model in models_to_try:
+        try:
+            generator = ProtoForgeGenerator(
+                api_key=request.api_key,
+                provider=provider
+            )
+            
+            # Temporarily override the model
+            original_model = generator.config.get('model')
+            generator.config['model'] = model
+            
+            response = generator._call_ai(
+                system_prompt="Reply with only 'OK'",
+                user_prompt="Say OK"
+            )
+            
+            # Restore original model
+            if original_model:
+                generator.config['model'] = original_model
+            
+            return {
+                "success": True,
+                "provider": provider,
+                "model": model,
+                "message": f"Found working model: {model}"
+            }
+            
+        except Exception as e:
+            # Try next model
+            continue
+    
+    return {
+        "success": False,
+        "error": "No free tier models worked. Check your API key or try a different provider."
+    }
 
 
 @app.get("/api/models")

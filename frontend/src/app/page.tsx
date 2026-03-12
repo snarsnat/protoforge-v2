@@ -8,26 +8,117 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [apiKey, setApiKey] = useState('')
-  const [provider, setProvider] = useState('openai')
+  const [provider, setProvider] = useState('groq')
+  const [modelName, setModelName] = useState('')
+  const [testingKey, setTestingKey] = useState(false)
+  const [keyStatus, setKeyStatus] = useState<{valid: boolean, message: string, detectedModel?: string} | null>(null)
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) return
+  const handleAutoDetect = async () => {
+    if (!apiKey.trim()) {
+      setKeyStatus({ valid: false, message: 'Please enter an API key first' })
+      return
+    }
     
-    setLoading(true)
+    setTestingKey(true)
+    setKeyStatus(null)
+    
     try {
-      const res = await fetch('/api/langgraph/chat', {
+      const res = await fetch('http://localhost:8001/api/auto-detect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `[${mode}] ${prompt}`,
-          thread_id: 'default'
+          api_key: apiKey,
+          provider: provider
+        })
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        setKeyStatus({ 
+          valid: true, 
+          message: `Auto-detected: ${data.model}`,
+          detectedModel: data.model
+        })
+        setModelName(data.model)
+      } else {
+        setKeyStatus({ valid: false, message: data.error || 'Auto-detect failed' })
+      }
+    } catch (err: any) {
+      setKeyStatus({ valid: false, message: `Failed to connect: ${err.message}` })
+    } finally {
+      setTestingKey(false)
+    }
+  }
+
+  const handleTestKey = async () => {
+    if (!apiKey.trim()) {
+      setKeyStatus({ valid: false, message: 'Please enter an API key' })
+      return
+    }
+    
+    setTestingKey(true)
+    setKeyStatus(null)
+    
+    try {
+      const res = await fetch('http://localhost:8001/api/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          provider: provider
+        })
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        setKeyStatus({ 
+          valid: true, 
+          message: 'API key works!',
+          detectedModel: data.model || undefined
+        })
+        if (data.model) {
+          setModelName(data.model)
+        }
+      } else {
+        setKeyStatus({ valid: false, message: data.error || 'API key failed' })
+      }
+    } catch (err: any) {
+      setKeyStatus({ valid: false, message: `Failed to connect: ${err.message}` })
+    } finally {
+      setTestingKey(false)
+    }
+  }
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return
+    if (!apiKey.trim()) {
+      alert('Please enter an API key or test it first')
+      return
+    }
+    
+    setLoading(true)
+    setResult(null)
+    
+    try {
+      const res = await fetch('http://localhost:8001/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: prompt,
+          mode: mode,
+          api_key: apiKey,
+          provider: provider,
+          model_name: modelName || undefined
         })
       })
       
       const data = await res.json()
       setResult(data)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      setResult({ error: `Failed to fetch: ${err.message}. Make sure the backend is running on http://localhost:8001` })
     } finally {
       setLoading(false)
     }
@@ -43,17 +134,40 @@ export default function Home() {
       <main>
         <section className="config">
           <select value={provider} onChange={e => setProvider(e.target.value)}>
-            <option value="openai">OpenAI</option>
-            <option value="anthropic">Anthropic</option>
-            <option value="deepseek">DeepSeek</option>
+            <option value="groq">Groq (Recommended - Free)</option>
+            <option value="together">Together AI (Free)</option>
+            <option value="siliconflow">SiliconFlow (Free)</option>
+            <option value="deepseek">DeepSeek (Free)</option>
+            <option value="zhipu">Zhipu/GLM (Free)</option>
+            <option value="qwen">Qwen (Free)</option>
+            <option value="kimi">Kimi/Moonshot (Free)</option>
+            <option value="minimax">MiniMax (Free)</option>
+            <option value="volcengine">VolcEngine (Free)</option>
+            <option value="openai">OpenAI ($5 credit)</option>
+            <option value="anthropic">Anthropic (Free tier)</option>
+            <option value="ollama">Ollama (Local)</option>
           </select>
           <input
             type="password"
             placeholder="API Key"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
+            style={{ flex: 1 }}
           />
+          <button onClick={handleAutoDetect} disabled={testingKey} style={{ whiteSpace: 'nowrap', background: '#ff3e00' }}>
+            {testingKey ? 'Detecting...' : 'Auto-Detect'}
+          </button>
+          <button onClick={handleTestKey} disabled={testingKey} style={{ whiteSpace: 'nowrap' }}>
+            {testingKey ? 'Testing...' : 'Test Key'}
+          </button>
         </section>
+        
+        {keyStatus && (
+          <section className={`key-status ${keyStatus.valid ? 'valid' : 'invalid'}`}>
+            {keyStatus.valid ? '✅' : '❌'} {keyStatus.message}
+            {keyStatus.detectedModel && <span> • Using: {keyStatus.detectedModel}</span>}
+          </section>
+        )}
 
         <section className="mode-selector">
           {['software', 'hardware', 'hybrid'].map(m => (
@@ -106,12 +220,39 @@ export default function Home() {
         }
         .config {
           display: flex;
-          gap: 1rem;
-          margin-bottom: 1rem;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
         }
         .config input, .config select {
           padding: 0.5rem;
           font-size: 1rem;
+        }
+        .config button {
+          padding: 0.5rem 1rem;
+          font-size: 1rem;
+          background: #333;
+          color: white;
+          border: 2px solid #333;
+          cursor: pointer;
+        }
+        .config button:disabled {
+          opacity: 0.5;
+        }
+        .key-status {
+          padding: 0.5rem;
+          margin-bottom: 1rem;
+          border: 2px solid;
+          font-size: 0.9rem;
+        }
+        .key-status.valid {
+          background: #1a4a1a;
+          border-color: #2d7a2d;
+          color: #8f8;
+        }
+        .key-status.invalid {
+          background: #4a1a1a;
+          border-color: #7a2d2d;
+          color: #f88;
         }
         .mode-selector {
           display: flex;
