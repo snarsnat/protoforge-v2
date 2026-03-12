@@ -3,11 +3,13 @@
 # ProtoForge ⚡
 
 [![X](https://img.shields.io/badge/Follow-@happinezreal-000000?style=flat&logo=x)](https://x.com/happinezreal)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/nebsol) Built my me a 13 year old ⚡️
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/nebsol) 
 
 **AI-Powered Prototyping Engine**
 
 Build real software, hardware, and hybrid prototypes with AI.
+
+Built my me a 13 year old ⚡️
 
 ---
 
