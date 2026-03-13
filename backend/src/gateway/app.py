@@ -310,7 +310,7 @@ async def reload_memory():
 
 
 @app.post("/api/test-key")
-async def test_api_key(request: GenerateRequest):
+async def test_api_key(request: TestApiRequest):
     """Test if an API key works"""
     try:
         from src.gateway.generator import ProtoForgeGenerator
@@ -332,7 +332,7 @@ async def test_api_key(request: GenerateRequest):
             return {"success": True, "message": "API key accepted but response unexpected", "response": response[:100]}
             
     except Exception as e:
-        return {"success": False, "message": str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @app.post("/api/generate")
@@ -352,10 +352,11 @@ async def generate(request: GenerateRequest):
         )
         
         # Generate
+        import os
         result = generator.generate(
             prompt=request.prompt,
             mode=request.mode,
-            project_dir="./data/projects"
+            project_dir=os.path.join(os.path.dirname(__file__), "../../data/projects")
         )
         
         print(f"Generated {len(result.get('files', []))} files")
@@ -365,6 +366,28 @@ async def generate(request: GenerateRequest):
         print(f"Generate error: {e}")
         traceback.print_exc()
         return {"error": str(e), "files": [], "mode": request.mode}
+
+
+@app.get("/api/preview/{project_id}")
+async def preview_project(project_id: str):
+    """Serve HTML preview of generated project"""
+    from fastapi.responses import HTMLResponse, FileResponse
+    from pathlib import Path
+    
+    project_dir = Path(__file__).parent / "../../data/projects" / project_id
+    
+    # Try to find index.html
+    index_path = project_dir / "index.html"
+    if not index_path.exists():
+        # Try subdirectories for hybrid projects
+        software_dir = project_dir / "software"
+        if software_dir.exists():
+            index_path = software_dir / "index.html"
+    
+    if not index_path.exists():
+        return HTMLResponse("<html><body><h1>No preview available</h1><p>Project files not found.</p></body></html>", status_code=404)
+    
+    return FileResponse(index_path, media_type="text/html")
 
 
 @app.post("/api/threads/{thread_id}/uploads")
@@ -410,28 +433,6 @@ async def get_artifact(thread_id: str, path: str, download: bool = False):
         headers={"Content-Disposition": f"attachment; filename={path}"}
         if download else {}
     )
-
-
-# Generate endpoint
-@app.post("/api/generate")
-async def generate(request: GenerateRequest):
-    """Generate a prototype using AI"""
-    from src.gateway.generator import ProtoForgeGenerator
-    
-    generator = ProtoForgeGenerator(
-        api_key=request.api_key,
-        provider=request.provider
-    )
-    
-    try:
-        result = generator.generate(
-            prompt=request.prompt,
-            mode=request.mode,
-            project_dir="./data/projects"
-        )
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def init_app():

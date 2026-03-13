@@ -591,6 +591,125 @@
  white-space: pre-wrap;
  line-height: 1.6;
  margin-bottom: 24px;
+ max-height: 60vh;
+ overflow-y: auto;
+ }
+
+ .code-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 12px;
+ padding: 8px 0;
+ }
+
+ .file-explorer {
+ display: flex;
+ gap: 8px;
+ flex-wrap: wrap;
+ }
+
+ .file-icon {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ padding: 8px 12px;
+ background: var(--bg-tertiary);
+ border: 1px solid var(--border-subtle);
+ border-radius: 4px;
+ cursor: pointer;
+ transition: all 0.2s;
+ min-width: 60px;
+ }
+
+ .file-icon:hover {
+ background: var(--bg-hover);
+ border-color: var(--accent);
+ transform: translateY(-2px);
+ }
+
+ .file-icon.active {
+ background: var(--accent);
+ color: #fff;
+ border-color: var(--accent);
+ }
+
+ .file-icon svg {
+ width: 24px;
+ height: 24px;
+ margin-bottom: 4px;
+ }
+
+ .file-icon span {
+ font-size: 9px;
+ text-align: center;
+ max-width: 60px;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ }
+
+ .preview-btn {
+ display: flex;
+ align-items: center;
+ padding: 8px 16px;
+ background: var(--accent);
+ color: #fff;
+ border: none;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 12px;
+ font-weight: 500;
+ transition: all 0.2s;
+ }
+
+ .preview-btn:hover {
+ background: #ff5722;
+ transform: translateY(-1px);
+ }
+
+ .preview-modal {
+ position: fixed;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ background: rgba(0,0,0,0.9);
+ z-index: 1000;
+ display: none;
+ }
+
+ .preview-modal.active {
+ display: flex;
+ flex-direction: column;
+ }
+
+ .preview-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 12px 24px;
+ background: var(--bg-secondary);
+ border-bottom: 1px solid var(--border-subtle);
+ }
+
+ .preview-close {
+ background: transparent;
+ border: none;
+ color: var(--text-secondary);
+ cursor: pointer;
+ font-size: 24px;
+ padding: 4px 8px;
+ }
+
+ .preview-close:hover {
+ color: var(--accent);
+ }
+
+ .preview-frame {
+ flex: 1;
+ background: #fff;
+ border: none;
  }
 
  ::-webkit-scrollbar {
@@ -781,10 +900,16 @@
  <div class="empty-state-text">Source code will appear here.</div>
  </div>
  <div class="generated-content" id="code-content">
- <div class="content-section">
- <div class="content-section-title">Generated Source Code</div>
- <div class="code-block" id="source-code"></div>
+ <div class="code-header">
+ <div class="file-explorer" id="fileExplorer">
+ <!-- File icons will be populated dynamically -->
  </div>
+ <button class="preview-btn" id="previewBtn" onclick="openPreview()" style="display:none;">
+ <svg viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px"><path fill="currentColor" d="M12 9a3 3 0 100 6 3 3 0 000-6z"/><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+ Preview
+ </button>
+ </div>
+ <div class="code-block" id="source-code"></div>
  </div>
  </div>
  </div>
@@ -894,7 +1019,7 @@
  const model = document.getElementById('modelSelect').value;
 
  try {
- const response = await fetch('http://localhost:7777/api/generate', {
+ const response = await fetch('http://localhost:8001/api/generate', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
@@ -917,6 +1042,8 @@
  projectData = {
  name: message.split(' ').slice(0, 3).join(' '),
  type: projectType,
+ files: data.files || [],
+ fileContents: data.file_contents || {},
  components: data.components || [],
  instructions: data.instructions || [],
  code: data.code || '',
@@ -924,7 +1051,19 @@
  specs: data.specs || ''
  };
 
- addMessage(`Generated your ${projectType} project! Check the tabs for 3D model, diagram, BOM, instructions, and code.`);
+ // Build specific success message based on what was generated
+ let generatedItems = [];
+ if (data.files && data.files.length > 0) {
+ const fileNames = data.files.map(f => f.name).join(', ');
+ generatedItems.push(`Files: ${fileNames}`);
+ }
+ if (data.diagram) generatedItems.push('Diagram');
+ if (data.components && data.components.length > 0) generatedItems.push(`BOM (${data.components.length} components)`);
+ if (data.instructions && data.instructions.length > 0) generatedItems.push('Instructions');
+ if (data.specs) generatedItems.push('Specs');
+ 
+ const summary = generatedItems.length > 0 ? generatedItems.join(' • ') : `${projectType} project`;
+ addMessage(`✅ Generated: ${summary}`);
  displayGeneratedContent();
 
  } catch (error) {
@@ -992,6 +1131,9 @@
  document.getElementById('code-empty').style.display = 'none';
  document.getElementById('code-content').classList.add('visible');
  document.getElementById('source-code').textContent = projectData.code;
+ 
+ // Populate file explorer
+ populateFileExplorer(projectData.files);
  }
 
  // Event Listeners
@@ -1032,7 +1174,7 @@
  resultDiv.innerHTML = '<span style="color:var(--text-muted)">Testing...</span>';
  
  try {
- const response = await fetch('http://localhost:7777/api/test-key', {
+ const response = await fetch('http://localhost:8001/api/test-key', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({ api_key: apiKey, provider: model })
@@ -1043,7 +1185,7 @@
  if (data.success) {
  resultDiv.innerHTML = '<span style="color:#10b981">✓ ' + data.message + '</span>';
  } else {
- resultDiv.innerHTML = '<span style="color:var(--accent)">✗ ' + data.message + '</span>';
+ resultDiv.innerHTML = '<span style="color:var(--accent)">✗ ' + (data.error || data.message || 'Unknown error') + '</span>';
  }
  } catch (error) {
  resultDiv.innerHTML = '<span style="color:var(--accent)">Error: ' + error.message + '</span>';
@@ -1052,11 +1194,97 @@
 
  document.getElementById('downloadBtn').addEventListener('click', () => {
  if (currentProjectId) {
- window.location.href = `http://localhost:7777/api/download/${currentProjectId}`;
+ window.location.href = `http://localhost:8001/api/download/${currentProjectId}`;
  } else {
  alert('Generate a project first!');
  }
  });
+
+ // File Explorer & Preview Functions
+ function populateFileExplorer(files) {
+ const explorer = document.getElementById('fileExplorer');
+ if (!explorer || !files || files.length === 0) return;
+ 
+ explorer.innerHTML = files.map((file, idx) => {
+ const icon = getFileIcon(file.type);
+ return `
+ <div class="file-icon ${idx === 0 ? 'active' : ''}" onclick="selectFile(${idx}, '${file.name}')" data-file="${file.name}" data-type="${file.type}">
+ ${icon}
+ <span>${file.name}</span>
+ </div>
+ `;
+ }).join('');
+ 
+ // Show preview button for software projects
+ const previewBtn = document.getElementById('previewBtn');
+ const hasHtml = files.some(f => f.name.endsWith('.html'));
+ previewBtn.style.display = hasHtml ? 'flex' : 'none';
+ }
+
+ function getFileIcon(type) {
+ const icons = {
+ html: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><path fill="currentColor" d="M12 7v10M8 9l4-2 4 2M8 13l4 2 4-2"/></svg>',
+ css: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><text x="7" y="16" fill="currentColor" font-size="8">#</text></svg>',
+ javascript: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><text x="6" y="16" fill="currentColor" font-size="7">JS</text></svg>',
+ json: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><text x="5" y="16" fill="currentColor" font-size="6">{}</text></svg>',
+ mermaid: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><path fill="currentColor" d="M7 10h10M7 14h10M7 18h6"/></svg>',
+ markdown: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2L2 4l1 12 9 6 9-6 1-12L12 2zm0 2.5L19.5 6 12 20 4.5 6 12 4.5z"/><text x="5" y="16" fill="currentColor" font-size="6">MD</text></svg>'
+ };
+ return icons[type] || icons.html;
+ }
+
+ function selectFile(index, fileName) {
+ // Update active state
+ document.querySelectorAll('.file-icon').forEach((el, idx) => {
+ el.classList.toggle('active', idx === index);
+ });
+ 
+ // Show file content
+ const code = projectData.fileContents && projectData.fileContents[fileName];
+ if (code) {
+ document.getElementById('source-code').textContent = code;
+ }
+ }
+
+ function openPreview() {
+ if (!currentProjectId) return;
+ 
+ // Create or show preview modal
+ let modal = document.getElementById('previewModal');
+ if (!modal) {
+ modal = document.createElement('div');
+ modal.id = 'previewModal';
+ modal.className = 'preview-modal';
+ modal.innerHTML = `
+ <div class="preview-header">
+ <span style="font-weight:600">Live Preview</span>
+ <button class="preview-close" onclick="closePreview()">&times;</button>
+ </div>
+ <iframe class="preview-frame" id="previewFrame"></iframe>
+ `;
+ document.body.appendChild(modal);
+ }
+ 
+ modal.classList.add('active');
+ 
+ // Load the preview
+ const iframe = document.getElementById('previewFrame');
+ iframe.src = `http://localhost:8001/api/preview/${currentProjectId}`;
+ }
+
+ function closePreview() {
+ const modal = document.getElementById('previewModal');
+ if (modal) {
+ modal.classList.remove('active');
+ }
+ }
+
+ // Add chat memory - store last 10 messages
+ const chatMemory = [];
+ function addToMemory(message, isUser) {
+ chatMemory.push({ role: isUser ? 'user' : 'assistant', content: message });
+ if (chatMemory.length > 10) chatMemory.shift();
+ }
  </script>
 </body>
 </html>

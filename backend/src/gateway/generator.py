@@ -374,124 +374,166 @@ Return ONLY valid JSON."""
         return {"description": prompt, "components": [], "tech_stack": [], "features": []}
     
     def _generate_software(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
-        """Generate software project"""
+        """Generate software project with REAL working code"""
         
-        system_prompt = """You are a full-stack developer. Generate a complete web application.
-Create these files:
-1. index.html - Main HTML file
-2. style.css - Styles
-3. app.js - JavaScript functionality
-
-Output ONLY valid code for each file, properly formatted. No explanations."""
+        # Generate HTML with AI
+        html_prompt = f"""Generate a COMPLETE, WORKING index.html for: {prompt}
+Include: proper HTML5 structure, CDN links for any libraries needed, all UI elements, forms, buttons, containers.
+Make it production-ready with real functionality. Output ONLY the HTML code, no explanations."""
+        html_content = self._call_ai("You are an expert frontend developer. Write complete, working HTML files.", html_prompt)
+        # Extract HTML
+        if '<html' in html_content or '<!DOCTYPE' in html_content:
+            start = max(html_content.find('<html'), html_content.find('<!DOCTYPE'))
+            end = html_content.rfind('</html>') + 7
+            if end > start:
+                html_content = html_content[start:end]
+        (project_path / 'index.html').write_text(html_content)
         
-        user_prompt = f"Create a web app: {prompt}"
+        # Generate CSS with AI
+        css_prompt = f"""Generate COMPLETE, WORKING CSS for: {prompt}
+Include: responsive design, modern styling, animations, dark/light mode support if relevant.
+Make it look professional. Output ONLY the CSS code, no explanations."""
+        css_content = self._call_ai("You are an expert CSS developer. Write complete, production-ready stylesheets.", css_prompt)
+        # Extract CSS
+        if '```css' in css_content:
+            css_content = css_content.split('```css')[1].split('```')[0].strip()
+        (project_path / 'style.css').write_text(css_content)
         
-        # Generate code
-        code_response = self._call_ai(system_prompt, user_prompt)
+        # Generate JavaScript with AI
+        js_prompt = f"""Generate COMPLETE, WORKING JavaScript for: {prompt}
+Include: event handlers, DOM manipulation, API calls if needed, error handling, real functionality.
+Make it fully functional. Output ONLY the JavaScript code, no explanations."""
+        js_content = self._call_ai("You are an expert JavaScript developer. Write complete, working application code.", js_prompt)
+        # Extract JS
+        if '```javascript' in js_content or '```js' in js_content:
+            for marker in ['```javascript', '```js']:
+                if marker in js_content:
+                    js_content = js_content.split(marker)[1].split('```')[0].strip()
+                    break
+        (project_path / 'app.js').write_text(js_content)
         
-        files = []
+        files = [
+            {'name': 'index.html', 'type': 'html'},
+            {'name': 'style.css', 'type': 'css'},
+            {'name': 'app.js', 'type': 'javascript'}
+        ]
         
-        # Try to extract code blocks
-        try:
-            # Look for HTML
-            if '<html' in code_response.lower() or '<!DOCTYPE' in code_response:
-                html_start = code_response.find('<html')
-                if html_start == -1:
-                    html_start = code_response.find('<!DOCTYPE')
-                html_end = code_response.rfind('</html>') + 7
-                if html_end > 6:
-                    html_content = code_response[html_start:html_end]
-                    (project_path / 'index.html').write_text(html_content)
-                    files.append({'name': 'index.html', 'type': 'html'})
-            
-            # Look for CSS
-            if 'css' in code_response.lower():
-                css_parts = code_response.split('```css')
-                for i, part in enumerate(css_parts[1:], 1):
-                    end = part.find('```')
-                    if end > 0:
-                        css_content = part[:end].strip()
-                        (project_path / 'style.css').write_text(css_content)
-                        files.append({'name': 'style.css', 'type': 'css'})
-                        break
-                else:
-                    # No code blocks, try inline
-                    (project_path / 'style.css').write_text('/* Styles */')
-                    files.append({'name': 'style.css', 'type': 'css'})
-            
-            # Look for JS
-            if 'javascript' in code_response.lower() or 'script' in code_response.lower():
-                js_parts = code_response.split('```javascript')
-                for i, part in enumerate(js_parts[1:], 1):
-                    end = part.find('```')
-                    if end > 0:
-                        js_content = part[:end].strip()
-                        (project_path / 'app.js').write_text(js_content)
-                        files.append({'name': 'app.js', 'type': 'javascript'})
-                        break
-                else:
-                    (project_path / 'app.js').write_text('// App code')
-                    files.append({'name': 'app.js', 'type': 'javascript'})
-                    
-        except Exception as e:
-            print(f"Error parsing code: {e}")
+        # Generate tech specs with AI
+        specs_prompt = f"""Analyze this project: {prompt}
+Generate technical specifications including: architecture, tech stack, features, API endpoints (if any), data flow.
+Be specific and detailed. Output as plain text."""
+        specs = self._call_ai("You are a software architect. Write detailed technical specifications.", specs_prompt)
         
-        # Ensure at least basic files exist
-        if not files:
-            (project_path / 'index.html').write_text('<!DOCTYPE html>\n<html><body><h1>Hello</h1></body></html>')
-            (project_path / 'style.css').write_text('body { font-family: sans-serif; }')
-            (project_path / 'app.js').write_text('console.log("Hello");')
-            files = [
-                {'name': 'index.html', 'type': 'html'},
-                {'name': 'style.css', 'type': 'css'},
-                {'name': 'app.js', 'type': 'javascript'}
-            ]
+        # Generate deployment instructions with AI
+        instructions_prompt = f"""Generate step-by-step deployment instructions for: {prompt}
+Include: 1) Setup/Installation, 2) Configuration, 3) Running locally, 4) Deployment steps, 5) Testing.
+Be specific with commands and file paths. Output as a numbered list."""
+        instructions_response = self._call_ai("You are a DevOps engineer. Write clear deployment instructions.", instructions_prompt)
+        instructions = [line.strip() for line in instructions_response.split('\n') if line.strip()]
+        
+        # Combine all code for display
+        code_content = f"// === index.html ===\n{html_content}\n\n// === style.css ===\n{css_content}\n\n// === app.js ===\n{js_content}"
+        
+        # Build file contents map for frontend
+        file_contents = {
+            'index.html': html_content,
+            'style.css': css_content,
+            'app.js': js_content
+        }
         
         return {
-            'project_id': project_id,
+            'project_id': project_path.name,
             'files': files,
+            'file_contents': file_contents,
             'mode': 'software',
-            'description': analysis.get('description', prompt)
+            'description': analysis.get('description', prompt),
+            'code': code_content,
+            'specs': specs,
+            'components': [],
+            'instructions': instructions,
+            'diagram': None
         }
     
     def _generate_hardware(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
-        """Generate hardware project"""
+        """Generate hardware project with REAL diagrams, BOM, and instructions"""
         
-        system_prompt = """You are a hardware engineer. Generate a circuit diagram and BOM.
-Create:
-1. circuit.md - Mermaid diagram of the circuit
-2. bom.md - Bill of Materials with components
-3. instructions.md - Build instructions
-
-Output ONLY valid markdown."""
+        # Generate Mermaid circuit diagram with AI
+        diagram_prompt = f"""Generate a Mermaid.js circuit diagram for: {prompt}
+Use mermaid graph TD or flowchart syntax. Include all components, connections, power supply, inputs/outputs.
+Make it a proper circuit diagram that will render. Output ONLY the mermaid code, no explanations.
+Example format:
+graph TD
+    A[Component1] --> B[Component2]
+    B --> C[Output]"""
+        diagram = self._call_ai("You are an electrical engineer. Create Mermaid.js circuit diagrams.", diagram_prompt)
+        # Extract mermaid code
+        if '```mermaid' in diagram:
+            diagram = diagram.split('```mermaid')[1].split('```')[0].strip()
+        elif '```' in diagram:
+            diagram = diagram.split('```')[1].split('```')[0].strip()
+        (project_path / 'diagram.mmd').write_text(diagram)
         
-        user_prompt = f"Design hardware for: {prompt}"
+        # Generate BOM with AI
+        bom_prompt = f"""Generate a complete Bill of Materials (BOM) for: {prompt}
+Return JSON array with: name, qty (quantity), ref (reference designator like R1, C1, U1), notes (description/specs).
+Example: [{{"name": "Resistor 10k", "qty": 2, "ref": "R1,R2", "notes": "1/4W 5%"}}]
+Output ONLY valid JSON array."""
+        bom_response = self._call_ai("You are a hardware engineer. Create detailed bills of materials.", bom_prompt)
+        # Extract JSON
+        components = []
+        try:
+            start = bom_response.find('[')
+            end = bom_response.rfind(']') + 1
+            if start >= 0 and end > start:
+                components = json.loads(bom_response[start:end])
+        except:
+            components = [{'name': 'Component', 'qty': 1, 'ref': 'X1', 'notes': 'See diagram'}]
+        (project_path / 'bom.json').write_text(json.dumps(components, indent=2))
         
-        response = self._call_ai(system_prompt, user_prompt)
+        # Generate build instructions with AI
+        instructions_prompt = f"""Generate step-by-step build instructions for: {prompt}
+Include: 1) Components needed, 2) Tools required, 3) Assembly steps (numbered), 4) Wiring connections, 5) Testing procedure, 6) Troubleshooting.
+Be extremely specific with wire colors, pin numbers, and safety warnings. Output as numbered steps."""
+        instructions_response = self._call_ai("You are a hardware technician. Write detailed assembly instructions.", instructions_prompt)
+        instructions = [line.strip() for line in instructions_response.split('\n') if line.strip() and not line.strip().startswith('#')]
         
-        files = []
+        # Generate specs
+        specs_prompt = f"""Generate technical specifications for this hardware project: {prompt}
+Include: voltage requirements, current draw, dimensions, weight, operating temperature, interfaces, certifications needed.
+Be specific with numbers and units."""
+        specs = self._call_ai("You are a hardware engineer. Write detailed technical specifications.", specs_prompt)
         
-        # Save response as markdown
-        (project_path / 'hardware.md').write_text(response)
-        files.append({'name': 'hardware.md', 'type': 'markdown'})
+        files = [
+            {'name': 'diagram.mmd', 'type': 'mermaid'},
+            {'name': 'bom.json', 'type': 'json'},
+            {'name': 'instructions.md', 'type': 'markdown'}
+        ]
         
-        # Create diagram file
-        diagram = f"# Hardware Design\n\n{analysis.get('description', prompt)}\n\n## Components\n"
-        for comp in analysis.get('components', []):
-            diagram += f"- {comp.get('name', 'Component')}: {comp.get('description', '')}\n"
+        # Save instructions
+        (project_path / 'instructions.md').write_text('\n'.join(instructions))
         
-        (project_path / 'diagram.md').write_text(diagram)
-        files.append({'name': 'diagram.md', 'type': 'diagram'})
+        # Build file contents map
+        file_contents = {
+            'diagram.mmd': diagram,
+            'bom.json': json.dumps(components, indent=2),
+            'instructions.md': '\n'.join(instructions)
+        }
         
         return {
-            'project_id': project_id,
+            'project_id': project_path.name,
             'files': files,
+            'file_contents': file_contents,
             'mode': 'hardware',
-            'description': analysis.get('description', prompt)
+            'description': analysis.get('description', prompt),
+            'code': diagram,
+            'diagram': diagram,
+            'specs': specs,
+            'components': components,
+            'instructions': instructions
         }
     
     def _generate_hybrid(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
-        """Generate hybrid hardware+software project"""
+        """Generate hybrid hardware+software project with ALL real content"""
         
         # Generate both
         software_result = self._generate_software(prompt, analysis, project_path / 'software')
@@ -499,9 +541,29 @@ Output ONLY valid markdown."""
         
         files = software_result['files'] + hardware_result['files']
         
+        # Combine file contents (prefix with subdirectory)
+        file_contents = {}
+        for fname, content in software_result.get('file_contents', {}).items():
+            file_contents[f'software/{fname}'] = content
+        for fname, content in hardware_result.get('file_contents', {}).items():
+            file_contents[f'hardware/{fname}'] = content
+        
+        # Combine all content
+        code_content = f"// === SOFTWARE CODE ===\n{software_result.get('code', '')}\n\n// === HARDWARE DIAGRAM ===\n{hardware_result.get('diagram', '')}"
+        specs_content = f"=== SOFTWARE SPECS ===\n{software_result.get('specs', '')}\n\n=== HARDWARE SPECS ===\n{hardware_result.get('specs', '')}"
+        instructions = software_result.get('instructions', []) + hardware_result.get('instructions', [])
+        components = hardware_result.get('components', [])
+        diagram = hardware_result.get('diagram', '')
+        
         return {
-            'project_id': project_id,
+            'project_id': project_path.name,
             'files': files,
+            'file_contents': file_contents,
             'mode': 'hybrid',
-            'description': analysis.get('description', prompt)
+            'description': analysis.get('description', prompt),
+            'code': code_content,
+            'specs': specs_content,
+            'diagram': diagram,
+            'components': components,
+            'instructions': instructions
         }
