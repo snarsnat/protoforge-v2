@@ -18,6 +18,17 @@ from src.mcp import get_mcp_manager
 from src.agents.memory import get_memory_system, init_memory_system
 
 
+# Robust base path handling (absolute, centralized)
+# Base path to data/projects is two levels up from this file: backend/src/gateway/app.py
+BASE_PROJECTS_PATH = Path(__file__).resolve().parents[2] / "data" / "projects"
+
+
+def get_project_base_dir() -> Path:
+    """Return the absolute base path for all project data. Ensures the path exists for writes."""
+    BASE_PROJECTS_PATH.mkdir(parents=True, exist_ok=True)
+    return BASE_PROJECTS_PATH
+
+
 app = FastAPI(title="ProtoForge Gateway")
 
 app.add_middleware(
@@ -352,12 +363,12 @@ async def generate(request: GenerateRequest):
             provider=request.provider
         )
         
-        # Generate
-        import os
+        # Generate - use absolute base path
+        abs_base = str(get_project_base_dir())
         result = generator.generate(
             prompt=request.prompt,
             mode=request.mode,
-            project_dir=os.path.join(os.path.dirname(__file__), "../../data/projects")
+            project_dir=abs_base
         )
         
         print(f"Generated {len(result.get('files', []))} files")
@@ -373,9 +384,10 @@ async def generate(request: GenerateRequest):
 async def preview_project(project_id: str):
     """Serve HTML preview of generated project"""
     from fastapi.responses import HTMLResponse, FileResponse
-    from pathlib import Path
     
-    project_dir = Path(__file__).parent / "../../data/projects" / project_id
+    # Use absolute base path
+    base_dir = get_project_base_dir()
+    project_dir = base_dir / project_id
     
     # Try to find index.html
     index_path = project_dir / "index.html"
@@ -397,7 +409,9 @@ async def download_project(project_id: str):
     import zipfile
     from io import BytesIO
     
-    project_dir = Path(__file__).parent / "../../data/projects" / project_id
+    # Use absolute base path
+    base_dir = get_project_base_dir()
+    project_dir = base_dir / project_id
     
     if not project_dir.exists():
         raise HTTPException(status_code=404, detail="Project not found")

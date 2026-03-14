@@ -329,9 +329,15 @@ class ProtoForgeGenerator:
     def generate(self, prompt: str, mode: str, project_dir: str) -> Dict[str, Any]:
         """Generate prototype based on prompt and mode"""
         
+        # Normalize project_dir to absolute path
+        base = Path(project_dir).resolve()
         project_id = str(uuid.uuid4())[:8]
-        project_path = Path(project_dir) / project_id
+        project_path = base / project_id
         project_path.mkdir(parents=True, exist_ok=True)
+        
+        # Ensure subdirectories exist for all modes
+        (project_path / "software").mkdir(parents=True, exist_ok=True)
+        (project_path / "hardware").mkdir(parents=True, exist_ok=True)
         
         # Analyze request with AI
         analysis = self._analyze_request(prompt, mode)
@@ -381,13 +387,16 @@ Return ONLY valid JSON."""
 Include: proper HTML5 structure, CDN links for any libraries needed, all UI elements, forms, buttons, containers.
 Make it production-ready with real functionality. Output ONLY the HTML code, no explanations."""
         html_content = self._call_ai("You are an expert frontend developer. Write complete, working HTML files.", html_prompt)
-        # Extract HTML
-        if '<html' in html_content or '<!DOCTYPE' in html_content:
-            start = max(html_content.find('<html'), html_content.find('<!DOCTYPE'))
-            end = html_content.rfind('</html>') + 7
-            if end > start:
-                html_content = html_content[start:end]
-        (project_path / 'index.html').write_text(html_content)
+        # Extract and validate HTML (case-insensitive)
+        html_lower = html_content.lower()
+        if '<html' in html_lower and '</html>' in html_lower:
+            start = html_lower.find('<html')
+            end = html_lower.rfind('</html>') + len('</html>')
+            html_content = html_content[start:end]
+        else:
+            # Fallback placeholder HTML if AI failed to produce valid HTML
+            html_content = "<html><body><h1>ProtoForge - Software content not generated</h1><p>The AI did not return valid HTML. Please retry generation.</p></body></html>"
+        (project_path / 'software' / 'index.html').write_text(html_content)
         
         # Generate CSS with AI
         css_prompt = f"""Generate COMPLETE, WORKING CSS for: {prompt}
@@ -397,7 +406,7 @@ Make it look professional. Output ONLY the CSS code, no explanations."""
         # Extract CSS
         if '```css' in css_content:
             css_content = css_content.split('```css')[1].split('```')[0].strip()
-        (project_path / 'style.css').write_text(css_content)
+        (project_path / 'software' / 'style.css').write_text(css_content)
         
         # Generate JavaScript with AI
         js_prompt = f"""Generate COMPLETE, WORKING JavaScript for: {prompt}
@@ -410,12 +419,12 @@ Make it fully functional. Output ONLY the JavaScript code, no explanations."""
                 if marker in js_content:
                     js_content = js_content.split(marker)[1].split('```')[0].strip()
                     break
-        (project_path / 'app.js').write_text(js_content)
+        (project_path / 'software' / 'app.js').write_text(js_content)
         
         files = [
-            {'name': 'index.html', 'type': 'html'},
-            {'name': 'style.css', 'type': 'css'},
-            {'name': 'app.js', 'type': 'javascript'}
+            {'name': 'software/index.html', 'type': 'html'},
+            {'name': 'software/style.css', 'type': 'css'},
+            {'name': 'software/app.js', 'type': 'javascript'}
         ]
         
         # Generate tech specs with AI
@@ -434,11 +443,11 @@ Be specific with commands and file paths. Output as a numbered list."""
         # Combine all code for display
         code_content = f"// === index.html ===\n{html_content}\n\n// === style.css ===\n{css_content}\n\n// === app.js ===\n{js_content}"
         
-        # Build file contents map for frontend
+        # Build file contents map for frontend (with software/ prefix)
         file_contents = {
-            'index.html': html_content,
-            'style.css': css_content,
-            'app.js': js_content
+            'software/index.html': html_content,
+            'software/style.css': css_content,
+            'software/app.js': js_content
         }
         
         return {
@@ -466,12 +475,24 @@ graph TD
     A[Component1] --> B[Component2]
     B --> C[Output]"""
         diagram = self._call_ai("You are an electrical engineer. Create Mermaid.js circuit diagrams.", diagram_prompt)
-        # Extract mermaid code
-        if '```mermaid' in diagram:
+        # Extract mermaid code robustly
+        diagram_lower = diagram.lower()
+        if '```mermaid' in diagram_lower:
             diagram = diagram.split('```mermaid')[1].split('```')[0].strip()
         elif '```' in diagram:
             diagram = diagram.split('```')[1].split('```')[0].strip()
-        (project_path / 'diagram.mmd').write_text(diagram)
+        elif 'graph TD' in diagram or 'graph LR' in diagram or 'flowchart' in diagram:
+            # Already valid mermaid, just strip whitespace
+            diagram = diagram.strip()
+        else:
+            # Fallback: try to find any mermaid-like content or use as-is
+            diagram = diagram.strip()
+        # Ensure diagram starts with valid mermaid syntax
+        if not (diagram.startswith('graph') or diagram.startswith('flowchart') or diagram.startswith('sequenceDiagram')):
+            # Prepend graph TD if missing
+            if 'graph TD' not in diagram and 'graph LR' not in diagram:
+                diagram = 'graph TD\n' + diagram
+        (project_path / 'hardware' / 'diagram.mmd').write_text(diagram)
         
         # Generate BOM with AI
         bom_prompt = f"""Generate a complete Bill of Materials (BOM) for: {prompt}
@@ -488,7 +509,7 @@ Output ONLY valid JSON array."""
                 components = json.loads(bom_response[start:end])
         except:
             components = [{'name': 'Component', 'qty': 1, 'ref': 'X1', 'notes': 'See diagram'}]
-        (project_path / 'bom.json').write_text(json.dumps(components, indent=2))
+        (project_path / 'hardware' / 'bom.json').write_text(json.dumps(components, indent=2))
         
         # Generate build instructions with AI
         instructions_prompt = f"""Generate step-by-step build instructions for: {prompt}
@@ -504,19 +525,19 @@ Be specific with numbers and units."""
         specs = self._call_ai("You are a hardware engineer. Write detailed technical specifications.", specs_prompt)
         
         files = [
-            {'name': 'diagram.mmd', 'type': 'mermaid'},
-            {'name': 'bom.json', 'type': 'json'},
-            {'name': 'instructions.md', 'type': 'markdown'}
+            {'name': 'hardware/diagram.mmd', 'type': 'mermaid'},
+            {'name': 'hardware/bom.json', 'type': 'json'},
+            {'name': 'hardware/instructions.md', 'type': 'markdown'}
         ]
         
         # Save instructions
-        (project_path / 'instructions.md').write_text('\n'.join(instructions))
+        (project_path / 'hardware' / 'instructions.md').write_text('\n'.join(instructions))
         
-        # Build file contents map
+        # Build file contents map (with hardware/ prefix)
         file_contents = {
-            'diagram.mmd': diagram,
-            'bom.json': json.dumps(components, indent=2),
-            'instructions.md': '\n'.join(instructions)
+            'hardware/diagram.mmd': diagram,
+            'hardware/bom.json': json.dumps(components, indent=2),
+            'hardware/instructions.md': '\n'.join(instructions)
         }
         
         return {
@@ -535,18 +556,18 @@ Be specific with numbers and units."""
     def _generate_hybrid(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
         """Generate hybrid hardware+software project with ALL real content"""
         
-        # Generate both
-        software_result = self._generate_software(prompt, analysis, project_path / 'software')
-        hardware_result = self._generate_hardware(prompt, analysis, project_path / 'hardware')
+        # Generate both - software and hardware methods now write to their own subdirs
+        software_result = self._generate_software(prompt, analysis, project_path)
+        hardware_result = self._generate_hardware(prompt, analysis, project_path)
         
         files = software_result['files'] + hardware_result['files']
         
-        # Combine file contents (prefix with subdirectory)
+        # Combine file contents (already prefixed with software/ or hardware/)
         file_contents = {}
         for fname, content in software_result.get('file_contents', {}).items():
-            file_contents[f'software/{fname}'] = content
+            file_contents[fname] = content
         for fname, content in hardware_result.get('file_contents', {}).items():
-            file_contents[f'hardware/{fname}'] = content
+            file_contents[fname] = content
         
         # Combine all content
         code_content = f"// === SOFTWARE CODE ===\n{software_result.get('code', '')}\n\n// === HARDWARE DIAGRAM ===\n{hardware_result.get('diagram', '')}"
