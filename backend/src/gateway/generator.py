@@ -60,6 +60,10 @@ PROVIDERS = {
         "base_url": "https://api.together.xyz/v1",
         "model": "meta-llama/Llama-3.2-3B-Instruct"  # Free tier model
     },
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1",
+        "model": "meta-llama/llama-3.1-8b-instruct"  # Free tier available, many models
+    },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",
         "model": "llama-3.1-8b-instant"  # Very generous: 20 req/min

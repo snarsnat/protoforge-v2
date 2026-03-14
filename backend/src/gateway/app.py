@@ -112,6 +112,28 @@ async def health():
     return {"status": "ok", "service": "protoforge-gateway"}
 
 
+@app.get("/favicon.ico")
+async def favicon():
+    """Serve favicon.ico"""
+    from fastapi.responses import FileResponse
+    # Favicon is in workspace root, which is 3 levels up from this file
+    favicon_path = Path(__file__).resolve().parents[3] / "favicon.ico"
+    if favicon_path.exists():
+        return FileResponse(favicon_path, media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
+@app.get("/favicon.png")
+async def favicon_png():
+    """Serve favicon.png (alias to favicon.ico)"""
+    from fastapi.responses import FileResponse
+    # Favicon is in workspace root, which is 3 levels up from this file
+    favicon_path = Path(__file__).resolve().parents[3] / "favicon.ico"
+    if favicon_path.exists():
+        return FileResponse(favicon_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
 @app.post("/api/test")
 async def test_api(request: TestApiRequest):
     """Test an API key with a simple request"""
@@ -165,6 +187,7 @@ async def auto_detect_model(request: AutoDetectRequest):
         "openai": ["gpt-3.5-turbo"],
         "anthropic": ["claude-instant-1.2"],
         "ollama": ["llama3.2", "qwen2.5"],
+        "openrouter": ["meta-llama/llama-3.1-8b-instruct", "google/gemma-2-9b-it:free", "mistralai/mistral-7b-instruct:free"],
     }
     
     provider = request.provider.lower()
