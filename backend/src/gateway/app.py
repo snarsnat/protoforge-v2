@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from src.config import get_config, reload_config
@@ -388,6 +389,36 @@ async def preview_project(project_id: str):
         return HTMLResponse("<html><body><h1>No preview available</h1><p>Project files not found.</p></body></html>", status_code=404)
     
     return FileResponse(index_path, media_type="text/html")
+
+
+@app.get("/api/download/{project_id}")
+async def download_project(project_id: str):
+    """Download project as ZIP file"""
+    import zipfile
+    from io import BytesIO
+    
+    project_dir = Path(__file__).parent / "../../data/projects" / project_id
+    
+    if not project_dir.exists():
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Create ZIP in memory
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Walk through project directory
+        for file_path in project_dir.rglob('*'):
+            if file_path.is_file():
+                # Calculate relative path for ZIP
+                arcname = file_path.relative_to(project_dir)
+                zip_file.write(file_path, arcname)
+    
+    zip_buffer.seek(0)
+    
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={project_id}.zip"}
+    )
 
 
 @app.post("/api/threads/{thread_id}/uploads")
