@@ -383,8 +383,14 @@ Return ONLY valid JSON."""
         
         return {"description": prompt, "components": [], "tech_stack": [], "features": []}
     
-    def _generate_software(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
-        """Generate software project with REAL working code"""
+    def _generate_software(self, prompt: str, analysis: Dict, project_path: Path, subdir: str = None) -> Dict[str, Any]:
+        """Generate software project with REAL working code
+        
+        Args:
+            subdir: Optional subdirectory prefix for hybrid mode (e.g., 'software/')
+        """
+        # Ensure project path exists
+        project_path.mkdir(parents=True, exist_ok=True)
         
         # Generate HTML with AI
         html_prompt = f"""Generate a COMPLETE, WORKING index.html for: {prompt}
@@ -400,7 +406,11 @@ Make it production-ready with real functionality. Output ONLY the HTML code, no 
         else:
             # Fallback placeholder HTML if AI failed to produce valid HTML
             html_content = "<html><body><h1>ProtoForge - Software content not generated</h1><p>The AI did not return valid HTML. Please retry generation.</p></body></html>"
-        (project_path / 'software' / 'index.html').write_text(html_content)
+        
+        # Write files - use subdir prefix if provided (for hybrid mode)
+        base_path = project_path / subdir if subdir else project_path
+        base_path.mkdir(parents=True, exist_ok=True)
+        (base_path / 'index.html').write_text(html_content)
         
         # Generate CSS with AI
         css_prompt = f"""Generate COMPLETE, WORKING CSS for: {prompt}
@@ -410,7 +420,7 @@ Make it look professional. Output ONLY the CSS code, no explanations."""
         # Extract CSS
         if '```css' in css_content:
             css_content = css_content.split('```css')[1].split('```')[0].strip()
-        (project_path / 'software' / 'style.css').write_text(css_content)
+        (base_path / 'style.css').write_text(css_content)
         
         # Generate JavaScript with AI
         js_prompt = f"""Generate COMPLETE, WORKING JavaScript for: {prompt}
@@ -423,12 +433,14 @@ Make it fully functional. Output ONLY the JavaScript code, no explanations."""
                 if marker in js_content:
                     js_content = js_content.split(marker)[1].split('```')[0].strip()
                     break
-        (project_path / 'software' / 'app.js').write_text(js_content)
+        (base_path / 'app.js').write_text(js_content)
         
+        # File paths - include subdir prefix if provided
+        prefix = subdir + '/' if subdir else ''
         files = [
-            {'name': 'software/index.html', 'type': 'html'},
-            {'name': 'software/style.css', 'type': 'css'},
-            {'name': 'software/app.js', 'type': 'javascript'}
+            {'name': f'{prefix}index.html', 'type': 'html'},
+            {'name': f'{prefix}style.css', 'type': 'css'},
+            {'name': f'{prefix}app.js', 'type': 'javascript'}
         ]
         
         # Generate tech specs with AI
@@ -447,11 +459,11 @@ Be specific with commands and file paths. Output as a numbered list."""
         # Combine all code for display
         code_content = f"// === index.html ===\n{html_content}\n\n// === style.css ===\n{css_content}\n\n// === app.js ===\n{js_content}"
         
-        # Build file contents map for frontend (with software/ prefix)
+        # Build file contents map for frontend (with subdir prefix if provided)
         file_contents = {
-            'software/index.html': html_content,
-            'software/style.css': css_content,
-            'software/app.js': js_content
+            f'{prefix}index.html': html_content,
+            f'{prefix}style.css': css_content,
+            f'{prefix}app.js': js_content
         }
         
         return {
@@ -467,8 +479,14 @@ Be specific with commands and file paths. Output as a numbered list."""
             'diagram': None
         }
     
-    def _generate_hardware(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
-        """Generate hardware project with REAL diagrams, BOM, and instructions"""
+    def _generate_hardware(self, prompt: str, analysis: Dict, project_path: Path, subdir: str = None) -> Dict[str, Any]:
+        """Generate hardware project with REAL diagrams, BOM, and instructions
+        
+        Args:
+            subdir: Optional subdirectory prefix for hybrid mode (e.g., 'hardware/')
+        """
+        # Ensure project path exists
+        project_path.mkdir(parents=True, exist_ok=True)
         
         # Generate Mermaid circuit diagram with AI
         diagram_prompt = f"""Generate a Mermaid.js circuit diagram for: {prompt}
@@ -496,7 +514,11 @@ graph TD
             # Prepend graph TD if missing
             if 'graph TD' not in diagram and 'graph LR' not in diagram:
                 diagram = 'graph TD\n' + diagram
-        (project_path / 'hardware' / 'diagram.mmd').write_text(diagram)
+        
+        # Write files - use subdir prefix if provided (for hybrid mode)
+        base_path = project_path / subdir if subdir else project_path
+        base_path.mkdir(parents=True, exist_ok=True)
+        (base_path / 'diagram.mmd').write_text(diagram)
         
         # Generate BOM with AI
         bom_prompt = f"""Generate a complete Bill of Materials (BOM) for: {prompt}
@@ -513,7 +535,7 @@ Output ONLY valid JSON array."""
                 components = json.loads(bom_response[start:end])
         except:
             components = [{'name': 'Component', 'qty': 1, 'ref': 'X1', 'notes': 'See diagram'}]
-        (project_path / 'hardware' / 'bom.json').write_text(json.dumps(components, indent=2))
+        (base_path / 'bom.json').write_text(json.dumps(components, indent=2))
         
         # Generate build instructions with AI
         instructions_prompt = f"""Generate step-by-step build instructions for: {prompt}
@@ -528,20 +550,22 @@ Include: voltage requirements, current draw, dimensions, weight, operating tempe
 Be specific with numbers and units."""
         specs = self._call_ai("You are a hardware engineer. Write detailed technical specifications.", specs_prompt)
         
+        # File paths - include subdir prefix if provided
+        prefix = subdir + '/' if subdir else ''
         files = [
-            {'name': 'hardware/diagram.mmd', 'type': 'mermaid'},
-            {'name': 'hardware/bom.json', 'type': 'json'},
-            {'name': 'hardware/instructions.md', 'type': 'markdown'}
+            {'name': f'{prefix}diagram.mmd', 'type': 'mermaid'},
+            {'name': f'{prefix}bom.json', 'type': 'json'},
+            {'name': f'{prefix}instructions.md', 'type': 'markdown'}
         ]
         
         # Save instructions
-        (project_path / 'hardware' / 'instructions.md').write_text('\n'.join(instructions))
+        (base_path / 'instructions.md').write_text('\n'.join(instructions))
         
-        # Build file contents map (with hardware/ prefix)
+        # Build file contents map (with subdir prefix if provided)
         file_contents = {
-            'hardware/diagram.mmd': diagram,
-            'hardware/bom.json': json.dumps(components, indent=2),
-            'hardware/instructions.md': '\n'.join(instructions)
+            f'{prefix}diagram.mmd': diagram,
+            f'{prefix}bom.json': json.dumps(components, indent=2),
+            f'{prefix}instructions.md': '\n'.join(instructions)
         }
         
         return {
@@ -560,9 +584,9 @@ Be specific with numbers and units."""
     def _generate_hybrid(self, prompt: str, analysis: Dict, project_path: Path) -> Dict[str, Any]:
         """Generate hybrid hardware+software project with ALL real content"""
         
-        # Generate both - software and hardware methods now write to their own subdirs
-        software_result = self._generate_software(prompt, analysis, project_path)
-        hardware_result = self._generate_hardware(prompt, analysis, project_path)
+        # Generate both - pass subdir to create software/ and hardware/ subdirectories
+        software_result = self._generate_software(prompt, analysis, project_path, subdir='software')
+        hardware_result = self._generate_hardware(prompt, analysis, project_path, subdir='hardware')
         
         files = software_result['files'] + hardware_result['files']
         
