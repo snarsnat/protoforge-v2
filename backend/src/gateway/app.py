@@ -426,6 +426,45 @@ async def preview_project(project_id: str):
     return FileResponse(index_path, media_type="text/html")
 
 
+@app.get("/api/project/{project_id}/{file_path:path}")
+async def get_project_file(project_id: str, file_path: str):
+    """Serve individual project files (CSS, JS, etc.) for preview"""
+    base_dir = get_project_base_dir()
+    project_dir = base_dir / project_id
+    
+    # Try root level first, then subdirectories
+    full_path = project_dir / file_path
+    if not full_path.exists():
+        # Try software/ subdirectory
+        full_path = project_dir / "software" / file_path
+    if not full_path.exists():
+        # Try hardware/ subdirectory
+        full_path = project_dir / "hardware" / file_path
+    
+    if not full_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Security: ensure path is within project directory
+    try:
+        full_path.resolve().relative_to(project_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Determine media type
+    media_types = {
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.html': 'text/html',
+        '.json': 'application/json',
+        '.mmd': 'text/plain',
+        '.md': 'text/markdown',
+    }
+    ext = full_path.suffix.lower()
+    media_type = media_types.get(ext, 'application/octet-stream')
+    
+    return FileResponse(full_path, media_type=media_type)
+
+
 @app.get("/api/download/{project_id}")
 async def download_project(project_id: str):
     """Download project as ZIP file"""

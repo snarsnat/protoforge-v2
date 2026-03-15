@@ -348,13 +348,71 @@ class ProtoForgeGenerator:
         
         # Generate based on mode
         if mode == 'software':
-            return self._generate_software(prompt, analysis, project_path)
+            result = self._generate_software(prompt, analysis, project_path)
         elif mode == 'hardware':
-            return self._generate_hardware(prompt, analysis, project_path)
+            result = self._generate_hardware(prompt, analysis, project_path)
         elif mode == 'hybrid':
-            return self._generate_hybrid(prompt, analysis, project_path)
+            result = self._generate_hybrid(prompt, analysis, project_path)
         else:
             raise ValueError(f"Unknown mode: {mode}")
+        
+        # Generate AI conversational response
+        result['ai_response'] = self._generate_ai_response(prompt, mode, result)
+        
+        return result
+    
+    def _generate_ai_response(self, prompt: str, mode: str, result: Dict) -> str:
+        """Generate a natural, conversational AI response about what was created"""
+        
+        # Build context about what was generated
+        file_count = len(result.get('files', []))
+        has_diagram = bool(result.get('diagram'))
+        has_components = len(result.get('components', [])) > 0
+        has_instructions = len(result.get('instructions', [])) > 0
+        has_specs = bool(result.get('specs'))
+        
+        response_prompt = f"""You just helped create a {mode} project based on this request: "{prompt}"
+
+What was generated:
+- {file_count} files created
+- {"Diagram included" if has_diagram else "No diagram"}
+- {"Bill of materials with " + str(len(result.get('components', []))) + " components" if has_components else "No BOM"}
+- {"Step-by-step instructions included" if has_instructions else "No instructions"}
+- {"Technical specifications included" if has_specs else "No specs"}
+
+Write a friendly, conversational 2-3 sentence response to the user about what you created for them. Be enthusiastic but professional. Mention specific things that were generated. Don't use technical jargon - speak naturally."""
+        
+        try:
+            response = self._call_ai(
+                "You are a helpful AI assistant explaining what you just built for a user. Be conversational and friendly.",
+                response_prompt
+            )
+            # Clean up response
+            response = response.strip().strip('"').strip("'")
+            if response:
+                return response
+        except:
+            pass
+        
+        # Fallback responses
+        fallbacks = [
+            f"I've brought your vision to life! Created a {mode} project with {file_count} files. " +
+            (f"The diagram shows how everything connects. " if has_diagram else "") +
+            (f"Follow the step-by-step instructions to get it running. " if has_instructions else "") +
+            "Let me know if you want to iterate on anything!",
+            
+            f"Your {mode} prototype is ready! I generated {file_count} files with all the essential pieces. " +
+            (f"Check the BOM for the components you'll need. " if has_components else "") +
+            (f"The specs detail the technical architecture. " if has_specs else "") +
+            "Ready to build!",
+            
+            f"Done! I've crafted a complete {mode} solution for you. " +
+            (f"The code is modular and ready to extend. " if file_count > 0 else "") +
+            (f"Visualize the architecture in the diagram tab. " if has_diagram else "") +
+            "What would you like to create next?"
+        ]
+        
+        return fallbacks[len(result.get('files', [])) % len(fallbacks)]
     
     def _analyze_request(self, prompt: str, mode: str) -> Dict[str, Any]:
         """Analyze what needs to be built"""
@@ -410,6 +468,15 @@ Make it production-ready with real functionality. Output ONLY the HTML code, no 
         # Write files - use subdir prefix if provided (for hybrid mode)
         base_path = project_path / subdir if subdir else project_path
         base_path.mkdir(parents=True, exist_ok=True)
+        
+        # Inject CSS and JS links into HTML if not present
+        if '<link' not in html_content.lower() or 'style.css' not in html_content.lower():
+            # Add CSS link before </head>
+            html_content = html_content.replace('</head>', '<link rel="stylesheet" href="style.css">\n</head>')
+        if '<script' not in html_content.lower() or 'app.js' not in html_content.lower():
+            # Add JS script before </body>
+            html_content = html_content.replace('</body>', '<script src="app.js"></script>\n</body>')
+        
         (base_path / 'index.html').write_text(html_content)
         
         # Generate CSS with AI
