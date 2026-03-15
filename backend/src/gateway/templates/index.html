@@ -1221,22 +1221,32 @@
  }
  });
 
- document.getElementById('shareBtn').addEventListener('click', () => {
+ // ============ DOM READY INITIALIZATION ============
+ window.addEventListener('DOMContentLoaded', () => {
+ console.log('ProtoForge UI initialized');
+ 
+ // Guard all button bindings with existence checks
+ const shareBtn = document.getElementById('shareBtn');
+ if (shareBtn) {
+ shareBtn.addEventListener('click', () => {
  alert('Share functionality');
  });
+ }
 
  // Test API Key
- document.getElementById('testKeyBtn').addEventListener('click', async () => {
- const apiKey = document.getElementById('apiKey').value;
- const model = document.getElementById('modelSelect').value;
+ const testKeyBtn = document.getElementById('testKeyBtn');
+ if (testKeyBtn) {
+ testKeyBtn.addEventListener('click', async () => {
+ const apiKey = document.getElementById('apiKey')?.value || '';
+ const model = document.getElementById('modelSelect')?.value || 'openrouter';
  const resultDiv = document.getElementById('testKeyResult');
  
  if (!apiKey) {
- resultDiv.innerHTML = '<span style="color:var(--accent)">Please enter an API key first</span>';
+ if (resultDiv) resultDiv.innerHTML = '<span style="color:var(--accent)">Please enter an API key first</span>';
  return;
  }
  
- resultDiv.innerHTML = '<span style="color:var(--text-muted)">Testing...</span>';
+ if (resultDiv) resultDiv.innerHTML = '<span style="color:var(--text-muted)">Testing...</span>';
  
  try {
  const response = await fetch('http://localhost:8001/api/test-key', {
@@ -1248,28 +1258,35 @@
  const data = await response.json();
  
  if (data.success) {
- resultDiv.innerHTML = '<span style="color:#10b981">✓ ' + data.message + '</span>';
+ if (resultDiv) resultDiv.innerHTML = '<span style="color:#10b981">✓ ' + data.message + '</span>';
  } else {
- resultDiv.innerHTML = '<span style="color:var(--accent)">✗ ' + (data.error || data.message || 'Unknown error') + '</span>';
+ if (resultDiv) resultDiv.innerHTML = '<span style="color:var(--accent)">✗ ' + (data.error || data.message || 'Unknown error') + '</span>';
  }
  } catch (error) {
- resultDiv.innerHTML = '<span style="color:var(--accent)">Error: ' + error.message + '</span>';
+ if (resultDiv) resultDiv.innerHTML = '<span style="color:var(--accent)">Error: ' + error.message + '</span>';
  }
  });
+ }
 
- document.getElementById('downloadBtn').addEventListener('click', () => {
+ // Download Button
+ const downloadBtn = document.getElementById('downloadBtn');
+ if (downloadBtn) {
+ downloadBtn.addEventListener('click', () => {
  if (currentProjectId) {
  window.location.href = `http://localhost:8001/api/download/${currentProjectId}`;
  } else {
  alert('Generate a project first!');
  }
  });
+ }
 
  // Sub-Agent Spawn Button
- document.getElementById('subAgentBtn').addEventListener('click', () => {
+ const subAgentBtn = document.getElementById('subAgentBtn');
+ if (subAgentBtn) {
+ subAgentBtn.addEventListener('click', () => {
  if (!planActive) {
  alert('⚠️ Sub-agent spawning requires ProtoForge Plan. Open settings to upgrade!');
- openSettings();
+ if (typeof openSettings === 'function') openSettings();
  return;
  }
  if (!currentProjectId) {
@@ -1277,13 +1294,20 @@
  return;
  }
  // Show agent chat visualization
+ if (typeof showAgentChat === 'function') {
  showAgentChat(subAgentConfig.agents.map(a => a.nickname || 'Agent'));
+ }
  
  // Simulate sub-agent work
  setTimeout(() => {
- hideAgentChat();
+ if (typeof hideAgentChat === 'function') hideAgentChat();
  addMessage('🤖 Sub-agents completed their tasks! Check the generated content for improvements.');
  }, 5000);
+ });
+ }
+
+ // Initialize plan status
+ if (typeof loadPlanStatus === 'function') loadPlanStatus();
  });
 
  // File Explorer & Preview Functions
@@ -1407,6 +1431,8 @@
  }
  }
 
+ // Initialize settings cog and modal after DOM is ready
+ window.addEventListener('DOMContentLoaded', () => {
  // Settings cog button (bottom right corner)
  const settingsCog = document.createElement('button');
  settingsCog.id = 'settingsCog';
@@ -1588,6 +1614,7 @@
 
  // Initialize on load
  loadPlanStatus();
+ }); // End DOMContentLoaded
 
  // ============ AGENT CHAT VISUALIZATION ============
  let agentChatInterval = null;
