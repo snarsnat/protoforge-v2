@@ -1,15 +1,1 @@
-__pycache__/
-*.pyc
-*.pyo
-.venv/
-venv/
-env/
-*.egg-info/
-dist/
-build/
-.pytest_cache/
-.mypy_cache/
-data/
-*.log
-.env
-.DS_Store
+Nothing needs to be added to .gitignore since only a source file (templates/index.html) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
