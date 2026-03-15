@@ -9,7 +9,7 @@
 
 Build real software, hardware, and hybrid prototypes with AI.
 
-Built my me a 13 year old ⚡️
+Built my me a 13 year old ⚡️ (still under development)
 
 ---
 
