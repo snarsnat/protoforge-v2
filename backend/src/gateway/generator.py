@@ -592,14 +592,15 @@ Be specific with numbers and units."""
             {'name': f'{prefix}instructions.md', 'type': 'markdown'}
         ]
         
-        # Save instructions
-        (base_path / 'instructions.md').write_text('\n'.join(instructions))
+        # Save instructions - convert dict format to markdown text
+        instructions_text = '\n\n'.join([f"## {step.get('title', f'Step {i+1}')}\n{step.get('desc', str(step))}" for i, step in enumerate(instructions)])
+        (base_path / 'instructions.md').write_text(instructions_text)
         
         # Build file contents map (with subdir prefix if provided)
         file_contents = {
             f'{prefix}diagram.mmd': diagram,
             f'{prefix}bom.json': json.dumps(components, indent=2),
-            f'{prefix}instructions.md': '\n'.join(instructions)
+            f'{prefix}instructions.md': instructions_text
         }
         
         return {
