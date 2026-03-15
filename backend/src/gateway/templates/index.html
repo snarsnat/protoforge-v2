@@ -855,6 +855,10 @@
  <div class="content-section-title">System Diagram (Mermaid.js)</div>
  <div class="diagram-container" id="mermaid-diagram"></div>
  </div>
+ <div class="content-section">
+ <div class="content-section-title">Technical Specifications</div>
+ <div class="code-block" id="diagram-specs"></div>
+ </div>
  </div>
  </div>
 
@@ -1075,29 +1079,62 @@
 
  async function renderMermaid(diagramCode) {
  const container = document.getElementById('mermaid-diagram');
- if (!container) return;
+ if (!container || !diagramCode) return;
+ 
  try {
- const { svg } = await mermaid.render('mermaid-svg', diagramCode);
+ // Clean up any previous renders
+ container.innerHTML = '';
+ 
+ // Initialize mermaid if needed
+ if (!window.mermaidInitialized) {
+ mermaid.initialize({ 
+ startOnLoad: false,
+ theme: 'default',
+ securityLevel: 'loose',
+ });
+ window.mermaidInitialized = true;
+ }
+ 
+ // Remove any existing SVG to avoid ID conflicts
+ const existingSvg = container.querySelector('svg');
+ if (existingSvg) existingSvg.remove();
+ 
+ // Render with unique ID
+ const renderId = 'mermaid-' + Date.now();
+ const { svg } = await mermaid.render(renderId, diagramCode);
  container.innerHTML = svg;
+ 
+ // Style the rendered diagram
+ const svgEl = container.querySelector('svg');
+ if (svgEl) {
+ svgEl.style.maxWidth = '100%';
+ svgEl.style.height = 'auto';
+ }
+ 
  window.currentDiagram = diagramCode;
  } catch (error) {
- container.innerHTML = `<pre class="code-block">${diagramCode}</pre>`;
+ console.error('Mermaid render error:', error);
+ // Fallback: show as formatted text
+ container.innerHTML = `
+ <div style="background:var(--bg-secondary);padding:16px;border-radius:8px;font-family:monospace;font-size:12px;overflow:auto;">
+ <pre style="margin:0;white-space:pre-wrap;">${diagramCode}</pre>
+ </div>
+ <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+ ⚠️ Diagram text generated. Copy this into a Mermaid live editor to visualize.
+ </div>
+ `;
  }
  }
 
  function displayGeneratedContent() {
- document.getElementById('model-empty').style.display = 'none';
- document.getElementById('model-content').classList.add('visible');
-
- const canvas = document.getElementById('model-canvas');
- canvas.innerHTML = `
- <div class="model-placeholder">
- <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
- <div style="margin-top:12px;font-size:12px;color:var(--accent)">3D Model Generated</div>
- <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${projectData.name}</div>
- </div>
- `;
- document.getElementById('model-specs').textContent = projectData.specs;
+ // Hide 3D model section - not actually generated (would need STL/OBJ generation)
+ document.getElementById('model-empty').style.display = 'flex';
+ document.getElementById('model-content').classList.remove('visible');
+ document.querySelector('[data-tab="model"]').style.display = 'none';
+ 
+ // Show specs in the diagram tab
+ const diagramSpecsEl = document.getElementById('diagram-specs');
+ if (diagramSpecsEl) diagramSpecsEl.textContent = projectData.specs || '';
 
  document.getElementById('diagram-empty').style.display = 'none';
  document.getElementById('diagram-content').classList.add('visible');
@@ -1119,15 +1156,36 @@
 
  document.getElementById('instructions-empty').style.display = 'none';
  document.getElementById('instructions-content').classList.add('visible');
- document.getElementById('instruction-list').innerHTML = projectData.instructions.map((step, i) => `
+ 
+ // Instructions can be strings or objects with title/desc
+ document.getElementById('instruction-list').innerHTML = projectData.instructions.map((step, i) => {
+ // Handle both string format and object format
+ let title, desc;
+ if (typeof step === 'string') {
+ // String format: "1. Connect the sensor" or just "Connect the sensor"
+ const match = step.match(/^(\d+)[.\)]\s*(.+)$/);
+ if (match) {
+ title = `Step ${match[1]}`;
+ desc = match[2];
+ } else {
+ title = `Step ${i + 1}`;
+ desc = step;
+ }
+ } else {
+ // Object format
+ title = step.title || `Step ${i + 1}`;
+ desc = step.desc || step.description || '';
+ }
+ return `
  <div class="instruction-step">
  <div class="step-number">${i + 1}</div>
  <div class="step-content">
- <h4>${step.title}</h4>
- <p>${step.desc || step.description || ''}</p>
+ <h4>${title}</h4>
+ <p>${desc}</p>
  </div>
  </div>
- `).join('');
+ `;
+ }).join('');
 
  document.getElementById('code-empty').style.display = 'none';
  document.getElementById('code-content').classList.add('visible');

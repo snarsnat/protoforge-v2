@@ -449,12 +449,29 @@ Generate technical specifications including: architecture, tech stack, features,
 Be specific and detailed. Output as plain text."""
         specs = self._call_ai("You are a software architect. Write detailed technical specifications.", specs_prompt)
         
-        # Generate deployment instructions with AI
+        # Generate deployment instructions with AI - structured format
         instructions_prompt = f"""Generate step-by-step deployment instructions for: {prompt}
-Include: 1) Setup/Installation, 2) Configuration, 3) Running locally, 4) Deployment steps, 5) Testing.
-Be specific with commands and file paths. Output as a numbered list."""
-        instructions_response = self._call_ai("You are a DevOps engineer. Write clear deployment instructions.", instructions_prompt)
-        instructions = [line.strip() for line in instructions_response.split('\n') if line.strip()]
+Return a JSON array of objects, each with "title" and "desc" keys.
+Example: [{{"title": "Install Dependencies", "desc": "Run npm install to install all required packages."}}, {{"title": "Start Development Server", "desc": "Run npm run dev to start the local development server on port 3000."}}]
+Include: 1) Setup/Installation, 2) Configuration, 3) Running locally, 4) Deployment, 5) Testing.
+Be specific with commands and file paths. Output ONLY valid JSON array."""
+        instructions_response = self._call_ai("You are a DevOps engineer. Write clear deployment instructions in JSON format.", instructions_prompt)
+        
+        # Parse JSON instructions
+        instructions = []
+        try:
+            start = instructions_response.find('[')
+            end = instructions_response.rfind(']') + 1
+            if start >= 0 and end > start:
+                instructions = json.loads(instructions_response[start:end])
+        except:
+            # Fallback: parse as plain text lines
+            instructions = [{'title': f'Step {i+1}', 'desc': line.strip()} 
+                          for i, line in enumerate(instructions_response.split('\n')) 
+                          if line.strip()]
+        
+        if not instructions:
+            instructions = [{'title': 'Deployment', 'desc': 'Follow standard deployment procedures for this application.'}]
         
         # Combine all code for display
         code_content = f"// === index.html ===\n{html_content}\n\n// === style.css ===\n{css_content}\n\n// === app.js ===\n{js_content}"
@@ -537,12 +554,29 @@ Output ONLY valid JSON array."""
             components = [{'name': 'Component', 'qty': 1, 'ref': 'X1', 'notes': 'See diagram'}]
         (base_path / 'bom.json').write_text(json.dumps(components, indent=2))
         
-        # Generate build instructions with AI
+        # Generate build instructions with AI - structured format
         instructions_prompt = f"""Generate step-by-step build instructions for: {prompt}
-Include: 1) Components needed, 2) Tools required, 3) Assembly steps (numbered), 4) Wiring connections, 5) Testing procedure, 6) Troubleshooting.
-Be extremely specific with wire colors, pin numbers, and safety warnings. Output as numbered steps."""
-        instructions_response = self._call_ai("You are a hardware technician. Write detailed assembly instructions.", instructions_prompt)
-        instructions = [line.strip() for line in instructions_response.split('\n') if line.strip() and not line.strip().startswith('#')]
+Return a JSON array of objects, each with "title" and "desc" keys.
+Example: [{{"title": "Gather Components", "desc": "Collect all parts from the BOM and verify quantities."}}, {{"title": "Prepare Power Supply", "desc": "Connect the 9V battery to the voltage regulator input."}}]
+Include: 1) Components/tools needed, 2) Assembly steps, 3) Wiring connections, 4) Testing, 5) Troubleshooting.
+Be specific with wire colors, pin numbers, and safety warnings. Output ONLY valid JSON array."""
+        instructions_response = self._call_ai("You are a hardware technician. Write detailed assembly instructions in JSON format.", instructions_prompt)
+        
+        # Parse JSON instructions
+        instructions = []
+        try:
+            start = instructions_response.find('[')
+            end = instructions_response.rfind(']') + 1
+            if start >= 0 and end > start:
+                instructions = json.loads(instructions_response[start:end])
+        except:
+            # Fallback: parse as plain text lines
+            instructions = [{'title': f'Step {i+1}', 'desc': line.strip()} 
+                          for i, line in enumerate(instructions_response.split('\n')) 
+                          if line.strip() and not line.strip().startswith('#')]
+        
+        if not instructions:
+            instructions = [{'title': 'Assembly', 'desc': 'Follow the diagram and BOM to assemble the circuit.'}]
         
         # Generate specs
         specs_prompt = f"""Generate technical specifications for this hardware project: {prompt}
