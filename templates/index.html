@@ -792,7 +792,7 @@
  <div class="chat-messages" id="chatMessages">
  <div class="chat-message ai">
  <div class="chat-message-label">ProtoForge</div>
- Ready to forge. Describe your project and I'll generate the prototypes.
+ Ready to forge. Describe your project and I\'ll generate the prototypes.
  </div>
  </div>
  <div class="chat-input-section">
@@ -1068,9 +1068,9 @@
  if (!aiResponse) {
  // Generate a natural response based on what was created
  const responses = [
- `I've brought your vision to life! Created a ${projectType} project with ${data.files ? data.files.length + ' files' : 'core components'}. ${data.diagram ? 'The system diagram shows how everything connects.' : ''} ${data.instructions && data.instructions.length > 0 ? 'Follow the step-by-step instructions to get it running.' : ''}`,
- `Your ${projectType} prototype is ready! I generated ${data.files ? data.files.length + ' files' : 'the core structure'} with all the essential pieces. ${data.components && data.components.length > 0 ? 'Check the BOM for the components you'll need.' : ''} ${data.specs ? 'The specs detail the technical architecture.' : ''}`,
- `Done! I've crafted a complete ${projectType} solution for you. ${data.code ? 'The code is modular and ready to extend.' : ''} ${data.diagram ? 'Visualize the architecture in the diagram tab.' : ''} Let me know if you want to iterate on anything!`
+ `I\'ve brought your vision to life! Created a ${projectType} project with ${data.files ? data.files.length + ' files' : 'core components'}. ${data.diagram ? 'The system diagram shows how everything connects.' : ''} ${data.instructions && data.instructions.length > 0 ? 'Follow the step-by-step instructions to get it running.' : ''}`,
+ `Your ${projectType} prototype is ready! I generated ${data.files ? data.files.length + ' files' : 'the core structure'} with all the essential pieces. ${data.components && data.components.length > 0 ? 'Check the BOM for the components you\'ll need.' : ''} ${data.specs ? 'The specs detail the technical architecture.' : ''}`,
+ `Done! I\'ve crafted a complete ${projectType} solution for you. ${data.code ? 'The code is modular and ready to extend.' : ''} ${data.diagram ? 'Visualize the architecture in the diagram tab.' : ''} Let me know if you want to iterate on anything!`
  ];
  aiResponse = responses[Math.floor(Math.random() * responses.length)];
  }
