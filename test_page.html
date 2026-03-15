@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ProtoForge UI Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1e1e1e; color: white; }
+        .status { margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        iframe { width: 100%; height: 600px; border: 2px solid #444; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>ProtoForge UI Diagnostic Tool</h1>
+    
+    <div id="results"></div>
+    
+    <h3>Live Preview (if working):</h3>
+    <iframe src="http://localhost:8001" id="appFrame"></iframe>
+    
+    <script>
+        async function test() {
+            const results = document.getElementById('results');
+            
+            try {
+                const response = await fetch('http://localhost:8001');
+                const html = await response.text();
+                
+                let output = '<div class="status success">✅ Server is responding!</div>';
+                output += `<div class="status">📄 Response size: ${html.length} bytes</div>`;
+                
+                // Check for key features
+                const checks = [
+                    { name: 'Settings Cog', pattern: 'settingsCog' },
+                    { name: 'File Explorer', pattern: 'fileExplorer' },
+                    { name: 'Preview Button', pattern: 'previewBtn' },
+                    { name: 'Tab Navigation', pattern: 'tabNav' },
+                    { name: 'Download Button', pattern: 'downloadBtn' }
+                ];
+                
+                output += '<h3>Feature Check:</h3>';
+                checks.forEach(check => {
+                    const found = html.includes(check.pattern);
+                    output += `<div class="status ${found ? 'success' : 'error'}">
+                        ${found ? '✅' : '❌'} ${check.name}: ${found ? 'FOUND' : 'MISSING'}
+                    </div>`;
+                });
+                
+                results.innerHTML = output;
+            } catch (e) {
+                results.innerHTML = `<div class="status error">❌ Error: ${e.message}</div>`;
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
