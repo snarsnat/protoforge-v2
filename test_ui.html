@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>UI Test</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+.status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+.success { background: #d4edda; color: #155724; }
+.error { background: #f8d7da; color: #721c24; }
+.info { background: #d1ecf1; color: #0c5460; }
+</style>
+</head>
+<body>
+<h1>ProtoForge UI Status Check</h1>
+
+<div id="results"></div>
+
+<script>
+async function checkUI() {
+    const results = document.getElementById('results');
+    
+    // Check if backend is running
+    try {
+        const healthRes = await fetch('http://localhost:8001/health');
+        const healthData = await healthRes.json();
+        results.innerHTML += '<div class="status success">✅ Backend is running: ' + JSON.stringify(healthData) + '</div>';
+    } catch (e) {
+        results.innerHTML += '<div class="status error">❌ Backend not reachable: ' + e.message + '</div>';
+        return;
+    }
+    
+    // Check if full UI is being served
+    try {
+        const uiRes = await fetch('http://localhost:8001/');
+        const uiText = await uiRes.text();
+        
+        const hasSettingsCog = uiText.includes('settingsCog');
+        const hasFileExplorer = uiText.includes('fileExplorer');
+        const hasPreview = uiText.includes('Preview');
+        const size = uiText.length;
+        
+        if (hasSettingsCog && hasFileExplorer && hasPreview) {
+            results.innerHTML += '<div class="status success">✅ Full-featured UI is being served (' + size + ' bytes)</div>';
+            results.innerHTML += '<div class="status info">ℹ️ Settings cog: ' + (hasSettingsCog ? '✓' : '✗') + ', File explorer: ' + (hasFileExplorer ? '✓' : '✗') + ', Preview: ' + (hasPreview ? '✓' : '✗') + '</div>';
+        } else {
+            results.innerHTML += '<div class="status error">❌ Simple UI detected or missing features</div>';
+            results.innerHTML += '<div class="status info">Settings cog: ' + (hasSettingsCog ? '✓' : '✗') + ', File explorer: ' + (hasFileExplorer ? '✓' : '✗') + ', Preview: ' + (hasPreview ? '✓' : '✗') + '</div>';
+        }
+    } catch (e) {
+        results.innerHTML += '<div class="status error">❌ Could not fetch UI: ' + e.message + '</div>';
+    }
+    
+    results.innerHTML += '<div class="status info"><strong>Instructions:</strong><br>1. Open http://localhost:8001 directly in your browser<br>2. Press Ctrl+Shift+R (or Cmd+Shift+R on Mac) to hard refresh<br>3. Clear browser cache if needed</div>';
+}
+
+checkUI();
+</script>
+</body>
+</html>
