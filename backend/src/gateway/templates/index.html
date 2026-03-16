@@ -1538,12 +1538,21 @@
  document.getElementById('settingsModal').classList.remove('active');
  }
 
+// Expose to global scope for inline onclick handlers
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.openPreview = openPreview;
+window.closePreview = closePreview;
+
  function switchToPlanTab() {
  document.querySelectorAll('[data-settings-tab]').forEach(btn => btn.classList.remove('active'));
  document.querySelector('[data-settings-tab="plan"]').classList.add('active');
  document.getElementById('settings-plan-tab').style.display = 'block';
  document.getElementById('settings-subagents-tab').style.display = 'none';
  }
+
+// Expose to global scope for inline onclick handlers
+window.switchToPlanTab = switchToPlanTab;
 
  // Tab switching for settings modal
  document.querySelectorAll('[data-settings-tab]').forEach(btn => {
@@ -1573,6 +1582,9 @@
  }
  }, 5000);
  }
+
+	// Expose to global scope for inline onclick handlers
+	window.handlePayment = handlePayment;
 
  function renderAgentConfigs() {
  const container = document.getElementById('agentConfigList');
@@ -1611,6 +1623,11 @@
  function updateAgent(index, field, value) {
  subAgentConfig.agents[index][field] = value;
  }
+
+// Expose to global scope for inline onclick handlers
+window.removeAgent = removeAgent;
+window.addAgentConfig = addAgentConfig;
+window.updateAgent = updateAgent;
 
  // Initialize on load
  loadPlanStatus();
