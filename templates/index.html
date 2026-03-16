@@ -1013,6 +1013,13 @@
  }
 
  async function processMessage(message) {
+ // Check if user can send prompts
+ if (!planActive && freePromptUsed) {
+ addMessage('⚠ You\'ve used your free prompt for today. Please upgrade to ProtoForge Plan ($6/month) for unlimited prompts, or come back tomorrow for another free prompt!');
+ openSettings();
+ return;
+ }
+ 
  addMessage(message, true);
  const loadingMsg = addMessage('', false, true);
 
@@ -1025,6 +1032,11 @@
 
  const projectType = document.querySelector('.project-toggle-btn.active').dataset.type;
  const model = document.getElementById('modelSelect').value;
+ 
+ // Mark free prompt as used if on free plan
+ if (!planActive) {
+ useFreePrompt();
+ }
 
  try {
  // Show agent chat visualization
@@ -1060,7 +1072,8 @@
  instructions: data.instructions || [],
  code: data.code || '',
  diagram: data.diagram || '',
- specs: data.specs || ''
+ specs: data.specs || '',
+ model3d: data.model_3d || null // Store 3D model data
  };
 
  // AI-generated conversational response
@@ -1132,11 +1145,71 @@
  }
  }
 
+ // 3D Model rendering function using Three.js
+ async function render3DModel(modelData) {
+ const container = document.getElementById('model-content');
+ if (!container) return;
+ 
+ // Clear previous content
+ const viewerContainer = container.querySelector('#3d-viewer-container');
+ if (viewerContainer) viewerContainer.remove();
+ 
+ const viewerDiv = document.createElement('div');
+ viewerDiv.id = '3d-viewer-container';
+ viewerDiv.style.cssText = 'width:100%;height:400px;background:var(--bg-tertiary);border-radius:8px;position:relative;overflow:hidden;';
+ 
+ // If modelData is a URL to an STL/OBJ file
+ if (typeof modelData === 'string' && (modelData.includes('.stl') || modelData.includes('.obj') || modelData.includes('.glb'))) {
+ viewerDiv.innerHTML = `
+ <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-secondary);">
+ <div style="font-size:48px;margin-bottom:16px;">🎨</div>
+ <div>3D Model Viewer</div>
+ <div style="font-size:11px;margin-top:8px;">Loading: ${modelData.split('/').pop()}</div>
+ <div style="font-size:10px;margin-top:4px;">Use mouse to rotate, scroll to zoom</div>
+ </div>
+ `;
+ } else if (typeof modelData === 'object' && modelData.format === 'ascii_stl') {
+ // ASCII STL data - create a simple visualization
+ viewerDiv.innerHTML = `
+ <div style="padding:20px;height:100%;overflow:auto;">
+ <pre style="font-size:10px;color:var(--text-secondary);white-space:pre-wrap;">${modelData.data || JSON.stringify(modelData)}</pre>
+ </div>
+ `;
+ } else {
+ // Default: show placeholder with model info
+ viewerDiv.innerHTML = `
+ <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);">
+ <div style="font-size:64px;margin-bottom:16px;">🧊</div>
+ <div style="font-size:14px;font-weight:600;">3D Model Generated</div>
+ <div style="font-size:11px;margin-top:8px;text-align:center;max-width:80%;">
+ ${typeof modelData === 'string' ? modelData : JSON.stringify(modelData, null, 2)}
+ </div>
+ <div style="margin-top:16px;padding:8px 16px;background:var(--accent);color:white;border-radius:4px;font-size:11px;">
+ Download STL/OBJ to view in external viewer
+ </div>
+ </div>
+ `;
+ }
+ 
+ container.insertBefore(viewerDiv, container.firstChild);
+ window.current3DModel = modelData;
+ }
+
  function displayGeneratedContent() {
- // Hide 3D model section - not actually generated (would need STL/OBJ generation)
+ // Handle 3D model tab
+ const modelTab = document.querySelector('[data-tab="model"]');
+ if (projectData.model3d) {
+ // Show 3D model content
+ document.getElementById('model-empty').style.display = 'none';
+ document.getElementById('model-content').classList.add('visible');
+ modelTab.style.display = 'flex';
+ render3DModel(projectData.model3d);
+ } else {
+ // Hide 3D model section - no model generated
  document.getElementById('model-empty').style.display = 'flex';
  document.getElementById('model-content').classList.remove('visible');
- document.querySelector('[data-tab="model"]').style.display = 'none';
+ modelTab.style.display = 'none';
+ }
  
  // Show specs in the diagram tab
  const diagramSpecsEl = document.getElementById('diagram-specs');
@@ -1228,8 +1301,53 @@
  // Guard all button bindings with existence checks
  const shareBtn = document.getElementById('shareBtn');
  if (shareBtn) {
- shareBtn.addEventListener('click', () => {
- alert('Share functionality');
+ shareBtn.addEventListener('click', async () => {
+ if (!currentProjectId) {
+ alert('Generate a project first!');
+ return;
+ }
+ 
+ try {
+ // Create a shareable link with project data
+ const shareData = {
+ id: currentProjectId,
+ name: projectData.name,
+ type: projectData.type,
+ timestamp: Date.now()
+ };
+ 
+ // Store project in localStorage for demo (in production, save to backend)
+ const shareKey = 'protoforge_share_' + currentProjectId;
+ localStorage.setItem(shareKey, JSON.stringify(projectData));
+ 
+ // Generate share URL
+ const shareUrl = window.location.origin + '/?shared=' + currentProjectId;
+ 
+ // Copy to clipboard
+ await navigator.clipboard.writeText(shareUrl);
+ 
+ // Show share dialog
+ const shareDialog = document.createElement('div');
+ shareDialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-secondary);padding:24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:10001;max-width:400px;width:90%;border:1px solid var(--border-subtle);';
+ shareDialog.innerHTML = `
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+ <h3 style="margin:0;font-size:16px;">🔗 Share Project</h3>
+ <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:20px;">&times;</button>
+ </div>
+ <p style="color:var(--text-secondary);margin-bottom:16px;font-size:12px;">Your project is ready to share! Copy the link below:</p>
+ <div style="display:flex;gap:8px;margin-bottom:16px;">
+ <input type="text" value="${shareUrl}" readonly style="flex:1;padding:8px;background:var(--bg-tertiary);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;font-size:11px;" />
+ <button onclick="navigator.clipboard.writeText('${shareUrl}').then(() => alert('Link copied!'))" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">Copy</button>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;">
+ <button onclick="window.open('https://twitter.com/intent/tweet?text=Check out my ProtoForge project: ${encodeURIComponent(shareUrl)}')" style="flex:1;padding:8px;background:#1DA1F2;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Twitter</button>
+ <button onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}')" style="flex:1;padding:8px;background:#0A66C2;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">LinkedIn</button>
+ </div>
+ `;
+ document.body.appendChild(shareDialog);
+ } catch (error) {
+ alert('Error creating share link: ' + error.message);
+ }
  });
  }
 
@@ -1398,6 +1516,8 @@
 
  // ============ SETTINGS COG & MODAL ============
  let planActive = false;
+ let freePromptUsed = false;
+ let lastPromptDate = null;
  let subAgentConfig = {
  maxAgents: 3,
  agents: [],
@@ -1408,13 +1528,50 @@
  function loadPlanStatus() {
  const saved = localStorage.getItem('protoforge_plan_active');
  planActive = saved === 'true';
+ 
+ // Load free prompt usage
+ const savedFreePrompt = localStorage.getItem('protoforge_free_prompt_used');
+ const savedDate = localStorage.getItem('protoforge_last_prompt_date');
+ const today = new Date().toDateString();
+ 
+ // Reset daily
+ if (savedDate !== today) {
+ freePromptUsed = false;
+ localStorage.setItem('protoforge_free_prompt_used', 'false');
+ localStorage.setItem('protoforge_last_prompt_date', today);
+ } else {
+ freePromptUsed = savedFreePrompt === 'true';
+ }
+ 
+ lastPromptDate = savedDate;
  updateSubAgentButton();
+ updateFreePromptStatus();
  }
 
  function savePlanStatus(active) {
  planActive = active;
  localStorage.setItem('protoforge_plan_active', active ? 'true' : 'false');
  updateSubAgentButton();
+ }
+
+ function useFreePrompt() {
+ freePromptUsed = true;
+ localStorage.setItem('protoforge_free_prompt_used', 'true');
+ localStorage.setItem('protoforge_last_prompt_date', new Date().toDateString());
+ updateFreePromptStatus();
+ }
+
+ function updateFreePromptStatus() {
+ const statusEl = document.getElementById('freePromptStatus');
+ if (statusEl) {
+ if (planActive) {
+ statusEl.innerHTML = '<span style="color:#4CAF50;">✓ Plan Active - Unlimited Prompts</span>';
+ } else if (!freePromptUsed) {
+ statusEl.innerHTML = '<span style="color:#FFC107;">⚡ 1 Free Prompt Available Today</span>';
+ } else {
+ statusEl.innerHTML = '<span style="color:#f44336;">⚠ Free Prompt Used - Upgrade for More</span>';
+ }
+ }
  }
 
  function updateSubAgentButton() {
@@ -1474,6 +1631,18 @@
  </button>
  ${planActive ? '<div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:center;">Your plan is active. All features unlocked!</div>' : ''}
  </div>
+ 
+ <!-- Free Plan Info -->
+ ${!planActive ? `
+ <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;margin-bottom:16px;">
+ <h4 style="margin-bottom:8px;font-size:14px;">⚡ Free Plan</h4>
+ <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Get 1 free prompt per day, resets daily at midnight.</p>
+ <div id="freePromptStatus" style="padding:12px;background:var(--bg-secondary);border-radius:6px;font-size:12px;">
+ <!-- Populated by updateFreePromptStatus() -->
+ </div>
+ </div>
+ ` : ''}
+ 
  <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;">
  <h4 style="margin-bottom:8px;font-size:14px;">Technical Settings</h4>
  <div class="config-group">
