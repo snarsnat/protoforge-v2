@@ -1616,6 +1616,14 @@ alert('Error creating share link: ' + error.message);
  settingsCog.onmouseover = () => settingsCog.style.transform = 'scale(1.1) rotate(90deg)';
  settingsCog.onmouseout = () => settingsCog.style.transform = 'scale(1) rotate(0deg)';
  document.body.appendChild(settingsCog);
+ 
+ // Auto-open settings on first visit to show plan card
+ const hasSeenSettings = localStorage.getItem('protoforge_has_seen_settings');
+ if (!hasSeenSettings) {
+ setTimeout(() => {
+ openSettings();
+ }, 1000);
+ }
 
  // Settings Modal
  const settingsModal = document.createElement('div');
@@ -1634,14 +1642,13 @@ alert('Error creating share link: ' + error.message);
  <!-- Plan Tab -->
  <div id="settings-plan-tab" class="settings-tab-content" style="display:block;">
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
- <h3 style="margin-bottom:12px;font-size:16px;">🚀 ProtoForge Plan</h3>
+ <h3 style="margin-bottom:12px;font-size:16px;">📋 ProtoForge Monthly Usage</h3>
  <div style="font-size:28px;font-weight:bold;color:var(--accent);margin-bottom:8px;">$6.00<span style="font-size:14px;color:var(--text-muted);font-weight:normal;">/month</span></div>
  <ul style="list-style:none;margin:16px 0;">
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Unlimited project generation</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub-agent spawning (up to 10 agents)</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Per-agent API key configuration</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Custom agent roles & nicknames</li>
- <li style="padding:8px 0;">✓ Priority support</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent configuration</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agents nicknaming</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent API configuration</li>
+ <li style="padding:8px 0;">✓ Infinite prompt usage</li>
  </ul>
  <button id="payNowBtn" onclick="handlePayment()" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;margin-top:16px;">
  ${planActive ? '✅ Plan Active' : '💳 Pay Now with PayPal'}
@@ -1677,13 +1684,13 @@ alert('Error creating share link: ' + error.message);
  ${!planActive ? `
  <div style="text-align:center;padding:40px 20px;">
  <svg viewBox="0 0 24 24" style="width:48px;height:48px;color:var(--text-muted);margin-bottom:16px;"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
- <h3 style="margin-bottom:8px;">Sub-Agent Features Locked</h3>
- <p style="color:var(--text-muted);margin-bottom:16px;">Upgrade to ProtoForge Plan to unlock sub-agent spawning and configuration.</p>
+ <h3 style="margin-bottom:8px;">Sub-Agent Configuration Locked</h3>
+ <p style="color:var(--text-muted);margin-bottom:16px;">Upgrade to ProtoForge Monthly Usage ($6/month) to unlock sub-agent spawning and configuration.</p>
  <button onclick="switchToPlanTab()" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">View Plan</button>
  </div>
  ` : `
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
- <h4 style="margin-bottom:12px;font-size:14px;">Agent Configuration</h4>
+ <h4 style="margin-bottom:12px;font-size:14px;">Sub Agent Spawning</h4>
  <div class="config-group">
  <label class="config-label" style="font-size:12px;">Max Agents to Spawn (1-10)</label>
  <input type="range" id="maxAgentsSlider" min="1" max="10" value="${subAgentConfig.maxAgents}" style="width:100%;margin:8px 0;" oninput="document.getElementById('maxAgentsValue').textContent=this.value">
@@ -1691,7 +1698,8 @@ alert('Error creating share link: ' + error.message);
  </div>
  </div>
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
- <h4 style="margin-bottom:12px;font-size:14px;">Agent Roles</h4>
+ <h4 style="margin-bottom:12px;font-size:14px;">Sub Agent Roles</h4>
+ <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Each sub agent gets a role like coder agent, planner agent, etc.</p>
  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
  ${subAgentConfig.roles.map(role => `
  <label style="display:flex;align-items:center;gap:8px;font-size:12px;">
@@ -1702,7 +1710,8 @@ alert('Error creating share link: ' + error.message);
  </div>
  </div>
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;">
- <h4 style="margin-bottom:12px;font-size:14px;">Agent Nicknames & API Keys</h4>
+ <h4 style="margin-bottom:12px;font-size:14px;">Sub Agent API Configuration & Nicknames</h4>
+ <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">If no specific API is provided for a sub agent, they all use the main API key you provided above.</p>
  <div id="agentConfigList" style="display:flex;flex-direction:column;gap:12px;">
  <!-- Populated dynamically -->
  </div>
@@ -1729,6 +1738,11 @@ function openSettings() {
 document.getElementById('settingsModal').classList.add('active');
 loadPlanStatus();
 renderAgentConfigs();
+// Auto-show settings on first visit if plan is not active
+const hasSeenSettings = localStorage.getItem('protoforge_has_seen_settings');
+if (!hasSeenSettings && !planActive) {
+localStorage.setItem('protoforge_has_seen_settings', 'true');
+}
 }
 
 function closeSettings() {
@@ -1820,13 +1834,20 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  const chatMessages = document.getElementById('chatMessages');
  if (!chatMessages) return;
 
- // Create agent chat container
+ // Create agent chat container with 4 sub agents talking to each other
  const agentChatContainer = document.createElement('div');
  agentChatContainer.id = 'agentChatContainer';
  agentChatContainer.style.cssText = 'background:var(--bg-tertiary);border-radius:8px;padding:12px;margin:8px 0;';
+ 
+ // Ensure we have exactly 4 agents for the UI
+ const displayAgents = agents.slice(0, 4);
+ while (displayAgents.length < 4) {
+ displayAgents.push(`Agent ${displayAgents.length + 1}`);
+ }
+ 
  agentChatContainer.innerHTML = `
  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
- ${agents.map((agent, i) => `
+ ${displayAgents.map((agent, i) => `
  <div class="agent-avatar" data-agent="${agent}" style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:var(--bg-secondary);border-radius:16px;font-size:10px;border:1px solid ${i === 0 ? 'var(--accent)' : 'var(--border-subtle)'};">
  <div style="width:16px;height:16px;border-radius:50%;background:${['var(--accent)', '#4CAF50', '#2196F3', '#FFC107'][i % 4]};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">${agent[0]}</div>
  ${agent}
@@ -1838,18 +1859,20 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  chatMessages.appendChild(agentChatContainer);
  chatMessages.scrollTop = chatMessages.scrollHeight;
 
- // Simulate agent conversation
- const messages = [
- "Analyzing requirements...",
- "Generating architecture...",
- "Writing code...",
- "Running tests...",
- "Reviewing changes...",
- "Optimizing performance...",
- "Finalizing output..."
+ // Simulate agent conversation - 4 sub agents talking to each other
+ const agentNames = displayAgents;
+ const conversations = [
+ () => `${agentNames[0]}: Starting analysis of the project requirements...`,
+ () => `${agentNames[1]}: Got it! I'll begin drafting the initial structure.`,
+ () => `${agentNames[2]}: Reviewing the approach for best practices...`,
+ () => `${agentNames[3]}: Preparing test cases in parallel...`,
+ () => `${agentNames[0]}: ${agentNames[1]}, make sure to follow the architecture guidelines.`,
+ () => `${agentNames[1]}: Will do! Almost done with the core modules.`,
+ () => `${agentNames[2]}: Code review complete. Looks good!`,
+ () => `${agentNames[3]}: Tests passing. Ready for deployment.`,
+ () => `${agentNames[0]}: Excellent work team! Finalizing output...`
  ];
  let msgIndex = 0;
- let agentIndex = 0;
 
  agentChatInterval = setInterval(() => {
  const bubble = document.getElementById('agentChatBubble');
@@ -1857,18 +1880,17 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  clearInterval(agentChatInterval);
  return;
  }
- bubble.textContent = `${agents[agentIndex % agents.length]}: ${messages[msgIndex % messages.length]}`;
+ bubble.textContent = conversations[msgIndex % conversations.length]();
  msgIndex++;
- agentIndex++;
 
- if (msgIndex >= messages.length + 2) {
+ if (msgIndex >= conversations.length + 1) {
  clearInterval(agentChatInterval);
- bubble.textContent = '✨ Generation complete!';
+ bubble.textContent = '✨ Generation complete! All sub-agents finished their tasks.';
  setTimeout(() => {
  if (agentChatContainer.parentNode) agentChatContainer.remove();
  }, 2000);
  }
- }, 800);
+ }, 900);
  }
 
  function hideAgentChat() {
@@ -2053,7 +2075,7 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  const partName = object.userData.partName || 'Unknown Part';
  
  // Insert part name into chat input
- const chatInput = document.getElementById('chat-input');
+ const chatInput = document.getElementById('chatInput');
  if (chatInput) {
  chatInput.value = `Edit the ${partName}: `;
  chatInput.focus();
