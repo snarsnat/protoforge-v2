@@ -1800,6 +1800,17 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
 
  // Initialize on load
  loadPlanStatus();
+ 
+ // Expose functions to global scope for onclick handlers
+ window.openSettings = openSettings;
+ window.closeSettings = closeSettings;
+ window.switchToPlanTab = switchToPlanTab;
+ window.handlePayment = handlePayment;
+ window.openPreview = openPreview;
+ window.closePreview = closePreview;
+ window.removeAgent = removeAgent;
+ window.addAgentConfig = addAgentConfig;
+ window.updateAgent = updateAgent;
  }); // End DOMContentLoaded
 
  // ============ AGENT CHAT VISUALIZATION ============
