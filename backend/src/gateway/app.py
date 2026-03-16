@@ -85,12 +85,20 @@ class AutoDetectRequest(BaseModel):
 # Routes
 @app.get("/")
 async def root():
-    """Root endpoint - Serve UI"""
+    """Root endpoint - Serve UI with cache-busting headers"""
     from pathlib import Path
     template_path = Path(__file__).parent / "templates" / "index.html"
     if template_path.exists():
         from fastapi.responses import FileResponse
-        return FileResponse(template_path)
+        return FileResponse(
+            template_path,
+            media_type="text/html",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return {
         "service": "ProtoForge Gateway",
         "version": "1.0.0",
