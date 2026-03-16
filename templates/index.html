@@ -1695,35 +1695,35 @@
  </div>
  </div>
  `;
- document.body.appendChild(settingsModal);
+document.body.appendChild(settingsModal);
 
- function openSettings() {
- document.getElementById('settingsModal').classList.add('active');
- loadPlanStatus();
- renderAgentConfigs();
- }
+// Tab switching for settings modal - MUST be after modal is appended
+document.querySelectorAll('[data-settings-tab]').forEach(btn => {
+btn.addEventListener('click', () => {
+document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
+btn.classList.add('active');
+const tabName = btn.getAttribute('data-settings-tab');
+document.querySelectorAll('.settings-tab-content').forEach(tab => tab.style.display = 'none');
+document.getElementById(`settings-${tabName}-tab`).style.display = 'block';
+});
+});
 
- function closeSettings() {
- document.getElementById('settingsModal').classList.remove('active');
- }
+function openSettings() {
+document.getElementById('settingsModal').classList.add('active');
+loadPlanStatus();
+renderAgentConfigs();
+}
 
- function switchToPlanTab() {
- document.querySelectorAll('[data-settings-tab]').forEach(btn => btn.classList.remove('active'));
- document.querySelector('[data-settings-tab="plan"]').classList.add('active');
- document.getElementById('settings-plan-tab').style.display = 'block';
- document.getElementById('settings-subagents-tab').style.display = 'none';
- }
+function closeSettings() {
+document.getElementById('settingsModal').classList.remove('active');
+}
 
- // Tab switching for settings modal
- document.querySelectorAll('[data-settings-tab]').forEach(btn => {
- btn.addEventListener('click', () => {
- document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
- btn.classList.add('active');
- const tabName = btn.getAttribute('data-settings-tab');
- document.querySelectorAll('.settings-tab-content').forEach(tab => tab.style.display = 'none');
- document.getElementById(`settings-${tabName}-tab`).style.display = 'block';
- });
- });
+function switchToPlanTab() {
+document.querySelectorAll('[data-settings-tab]').forEach(btn => btn.classList.remove('active'));
+document.querySelector('[data-settings-tab="plan"]').classList.add('active');
+document.getElementById('settings-plan-tab').style.display = 'block';
+document.getElementById('settings-subagents-tab').style.display = 'none';
+}
 
  function handlePayment() {
  if (planActive) {
