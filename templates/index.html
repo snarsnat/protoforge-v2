@@ -1145,54 +1145,17 @@
  }
  }
 
- // 3D Model rendering function using Three.js
+ // 3D Model rendering function using Three.js with interactive parts
+ // Three.js will be loaded from CDN below
+ 
  async function render3DModel(modelData) {
  const container = document.getElementById('model-content');
  if (!container) return;
  
- // Clear previous content
- const viewerContainer = container.querySelector('#3d-viewer-container');
- if (viewerContainer) viewerContainer.remove();
- 
- const viewerDiv = document.createElement('div');
- viewerDiv.id = '3d-viewer-container';
- viewerDiv.style.cssText = 'width:100%;height:400px;background:var(--bg-tertiary);border-radius:8px;position:relative;overflow:hidden;';
- 
- // If modelData is a URL to an STL/OBJ file
- if (typeof modelData === 'string' && (modelData.includes('.stl') || modelData.includes('.obj') || modelData.includes('.glb'))) {
- viewerDiv.innerHTML = `
- <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-secondary);">
- <div style="font-size:48px;margin-bottom:16px;">🎨</div>
- <div>3D Model Viewer</div>
- <div style="font-size:11px;margin-top:8px;">Loading: ${modelData.split('/').pop()}</div>
- <div style="font-size:10px;margin-top:4px;">Use mouse to rotate, scroll to zoom</div>
- </div>
- `;
- } else if (typeof modelData === 'object' && modelData.format === 'ascii_stl') {
- // ASCII STL data - create a simple visualization
- viewerDiv.innerHTML = `
- <div style="padding:20px;height:100%;overflow:auto;">
- <pre style="font-size:10px;color:var(--text-secondary);white-space:pre-wrap;">${modelData.data || JSON.stringify(modelData)}</pre>
- </div>
- `;
- } else {
- // Default: show placeholder with model info
- viewerDiv.innerHTML = `
- <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);">
- <div style="font-size:64px;margin-bottom:16px;">🧊</div>
- <div style="font-size:14px;font-weight:600;">3D Model Generated</div>
- <div style="font-size:11px;margin-top:8px;text-align:center;max-width:80%;">
- ${typeof modelData === 'string' ? modelData : JSON.stringify(modelData, null, 2)}
- </div>
- <div style="margin-top:16px;padding:8px 16px;background:var(--accent);color:white;border-radius:4px;font-size:11px;">
- Download STL/OBJ to view in external viewer
- </div>
- </div>
- `;
- }
- 
- container.insertBefore(viewerDiv, container.firstChild);
  window.current3DModel = modelData;
+ 
+ // Initialize Three.js viewer
+ initInteractive3DViewer(modelData);
  }
 
  function displayGeneratedContent() {
@@ -1904,6 +1867,377 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  }
  const container = document.getElementById('agentChatContainer');
  if (container) container.remove();
+ }
+ 
+ // ============================================
+ // INTERACTIVE 3D VIEWER WITH THREE.JS
+ // ============================================
+ let scene, camera, renderer, controls;
+ let modelGroup, highlightMesh, selectedPart = null;
+ let explodedParts = {};
+ let raycaster, mouse;
+ let threeJSInitialized = false;
+ 
+ // Load Three.js from CDN
+ async function loadThreeJS() {
+ if (typeof THREE !== 'undefined') return true;
+ 
+ return new Promise((resolve, reject) => {
+ const script = document.createElement('script');
+ script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+ script.onload = () => {
+ // Load additional modules
+ loadThreeJSModule('OrbitControls', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js')
+ .then(() => loadThreeJSModule('STLLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js'))
+ .then(() => loadThreeJSModule('OBJLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js'))
+ .then(() => loadThreeJSModule('GLTFLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'))
+ .then(() => resolve(true))
+ .catch(reject);
+ };
+ script.onerror = reject;
+ document.head.appendChild(script);
+ });
+ }
+ 
+ function loadThreeJSModule(name, url) {
+ return new Promise((resolve, reject) => {
+ const script = document.createElement('script');
+ script.src = url;
+ script.onload = resolve;
+ script.onerror = reject;
+ document.head.appendChild(script);
+ });
+ }
+ 
+ async function initInteractive3DViewer(modelData) {
+ await loadThreeJS();
+ 
+ const container = document.getElementById('model-content');
+ if (!container) return;
+ 
+ // Clear previous content
+ const viewerContainer = container.querySelector('#3d-viewer-container');
+ if (viewerContainer) viewerContainer.remove();
+ 
+ const viewerDiv = document.createElement('div');
+ viewerDiv.id = '3d-viewer-container';
+ viewerDiv.style.cssText = 'width:100%;height:500px;background:var(--bg-tertiary);border-radius:8px;position:relative;overflow:hidden;';
+ container.insertBefore(viewerDiv, container.firstChild);
+ 
+ // Initialize Three.js scene
+ scene = new THREE.Scene();
+ scene.background = new THREE.Color(0x1a1a2e);
+ 
+ // Camera
+ camera = new THREE.PerspectiveCamera(75, viewerDiv.clientWidth / viewerDiv.clientHeight, 0.1, 1000);
+ camera.position.set(0, 2, 5);
+ 
+ // Renderer
+ renderer = new THREE.WebGLRenderer({ antialias: true });
+ renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+ renderer.setPixelRatio(window.devicePixelRatio);
+ viewerDiv.appendChild(renderer.domElement);
+ 
+ // Controls
+ controls = new THREE.OrbitControls(camera, renderer.domElement);
+ controls.enableDamping = true;
+ controls.dampingFactor = 0.05;
+ 
+ // Lighting
+ const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+ scene.add(ambientLight);
+ 
+ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+ directionalLight.position.set(5, 5, 5);
+ scene.add(directionalLight);
+ 
+ const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+ directionalLight2.position.set(-5, 5, -5);
+ scene.add(directionalLight2);
+ 
+ // Model group
+ modelGroup = new THREE.Group();
+ scene.add(modelGroup);
+ 
+ // Highlight mesh (wireframe outline)
+ const highlightGeo = new THREE.SphereGeometry(1, 32, 32);
+ const highlightMat = new THREE.MeshBasicMaterial({ 
+ color: 0xffffff, 
+ wireframe: true, 
+ transparent: true, 
+ opacity: 0.8,
+ depthTest: false
+ });
+ highlightMesh = new THREE.Mesh(highlightGeo, highlightMat);
+ highlightMesh.visible = false;
+ scene.add(highlightMesh);
+ 
+ // Raycaster for interaction
+ raycaster = new THREE.Raycaster();
+ mouse = new THREE.Vector2();
+ 
+ // Event listeners
+ renderer.domElement.addEventListener('mousemove', onMouseMove);
+ renderer.domElement.addEventListener('click', onClick);
+ renderer.domElement.addEventListener('dblclick', onDoubleClick);
+ window.addEventListener('resize', () => onWindowResize(viewerDiv));
+ 
+ // Animation loop
+ function animate() {
+ requestAnimationFrame(animate);
+ controls.update();
+ renderer.render(scene, camera);
+ }
+ animate();
+ 
+ threeJSInitialized = true;
+ 
+ // Create model
+ create3DModelFromData(modelData);
+ }
+ 
+ function onMouseMove(event) {
+ if (!renderer) return;
+ 
+ const rect = renderer.domElement.getBoundingClientRect();
+ mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+ mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+ 
+ raycaster.setFromCamera(mouse, camera);
+ const intersects = raycaster.intersectObjects(modelGroup.children, true);
+ 
+ if (intersects.length > 0) {
+ const object = intersects[0].object;
+ const partName = object.userData.partName || 'Unknown Part';
+ 
+ // Position highlight mesh
+ const box = new THREE.Box3().setFromObject(object);
+ const center = box.getCenter(new THREE.Vector3());
+ const size = box.getSize(new THREE.Vector3());
+ const maxDim = Math.max(size.x, size.y, size.z);
+ 
+ highlightMesh.position.copy(center);
+ highlightMesh.scale.setScalar(maxDim * 1.1);
+ highlightMesh.visible = true;
+ 
+ renderer.domElement.style.cursor = 'pointer';
+ 
+ // Show tooltip
+ showPartTooltip(partName, event.clientX, event.clientY);
+ } else {
+ highlightMesh.visible = false;
+ renderer.domElement.style.cursor = 'default';
+ hidePartTooltip();
+ }
+ }
+ 
+ function onClick(event) {
+ if (!renderer) return;
+ 
+ raycaster.setFromCamera(mouse, camera);
+ const intersects = raycaster.intersectObjects(modelGroup.children, true);
+ 
+ if (intersects.length > 0) {
+ const object = intersects[0].object;
+ const partName = object.userData.partName || 'Unknown Part';
+ 
+ // Insert part name into chat input
+ const chatInput = document.getElementById('chat-input');
+ if (chatInput) {
+ chatInput.value = `Edit the ${partName}: `;
+ chatInput.focus();
+ }
+ 
+ selectedPart = object;
+ console.log('Selected part:', partName);
+ }
+ }
+ 
+ function onDoubleClick(event) {
+ if (!renderer) return;
+ 
+ raycaster.setFromCamera(mouse, camera);
+ const intersects = raycaster.intersectObjects(modelGroup.children, true);
+ 
+ if (intersects.length > 0) {
+ const object = intersects[0].object;
+ const partName = object.userData.partName || 'Unknown Part';
+ 
+ // Toggle explosion
+ if (explodedParts[partName]) {
+ // Return to original position
+ object.position.copy(explodedParts[partName].originalPos);
+ object.rotation.copy(explodedParts[partName].originalRot);
+ delete explodedParts[partName];
+ console.log('Part returned:', partName);
+ } else {
+ // Explode out
+ const direction = object.position.clone().normalize();
+ if (direction.length() === 0) direction.set(0, 1, 0);
+ 
+ const explodeDistance = 3;
+ explodedParts[partName] = {
+ originalPos: object.position.clone(),
+ originalRot: object.rotation.clone()
+ };
+ 
+ object.position.add(direction.multiplyScalar(explodeDistance));
+ object.rotation.x += Math.PI / 4;
+ console.log('Part exploded:', partName);
+ }
+ }
+ }
+ 
+ function showPartTooltip(name, x, y) {
+ let tooltip = document.getElementById('part-tooltip');
+ if (!tooltip) {
+ tooltip = document.createElement('div');
+ tooltip.id = 'part-tooltip';
+ tooltip.style.cssText = 'position:fixed;padding:8px 12px;background:rgba(0,0,0,0.9);color:white;border-radius:4px;font-size:12px;pointer-events:none;z-index:10000;display:none;';
+ document.body.appendChild(tooltip);
+ }
+ tooltip.textContent = name + ' (Click to select, Double-click to isolate)';
+ tooltip.style.left = (x + 15) + 'px';
+ tooltip.style.top = (y + 15) + 'px';
+ tooltip.style.display = 'block';
+ }
+ 
+ function hidePartTooltip() {
+ const tooltip = document.getElementById('part-tooltip');
+ if (tooltip) tooltip.style.display = 'none';
+ }
+ 
+ function onWindowResize(viewerDiv) {
+ if (!camera || !renderer) return;
+ camera.aspect = viewerDiv.clientWidth / viewerDiv.clientHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+ }
+ 
+ function create3DModelFromData(modelData) {
+ // Clear existing models
+ while(modelGroup.children.length > 0){
+ const obj = modelGroup.children[0];
+ modelGroup.remove(obj);
+ if(obj.geometry) obj.geometry.dispose();
+ if(obj.material) {
+ if(Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+ else obj.material.dispose();
+ }
+ }
+ explodedParts = {};
+ 
+ // Parse and create model with separate parts
+ if (typeof modelData === 'string' && (modelData.includes('.stl') || modelData.includes('.obj') || modelData.includes('.glb'))) {
+ loadExternalModel(modelData);
+ } else if (typeof modelData === 'object' && modelData.format === 'ascii_stl') {
+ parseASCIIStl(modelData.data);
+ } else if (typeof modelData === 'object' && modelData.parts) {
+ createModelFromParts(modelData.parts);
+ } else {
+ // Default: create example model with parts
+ createExampleModel();
+ }
+ }
+ 
+ function loadExternalModel(url) {
+ const extension = url.split('.').pop().toLowerCase();
+ 
+ if (extension === 'stl') {
+ const loader = new THREE.STLLoader();
+ loader.load(url, (geometry) => {
+ const material = new THREE.MeshPhongMaterial({ color: 0x4a90d9, specular: 0x111111, shininess: 200 });
+ const mesh = new THREE.Mesh(geometry, material);
+ mesh.userData.partName = 'Main Model';
+ mesh.geometry.center();
+ mesh.geometry.rotateX(-Math.PI / 2);
+ modelGroup.add(mesh);
+ });
+ } else if (extension === 'obj') {
+ const loader = new THREE.OBJLoader();
+ loader.load(url, (object) => {
+ object.traverse((child) => {
+ if (child.isMesh) {
+ child.material = new THREE.MeshPhongMaterial({ color: 0x4a90d9 });
+ child.userData.partName = child.name || 'Part';
+ modelGroup.add(child);
+ }
+ });
+ });
+ } else if (extension === 'glb' || extension === 'gltf') {
+ const loader = new THREE.GLTFLoader();
+ loader.load(url, (gltf) => {
+ gltf.scene.traverse((child) => {
+ if (child.isMesh) {
+ child.userData.partName = child.name || 'Part';
+ modelGroup.add(child);
+ }
+ });
+ });
+ }
+ }
+ 
+ function parseASCIIStl(stlData) {
+ // Simple parser that creates separate parts based on "solid" names
+ const solids = stlData.split(/solid\s+/).filter(s => s.trim());
+ 
+ solids.forEach((solid, index) => {
+ const lines = solid.split('\n');
+ const partName = lines[0].split(/\s+/)[0] || `Part ${index + 1}`;
+ 
+ // Create a simple representation for each part
+ const geometry = new THREE.BoxGeometry(1, 1, 1);
+ const material = new THREE.MeshPhongMaterial({ 
+ color: new THREE.Color().setHSL(index * 0.1, 0.7, 0.5) 
+ });
+ const mesh = new THREE.Mesh(geometry, material);
+ mesh.userData.partName = partName;
+ mesh.position.set((index % 3) * 1.5, Math.floor(index / 3) * 1.5, 0);
+ modelGroup.add(mesh);
+ });
+ }
+ 
+ function createModelFromParts(parts) {
+ parts.forEach((part, index) => {
+ const geometry = new THREE.BoxGeometry(part.width || 1, part.height || 1, part.depth || 1);
+ const material = new THREE.MeshPhongMaterial({ 
+ color: part.color ? new THREE.Color(part.color) : new THREE.Color().setHSL(index * 0.1, 0.7, 0.5) 
+ });
+ const mesh = new THREE.Mesh(geometry, material);
+ mesh.userData.partName = part.name || `Part ${index + 1}`;
+ mesh.position.set(part.x || 0, part.y || 0, part.z || 0);
+ if (part.rotation) mesh.rotation.set(part.rotation.x || 0, part.rotation.y || 0, part.rotation.z || 0);
+ modelGroup.add(mesh);
+ });
+ }
+ 
+ function createExampleModel() {
+ // Create an example assembly with multiple parts
+ const parts = [
+ { name: 'Base', size: [2, 0.3, 2], pos: [0, 0, 0], color: 0x8B4513 },
+ { name: 'Column', size: [0.3, 3, 0.3], pos: [0, 1.65, 0], color: 0x4a4a4a },
+ { name: 'Arm', size: [2, 0.2, 0.3], pos: [0, 3.2, 0], color: 0x4a90d9 },
+ { name: 'Joint', size: [0.5, 0.5, 0.5], pos: [0, 3.2, 0], color: 0xff6b6b },
+ { name: 'End Effector', size: [0.4, 0.8, 0.4], pos: [1, 3.2, 0], color: 0x51cf66 }
+ ];
+ 
+ parts.forEach((part, index) => {
+ const geometry = new THREE.BoxGeometry(part.size[0], part.size[1], part.size[2]);
+ const material = new THREE.MeshPhongMaterial({ 
+ color: part.color,
+ specular: 0x111111,
+ shininess: 100
+ });
+ const mesh = new THREE.Mesh(geometry, material);
+ mesh.userData.partName = part.name;
+ mesh.position.set(...part.pos);
+ modelGroup.add(mesh);
+ });
+ 
+ // Center the model
+ const box = new THREE.Box3().setFromObject(modelGroup);
+ const center = box.getCenter(new THREE.Vector3());
+ modelGroup.position.sub(center);
  }
  </script>
 </body>
