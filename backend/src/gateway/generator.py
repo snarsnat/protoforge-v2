@@ -1,6 +1,7 @@
 """
 ProtoForge Generator - AI-powered prototyping
 Uses OpenAI-compatible API calls for most providers
+Supports sub-agent orchestration for complex tasks
 """
 
 import os
@@ -9,6 +10,13 @@ import uuid
 import requests
 from pathlib import Path
 from typing import Dict, Any, Optional
+
+# Subagent integration
+try:
+    from src.subagents.executor import SubagentExecutor
+    SUBAGENTS_AVAILABLE = True
+except ImportError:
+    SUBAGENTS_AVAILABLE = False
 
 
 # Provider configurations - OpenAI-compatible endpoints
@@ -330,8 +338,16 @@ class ProtoForgeGenerator:
         except requests.exceptions.Timeout:
             raise Exception("Ollama request timed out.")
     
-    def generate(self, prompt: str, mode: str, project_dir: str) -> Dict[str, Any]:
-        """Generate prototype based on prompt and mode"""
+    def generate(self, prompt: str, mode: str, project_dir: str, use_subagents: bool = False, agent_config: Optional[Dict] = None) -> Dict[str, Any]:
+        """Generate prototype based on prompt and mode
+        
+        Args:
+            prompt: User's request
+            mode: software, hardware, or hybrid
+            project_dir: Base directory for projects
+            use_subagents: Whether to use sub-agent orchestration
+            agent_config: Configuration for sub-agents (roles, count, etc.)
+        """
         
         # Normalize project_dir to absolute path
         base = Path(project_dir).resolve()
@@ -343,23 +359,168 @@ class ProtoForgeGenerator:
         (project_path / "software").mkdir(parents=True, exist_ok=True)
         (project_path / "hardware").mkdir(parents=True, exist_ok=True)
         
-        # Analyze request with AI
-        analysis = self._analyze_request(prompt, mode)
-        
-        # Generate based on mode
-        if mode == 'software':
-            result = self._generate_software(prompt, analysis, project_path)
-        elif mode == 'hardware':
-            result = self._generate_hardware(prompt, analysis, project_path)
-        elif mode == 'hybrid':
-            result = self._generate_hybrid(prompt, analysis, project_path)
+        # Use sub-agent orchestration if enabled and available
+        if use_subagents and SUBAGENTS_AVAILABLE:
+            result = self._generate_with_subagents(prompt, mode, project_path, agent_config)
         else:
-            raise ValueError(f"Unknown mode: {mode}")
+            # Analyze request with AI
+            analysis = self._analyze_request(prompt, mode)
+            
+            # Generate based on mode
+            if mode == 'software':
+                result = self._generate_software(prompt, analysis, project_path)
+            elif mode == 'hardware':
+                result = self._generate_hardware(prompt, analysis, project_path)
+            elif mode == 'hybrid':
+                result = self._generate_hybrid(prompt, analysis, project_path)
+            else:
+                raise ValueError(f"Unknown mode: {mode}")
         
         # Generate AI conversational response
         result['ai_response'] = self._generate_ai_response(prompt, mode, result)
         
         return result
+    
+    def _generate_with_subagents(self, prompt: str, mode: str, project_path: Path, agent_config: Optional[Dict] = None) -> Dict[str, Any]:
+        """Generate using sub-agent orchestration"""
+        
+        # Initialize subagent executor
+        executor = SubagentExecutor(max_workers=4)
+        
+        # Analyze request first
+        analysis = self._analyze_request(prompt, mode)
+        
+        # Create specialized tasks for each agent role
+        tasks = []
+        
+        # Planner agent - breaks down the project
+        planner_task = executor.submit(
+            description="Plan project structure",
+            prompt=f"Plan a {mode} project: {prompt}\n\nAnalysis: {json.dumps(analysis)}\n\nProvide a detailed breakdown of components needed.",
+            subagent_type="general-purpose"
+        )
+        tasks.append(('planner', planner_task))
+        
+        # Coder agent - generates code
+        coder_task = executor.submit(
+            description="Generate code",
+            prompt=f"Write code for a {mode} project: {prompt}\n\nRequirements: {json.dumps(analysis)}\n\nProvide complete, working code.",
+            subagent_type="general-purpose"
+        )
+        tasks.append(('coder', coder_task))
+        
+        # Diagram agent - creates visual representation
+        diagram_task = executor.submit(
+            description="Create diagram",
+            prompt=f"Create a Mermaid diagram for: {prompt}\n\nShow the architecture and component relationships.",
+            subagent_type="diagram"
+        )
+        tasks.append(('diagram', diagram_task))
+        
+        # Reviewer agent - reviews and improves
+        reviewer_task = executor.submit(
+            description="Review and improve",
+            prompt=f"Review this {mode} project for quality, security, and best practices: {prompt}\n\nSuggest improvements.",
+            subagent_type="general-purpose"
+        )
+        tasks.append(('reviewer', reviewer_task))
+        
+        # Collect results
+        results = {}
+        for role, task_id in tasks:
+            task = executor._tasks.get(task_id)
+            if task and task.result:
+                results[role] = task.result
+            else:
+                results[role] = f"{role} task did not complete"
+        
+        # Generate based on mode using subagent results
+        if mode == 'software':
+            result = self._generate_software_from_subagents(prompt, analysis, project_path, results)
+        elif mode == 'hardware':
+            result = self._generate_hardware_from_subagents(prompt, analysis, project_path, results)
+        else:
+            result = self._generate_hybrid_from_subagents(prompt, analysis, project_path, results)
+        
+        result['used_subagents'] = True
+        result['subagent_results'] = results
+        
+        return result
+    
+    def _generate_software_from_subagents(self, prompt: str, analysis: Dict, project_path: Path, subagent_results: Dict) -> Dict[str, Any]:
+        """Generate software project using subagent results"""
+        # Use coder's output as main code, planner for structure, reviewer for improvements
+        code = subagent_results.get('coder', '')
+        diagram = subagent_results.get('diagram', '')
+        
+        # Save files
+        (project_path / 'software' / 'index.html').write_text(code if '<html' in code else f'<!DOCTYPE html><html><body><h1>ProtoForge</h1><pre>{code}</pre></body></html>')
+        (project_path / 'software' / 'diagram.mmd').write_text(diagram)
+        
+        return {
+            'project_id': project_path.name,
+            'files': [
+                {'name': 'software/index.html', 'type': 'html'},
+                {'name': 'software/diagram.mmd', 'type': 'mermaid'}
+            ],
+            'file_contents': {
+                'software/index.html': code if '<html' in code else f'<!DOCTYPE html><html><body><h1>ProtoForge</h1><pre>{code}</pre></body></html>',
+                'software/diagram.mmd': diagram
+            },
+            'mode': 'software',
+            'description': analysis.get('description', prompt),
+            'code': code,
+            'diagram': diagram,
+            'specs': subagent_results.get('planner', ''),
+            'components': [],
+            'instructions': []
+        }
+    
+    def _generate_hardware_from_subagents(self, prompt: str, analysis: Dict, project_path: Path, subagent_results: Dict) -> Dict[str, Any]:
+        """Generate hardware project using subagent results"""
+        diagram = subagent_results.get('diagram', '')
+        specs = subagent_results.get('planner', '')
+        
+        # Save files
+        (project_path / 'hardware' / 'diagram.mmd').write_text(diagram)
+        (project_path / 'hardware' / 'specs.md').write_text(specs)
+        
+        return {
+            'project_id': project_path.name,
+            'files': [
+                {'name': 'hardware/diagram.mmd', 'type': 'mermaid'},
+                {'name': 'hardware/specs.md', 'type': 'markdown'}
+            ],
+            'file_contents': {
+                'hardware/diagram.mmd': diagram,
+                'hardware/specs.md': specs
+            },
+            'mode': 'hardware',
+            'description': analysis.get('description', prompt),
+            'code': '',
+            'diagram': diagram,
+            'specs': specs,
+            'components': [],
+            'instructions': []
+        }
+    
+    def _generate_hybrid_from_subagents(self, prompt: str, analysis: Dict, project_path: Path, subagent_results: Dict) -> Dict[str, Any]:
+        """Generate hybrid project using subagent results"""
+        software = self._generate_software_from_subagents(prompt, analysis, project_path, subagent_results)
+        hardware = self._generate_hardware_from_subagents(prompt, analysis, project_path, subagent_results)
+        
+        return {
+            'project_id': project_path.name,
+            'files': software['files'] + hardware['files'],
+            'file_contents': {**software['file_contents'], **hardware['file_contents']},
+            'mode': 'hybrid',
+            'description': analysis.get('description', prompt),
+            'code': software['code'],
+            'diagram': hardware['diagram'],
+            'specs': f"Software:\n{software['specs']}\n\nHardware:\n{hardware['specs']}",
+            'components': hardware['components'],
+            'instructions': []
+        }
     
     def _generate_ai_response(self, prompt: str, mode: str, result: Dict) -> str:
         """Generate a natural, conversational AI response about what was created"""

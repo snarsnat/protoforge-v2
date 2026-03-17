@@ -65,6 +65,8 @@ class GenerateRequest(BaseModel):
     mode: str = "software"  # software, hardware, hybrid
     api_key: str
     provider: str = "openai"
+    use_subagents: bool = False  # Enable sub-agent orchestration
+    agent_config: Optional[dict] = None  # Sub-agent configuration
 
 
 class DepositRequest(BaseModel):
@@ -399,10 +401,12 @@ async def generate(request: GenerateRequest):
         result = generator.generate(
             prompt=request.prompt,
             mode=request.mode,
-            project_dir=abs_base
+            project_dir=abs_base,
+            use_subagents=request.use_subagents,
+            agent_config=request.agent_config
         )
         
-        print(f"Generated {len(result.get('files', []))} files")
+        print(f"Generated {len(result.get('files', []))} files, subagents={result.get('used_subagents', False)}")
         return result
         
     except Exception as e:

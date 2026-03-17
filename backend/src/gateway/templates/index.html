@@ -1040,8 +1040,13 @@
  }
 
  try {
- // Show agent chat visualization
- showAgentChat(['Architect', 'Coder', 'Reviewer', 'Tester']);
+ // Show agent chat visualization ONLY if plan is active
+ if (planActive) {
+ showAgentChat(subAgentConfig.agents.length > 0 
+   ? subAgentConfig.agents.map(a => a.nickname || 'Agent')
+   : ['Architect', 'Coder', 'Reviewer', 'Tester']
+ );
+ }
 
  const response = await fetch('http://localhost:8001/api/generate', {
  method: 'POST',
@@ -1050,7 +1055,9 @@
  prompt: message,
  mode: projectType,
  api_key: apiKey,
- provider: model === 'openrouter' ? 'openrouter/free' : model
+ provider: model === 'openrouter' ? 'openrouter/free' : model,
+ use_subagents: planActive && subAgentConfig.agents.length > 0,
+ agent_config: planActive ? subAgentConfig : null
  })
  });
 
