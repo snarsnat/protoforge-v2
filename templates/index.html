@@ -1459,6 +1459,25 @@ alert('Error creating share link: ' + error.message);
  if (typeof loadPlanStatus === 'function') loadPlanStatus();
  });
 
+ // Initialize settings cog after DOM is ready
+ window.addEventListener('DOMContentLoaded', () => {
+ // Settings cog button (bottom right corner)
+ const settingsCog = document.createElement('button');
+ settingsCog.id = 'settingsCog';
+ settingsCog.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px;height:20px"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
+ settingsCog.onclick = openSettings;
+ settingsCog.style.cssText = 'position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform 0.2s;';
+ settingsCog.onmouseover = () => settingsCog.style.transform = 'scale(1.1) rotate(90deg)';
+ settingsCog.onmouseout = () => settingsCog.style.transform = 'scale(1) rotate(0deg)';
+ document.body.appendChild(settingsCog);
+
+ // Settings Modal (empty, content generated dynamically)
+ const settingsModal = document.createElement('div');
+ settingsModal.id = 'settingsModal';
+ settingsModal.className = 'preview-modal';
+ document.body.appendChild(settingsModal);
+ });
+
  // File Explorer & Preview Functions
  function populateFileExplorer(files) {
  const explorer = document.getElementById('fileExplorer');
@@ -1618,6 +1637,169 @@ alert('Error creating share link: ' + error.message);
  btn.disabled = true;
  btn.title = 'Spawn Sub-Agents (Plan Required)';
  }
+ }
+
+ // ============ SETTINGS FUNCTIONS ============
+ function openSettings() {
+ const modal = document.getElementById('settingsModal');
+ // Generate modal content dynamically based on current plan status
+ modal.innerHTML = `
+ <div class="preview-header" style="padding:20px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
+ <span style="font-weight:600;font-size:14px;">⚙️ Settings</span>
+ <button onclick="closeSettings()" style="background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:20px;">&times;</button>
+ </div>
+ <div class="tab-bar" style="padding:0 20px;margin-top:16px;">
+ <button class="tab-btn active" data-settings-tab="plan" onclick="switchSettingsTab('plan')">📋 Plan</button>
+ <button class="tab-btn" data-settings-tab="subagents" onclick="switchSettingsTab('subagents')">🤖 Sub-Agents</button>
+ </div>
+ <div style="padding:20px;max-height:60vh;overflow-y:auto;">
+ <!-- Plan Tab -->
+ <div id="settings-plan-tab" class="settings-tab-content" style="display:block;">
+ <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
+ <h3 style="margin-bottom:12px;font-size:16px;">🚀 ProtoForge Monthly Usage</h3>
+ <div style="font-size:28px;font-weight:bold;color:var(--accent);margin-bottom:8px;">$6.00<span style="font-size:14px;color:var(--text-muted);font-weight:normal;">/month</span></div>
+ <ul style="list-style:none;margin:16px 0;">
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent configuration</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agents nicknaming</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent API configuration</li>
+ <li style="padding:8px 0;">✓ Infinite prompt usage</li>
+ </ul>
+ <button id="payNowBtn" onclick="handlePayment()" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;margin-top:16px;">
+ ${planActive ? '✅ Plan Active' : '💳 Pay Now with PayPal'}
+ </button>
+ ${planActive ? '<div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:center;">Your plan is active. All features unlocked!</div>' : ''}
+ </div>
+ ${!planActive ? `
+ <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;margin-bottom:16px;">
+ <h4 style="margin-bottom:8px;font-size:14px;">⚡ Free Plan</h4>
+ <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Get 1 free prompt per day, resets daily at midnight.</p>
+ <div id="freePromptStatus" style="padding:12px;background:var(--bg-secondary);border-radius:6px;font-size:12px;"></div>
+ </div>
+ ` : ''}
+ <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;">
+ <h4 style="margin-bottom:8px;font-size:14px;">Technical Settings</h4>
+ <div class="config-group">
+ <label class="config-label" style="font-size:12px;">AI Endpoint</label>
+ <select class="config-select" id="aiEndpoint" style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;">
+ <option value="openrouter/free">OpenRouter Free (Auto-select best model)</option>
+ <option value="openrouter/default">OpenRouter Default</option>
+ <option value="direct">Direct API</option>
+ </select>
+ </div>
+ </div>
+ </div>
+ <!-- Sub-Agents Tab -->
+ <div id="settings-subagents-tab" class="settings-tab-content" style="display:none;">
+ ${!planActive ? `
+ <div style="text-align:center;padding:40px 20px;">
+ <svg viewBox="0 0 24 24" style="width:48px;height:48px;color:var(--text-muted);margin-bottom:16px;"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+ <h3 style="margin-bottom:8px;">Sub-Agent Features Locked</h3>
+ <p style="color:var(--text-muted);margin-bottom:16px;">Upgrade to ProtoForge Plan to unlock sub-agent spawning and configuration.</p>
+ <button onclick="switchToPlanTab()" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">View Plan</button>
+ </div>
+ ` : `
+ <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
+ <h4 style="margin-bottom:12px;font-size:14px;">Agent Configuration</h4>
+ <div class="config-group">
+ <label class="config-label" style="font-size:12px;">Max Agents to Spawn (1-10)</label>
+ <input type="range" id="maxAgentsSlider" min="1" max="10" value="${subAgentConfig.maxAgents}" style="width:100%;margin:8px 0;" oninput="document.getElementById('maxAgentsValue').textContent=this.value">
+ <div style="text-align:center;font-size:12px;color:var(--text-secondary);">Current: <span id="maxAgentsValue">${subAgentConfig.maxAgents}</span> agents</div>
+ </div>
+ </div>
+ <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
+ <h4 style="margin-bottom:12px;font-size:14px;">Agent Roles</h4>
+ <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+ ${subAgentConfig.roles.map(role => `
+ <label style="display:flex;align-items:center;gap:8px;font-size:12px;">
+ <input type="checkbox" checked style="accent-color:var(--accent);">
+ ${role.charAt(0).toUpperCase() + role.slice(1)} Agent
+ </label>
+ `).join('')}
+ </div>
+ </div>
+ <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;">
+ <h4 style="margin-bottom:12px;font-size:14px;">Agent Nicknames & API Keys</h4>
+ <div id="agentConfigList" style="display:flex;flex-direction:column;gap:12px;"></div>
+ <button onclick="addAgentConfig()" style="margin-top:12px;padding:8px 16px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:4px;cursor:pointer;font-size:12px;">+ Add Agent</button>
+ </div>
+ `}
+ </div>
+ </div>
+ `;
+ modal.classList.add('active');
+ loadPlanStatus();
+ renderAgentConfigs();
+ }
+
+ function switchSettingsTab(tabName) {
+ document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
+ document.querySelector('[data-settings-tab="' + tabName + '"]').classList.add('active');
+ document.querySelectorAll('.settings-tab-content').forEach(tab => tab.style.display = 'none');
+ document.getElementById('settings-' + tabName + '-tab').style.display = 'block';
+ }
+
+ function closeSettings() {
+ document.getElementById('settingsModal').classList.remove('active');
+ }
+
+ function switchToPlanTab() {
+ switchSettingsTab('plan');
+ }
+
+ function handlePayment() {
+ if (planActive) {
+ alert('Your plan is already active!');
+ return;
+ }
+ // Open PayPal payment link
+ window.open('https://www.paypal.com/ncp/payment/W5M3GLD6UX23A', '_blank');
+ // Show confirmation dialog
+ setTimeout(() => {
+ const confirmed = confirm('Have you completed the payment? Click OK to activate your plan, or Cancel if you still need to pay.');
+ if (confirmed) {
+ savePlanStatus(true);
+ alert('🎉 Welcome to ProtoForge Plan! All features are now unlocked.');
+ openSettings(); // Refresh modal
+ }
+ }, 5000);
+ }
+
+ function renderAgentConfigs() {
+ const container = document.getElementById('agentConfigList');
+ if (!container) return;
+ container.innerHTML = subAgentConfig.agents.map((agent, i) => `
+ <div style="background:var(--bg-tertiary);padding:12px;border-radius:6px;">
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+ <input type="text" placeholder="Nickname (e.g., CodeWizard)" value="${agent.nickname || ''}" onchange="updateAgent(${i}, 'nickname', this.value)" style="padding:6px;background:var(--bg-input);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;font-size:11px;">
+ <select onchange="updateAgent(${i}, 'role', this.value)" style="padding:6px;background:var(--bg-input);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;font-size:11px;">
+ <option value="planning" ${agent.role === 'planning' ? 'selected' : ''}>Planning</option>
+ <option value="coding" ${agent.role === 'coding' ? 'selected' : ''}>Coding</option>
+ <option value="review" ${agent.role === 'review' ? 'selected' : ''}>Review</option>
+ <option value="testing" ${agent.role === 'testing' ? 'selected' : ''}>Testing</option>
+ </select>
+ </div>
+ <input type="password" placeholder="API Key (optional, leave blank to use default)" value="${agent.apiKey || ''}" onchange="updateAgent(${i}, 'apiKey', this.value)" style="width:100%;padding:6px;background:var(--bg-input);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;font-size:11px;">
+ <button onclick="removeAgent(${i})" style="margin-top:8px;padding:4px 8px;background:transparent;color:var(--text-muted);border:1px solid var(--border-subtle);border-radius:4px;cursor:pointer;font-size:10px;">Remove</button>
+ </div>
+ `).join('');
+ }
+
+ function addAgentConfig() {
+ if (subAgentConfig.agents.length >= subAgentConfig.maxAgents) {
+ alert(`Maximum ${subAgentConfig.maxAgents} agents allowed.`);
+ return;
+ }
+ subAgentConfig.agents.push({ nickname: '', role: 'coding', apiKey: '' });
+ renderAgentConfigs();
+ }
+
+ function removeAgent(index) {
+ subAgentConfig.agents.splice(index, 1);
+ renderAgentConfigs();
+ }
+
+ function updateAgent(index, field, value) {
+ subAgentConfig.agents[index][field] = value;
  }
 
  // ============ AGENT CHAT VISUALIZATION ============

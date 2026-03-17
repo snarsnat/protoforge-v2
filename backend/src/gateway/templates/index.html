@@ -7,6 +7,7 @@
  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
  <link rel="icon" href="/favicon.ico" type="image/x-icon">
  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
  <style>
  :root {
  --bg-primary: #1e1e1e;
@@ -912,7 +913,7 @@
  <div class="file-explorer" id="fileExplorer">
  <!-- File icons will be populated dynamically -->
  </div>
- <button class="preview-btn" id="previewBtn" onclick="openPreview()" style="display:none;">
+ <button class="preview-btn" id="previewBtn" style="display:none;">
  <svg viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px"><path fill="currentColor" d="M12 9a3 3 0 100 6 3 3 0 000-6z"/><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
  Preview
  </button>
@@ -1016,7 +1017,7 @@
  // Check if user can send prompts
  if (!planActive && freePromptUsed) {
  addMessage('⚠ You\'ve used your free prompt for today. Please upgrade to ProtoForge Plan ($6/month) for unlimited prompts, or come back tomorrow for another free prompt!');
- openSettings();
+ if (typeof openSettings === 'function') openSettings();
  return;
  }
  
@@ -1146,13 +1147,26 @@
  }
 
  // 3D Model rendering function using Three.js with interactive parts
- // Three.js will be loaded from CDN below
  
  async function render3DModel(modelData) {
  const container = document.getElementById('model-content');
  if (!container) return;
  
  window.current3DModel = modelData;
+ 
+ // Wait for Three.js to be available
+ if (typeof THREE === 'undefined') {
+ console.log('Three.js not loaded yet, waiting...');
+ await new Promise(resolve => {
+ const checkInterval = setInterval(() => {
+ if (typeof THREE !== 'undefined') {
+ clearInterval(checkInterval);
+ resolve();
+ }
+ }, 100);
+ setTimeout(resolve, 5000); // Timeout after 5 seconds
+ });
+ }
  
  // Initialize Three.js viewer
  initInteractive3DViewer(modelData);
@@ -1356,11 +1370,12 @@ return templates[userVocabulary]?.[userTone] || "🚀 Just created " + projectSu
 
 const aiMessage = generateAIMessage();
 
-// Create share dialog with all social platforms
-const shareDialog = document.createElement('div');
-shareDialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-secondary);padding:24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:10001;max-width:500px;width:90%;border:1px solid var(--border-subtle);';
-shareDialog.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-size:16px;">🔗 Share Project</h3><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:20px;">&times;</button></div><p style="color:var(--text-secondary);margin-bottom:16px;font-size:12px;">AI-crafted message based on your style:</p><div style="background:var(--bg-tertiary);padding:12px;border-radius:6px;margin-bottom:16px;border:1px solid var(--border-subtle);"><p style="margin:0;font-size:12px;color:var(--text-primary);font-style:italic;">"' + aiMessage + '"</p></div><div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" value="' + shareUrl + '" readonly style="flex:1;padding:8px;background:var(--bg-tertiary);border:1px solid var(--border-subtle);color:var(--text-primary);border-radius:4px;font-size:11px;" /><button onclick="navigator.clipboard.writeText(\'' + shareUrl + '\').then(() => alert(\'Link copied!\'))" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">Copy</button></div><p style="color:var(--text-secondary);margin-bottom:12px;font-size:12px;">Share to:</p><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;"><button onclick="window.open(\'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl) + '&quote=' + encodeURIComponent(aiMessage) + ')" style="padding:10px;background:#1877F2;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</button><button onclick="window.open(\'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl) + ')" style="padding:10px;background:#0A66C2;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</button><button onclick="window.open(\'https://www.reddit.com/submit?title=' + encodeURIComponent(aiMessage) + '&url=' + encodeURIComponent(shareUrl) + ')" style="padding:10px;background:#FF4500;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-.056-.056a1.25 1.25 0 0 1 1.249-1.249zm-7.505 2.48a2.5 2.5 0 1 1 0 5.001 2.5 2.5 0 0 1 0-5.001zm-4.743 2.03c.245-.368.745-.49 1.113-.245.369.245.49.745.245 1.113a4.998 4.998 0 0 0-.49 2.183c0 2.762 2.24 5.002 5.002 5.002 2.762 0 5.002-2.24 5.002-5.002 0-.767-.178-1.493-.49-2.142-.245-.368-.124-.868.245-1.113.368-.245.868-.124 1.113.245.428.868.65 1.825.65 2.825 0 3.865-3.137 7.002-7.002 7.002-3.865 0-7.002-3.137-7.002-7.002 0-1.041.245-2.02.673-2.907zm9.895 4.257c-.369.368-.868.368-1.237 0a.873.873 0 0 1 0-1.237c.368-.369.868-.369 1.237 0 .368.368.368.868 0 1.237z"/></svg>Reddit</button><button onclick="window.open(\'https://wa.me/?text=' + encodeURIComponent(aiMessage + ' ' + shareUrl) + ')" style="padding:10px;background:#25D366;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>WhatsApp</button><button onclick="window.open(\'https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(aiMessage) + ')" style="padding:10px;background:#0088cc;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>Telegram</button><button onclick="window.location.href=\'mailto:?subject=' + encodeURIComponent('Check out my ProtoForge project!') + '&body=' + encodeURIComponent(aiMessage + ' %0A%0A ' + shareUrl))" style="padding:10px;background:#EA4335;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>Email</button><button onclick="window.open(\'https://twitter.com/intent/tweet?text=' + encodeURIComponent(aiMessage + ' ' + shareUrl) + ')" style="padding:10px;background:#000000;color:white;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Twitter/X</button></div>';
-document.body.appendChild(shareDialog);
+// Simple share - just copy to clipboard
+navigator.clipboard.writeText(shareUrl).then(() => {
+  alert('Link copied to clipboard! Share it anywhere.');
+}).catch(() => {
+  prompt('Copy this link:', shareUrl);
+});
 } catch (error) {
 alert('Error creating share link: ' + error.message);
 }
@@ -1445,6 +1460,25 @@ alert('Error creating share link: ' + error.message);
  if (typeof loadPlanStatus === 'function') loadPlanStatus();
  });
 
+ // Initialize settings cog after DOM is ready
+ window.addEventListener('DOMContentLoaded', () => {
+ // Settings cog button (bottom right corner)
+ const settingsCog = document.createElement('button');
+ settingsCog.id = 'settingsCog';
+ settingsCog.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px;height:20px"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
+ settingsCog.onclick = openSettings;
+ settingsCog.style.cssText = 'position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform 0.2s;';
+ settingsCog.onmouseover = () => settingsCog.style.transform = 'scale(1.1) rotate(90deg)';
+ settingsCog.onmouseout = () => settingsCog.style.transform = 'scale(1) rotate(0deg)';
+ document.body.appendChild(settingsCog);
+
+ // Settings Modal (empty, content generated dynamically)
+ const settingsModal = document.createElement('div');
+ settingsModal.id = 'settingsModal';
+ settingsModal.className = 'preview-modal';
+ document.body.appendChild(settingsModal);
+ });
+
  // File Explorer & Preview Functions
  function populateFileExplorer(files) {
  const explorer = document.getElementById('fileExplorer');
@@ -1464,6 +1498,7 @@ alert('Error creating share link: ' + error.message);
  const previewBtn = document.getElementById('previewBtn');
  const hasHtml = files.some(f => f.name.endsWith('.html'));
  previewBtn.style.display = hasHtml ? 'flex' : 'none';
+ previewBtn.onclick = openPreview;
  }
 
  function getFileIcon(type) {
@@ -1605,61 +1640,43 @@ alert('Error creating share link: ' + error.message);
  }
  }
 
- // Initialize settings cog and modal after DOM is ready
- window.addEventListener('DOMContentLoaded', () => {
- // Settings cog button (bottom right corner)
- const settingsCog = document.createElement('button');
- settingsCog.id = 'settingsCog';
- settingsCog.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px;height:20px"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
- settingsCog.onclick = openSettings;
- settingsCog.style.cssText = 'position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform 0.2s;';
- settingsCog.onmouseover = () => settingsCog.style.transform = 'scale(1.1) rotate(90deg)';
- settingsCog.onmouseout = () => settingsCog.style.transform = 'scale(1) rotate(0deg)';
- document.body.appendChild(settingsCog);
-
- // Settings Modal
- const settingsModal = document.createElement('div');
- settingsModal.id = 'settingsModal';
- settingsModal.className = 'preview-modal';
- settingsModal.innerHTML = `
+ // ============ SETTINGS FUNCTIONS ============
+ function openSettings() {
+ const modal = document.getElementById('settingsModal');
+ // Generate modal content dynamically based on current plan status
+ modal.innerHTML = `
  <div class="preview-header" style="padding:20px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
  <span style="font-weight:600;font-size:14px;">⚙️ Settings</span>
  <button onclick="closeSettings()" style="background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:20px;">&times;</button>
  </div>
  <div class="tab-bar" style="padding:0 20px;margin-top:16px;">
- <button class="tab-btn active" data-settings-tab="plan">📋 Plan</button>
- <button class="tab-btn" data-settings-tab="subagents">🤖 Sub-Agents</button>
+ <button class="tab-btn active" data-settings-tab="plan" onclick="switchSettingsTab('plan')">📋 Plan</button>
+ <button class="tab-btn" data-settings-tab="subagents" onclick="switchSettingsTab('subagents')">🤖 Sub-Agents</button>
  </div>
  <div style="padding:20px;max-height:60vh;overflow-y:auto;">
  <!-- Plan Tab -->
  <div id="settings-plan-tab" class="settings-tab-content" style="display:block;">
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;margin-bottom:16px;">
- <h3 style="margin-bottom:12px;font-size:16px;">🚀 ProtoForge Plan</h3>
+ <h3 style="margin-bottom:12px;font-size:16px;">🚀 ProtoForge Monthly Usage</h3>
  <div style="font-size:28px;font-weight:bold;color:var(--accent);margin-bottom:8px;">$6.00<span style="font-size:14px;color:var(--text-muted);font-weight:normal;">/month</span></div>
  <ul style="list-style:none;margin:16px 0;">
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Unlimited project generation</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub-agent spawning (up to 10 agents)</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Per-agent API key configuration</li>
- <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Custom agent roles & nicknames</li>
- <li style="padding:8px 0;">✓ Priority support</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent configuration</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agents nicknaming</li>
+ <li style="padding:8px 0;border-bottom:1px solid var(--border-subtle);">✓ Sub agent API configuration</li>
+ <li style="padding:8px 0;">✓ Infinite prompt usage</li>
  </ul>
  <button id="payNowBtn" onclick="handlePayment()" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;margin-top:16px;">
  ${planActive ? '✅ Plan Active' : '💳 Pay Now with PayPal'}
  </button>
  ${planActive ? '<div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:center;">Your plan is active. All features unlocked!</div>' : ''}
  </div>
- 
- <!-- Free Plan Info -->
  ${!planActive ? `
  <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;margin-bottom:16px;">
  <h4 style="margin-bottom:8px;font-size:14px;">⚡ Free Plan</h4>
  <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Get 1 free prompt per day, resets daily at midnight.</p>
- <div id="freePromptStatus" style="padding:12px;background:var(--bg-secondary);border-radius:6px;font-size:12px;">
- <!-- Populated by updateFreePromptStatus() -->
- </div>
+ <div id="freePromptStatus" style="padding:12px;background:var(--bg-secondary);border-radius:6px;font-size:12px;"></div>
  </div>
  ` : ''}
- 
  <div style="background:var(--bg-tertiary);padding:16px;border-radius:8px;">
  <h4 style="margin-bottom:8px;font-size:14px;">Technical Settings</h4>
  <div class="config-group">
@@ -1703,44 +1720,32 @@ alert('Error creating share link: ' + error.message);
  </div>
  <div style="background:var(--bg-secondary);padding:20px;border-radius:8px;">
  <h4 style="margin-bottom:12px;font-size:14px;">Agent Nicknames & API Keys</h4>
- <div id="agentConfigList" style="display:flex;flex-direction:column;gap:12px;">
- <!-- Populated dynamically -->
- </div>
+ <div id="agentConfigList" style="display:flex;flex-direction:column;gap:12px;"></div>
  <button onclick="addAgentConfig()" style="margin-top:12px;padding:8px 16px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:4px;cursor:pointer;font-size:12px;">+ Add Agent</button>
  </div>
  `}
  </div>
  </div>
  `;
-document.body.appendChild(settingsModal);
+ modal.classList.add('active');
+ loadPlanStatus();
+ renderAgentConfigs();
+ }
 
-// Tab switching for settings modal - MUST be after modal is appended
-document.querySelectorAll('[data-settings-tab]').forEach(btn => {
-btn.addEventListener('click', () => {
-document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-const tabName = btn.getAttribute('data-settings-tab');
-document.querySelectorAll('.settings-tab-content').forEach(tab => tab.style.display = 'none');
-document.getElementById(`settings-${tabName}-tab`).style.display = 'block';
-});
-});
+ function switchSettingsTab(tabName) {
+ document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
+ document.querySelector('[data-settings-tab="' + tabName + '"]').classList.add('active');
+ document.querySelectorAll('.settings-tab-content').forEach(tab => tab.style.display = 'none');
+ document.getElementById('settings-' + tabName + '-tab').style.display = 'block';
+ }
 
-function openSettings() {
-document.getElementById('settingsModal').classList.add('active');
-loadPlanStatus();
-renderAgentConfigs();
-}
+ function closeSettings() {
+ document.getElementById('settingsModal').classList.remove('active');
+ }
 
-function closeSettings() {
-document.getElementById('settingsModal').classList.remove('active');
-}
-
-function switchToPlanTab() {
-document.querySelectorAll('[data-settings-tab]').forEach(btn => btn.classList.remove('active'));
-document.querySelector('[data-settings-tab="plan"]').classList.add('active');
-document.getElementById('settings-plan-tab').style.display = 'block';
-document.getElementById('settings-subagents-tab').style.display = 'none';
-}
+ function switchToPlanTab() {
+ switchSettingsTab('plan');
+ }
 
  function handlePayment() {
  if (planActive) {
@@ -1797,21 +1802,6 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  function updateAgent(index, field, value) {
  subAgentConfig.agents[index][field] = value;
  }
-
- // Initialize on load
- loadPlanStatus();
- 
- // Expose functions to global scope for onclick handlers
- window.openSettings = openSettings;
- window.closeSettings = closeSettings;
- window.switchToPlanTab = switchToPlanTab;
- window.handlePayment = handlePayment;
- window.openPreview = openPreview;
- window.closePreview = closePreview;
- window.removeAgent = removeAgent;
- window.addAgentConfig = addAgentConfig;
- window.updateAgent = updateAgent;
- }); // End DOMContentLoaded
 
  // ============ AGENT CHAT VISUALIZATION ============
  let agentChatInterval = null;
@@ -1889,32 +1879,43 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  let raycaster, mouse;
  let threeJSInitialized = false;
  
- // Load Three.js from CDN
+ // Load Three.js from CDN with all required modules
  async function loadThreeJS() {
- if (typeof THREE !== 'undefined') return true;
+ if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') return true;
  
  return new Promise((resolve, reject) => {
+ // Load Three.js core
  const script = document.createElement('script');
  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
  script.onload = () => {
- // Load additional modules
- loadThreeJSModule('OrbitControls', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js')
- .then(() => loadThreeJSModule('STLLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js'))
- .then(() => loadThreeJSModule('OBJLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js'))
- .then(() => loadThreeJSModule('GLTFLoader', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'))
- .then(() => resolve(true))
- .catch(reject);
+ // Load OrbitControls (inline after Three.js loads)
+ const controlsScript = document.createElement('script');
+ controlsScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
+ controlsScript.onload = () => {
+ // Load STL Loader
+ const stlScript = document.createElement('script');
+ stlScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js';
+ stlScript.onload = () => {
+ // Load OBJ Loader
+ const objScript = document.createElement('script');
+ objScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js';
+ objScript.onload = () => {
+ // Load GLTF Loader
+ const gltfScript = document.createElement('script');
+ gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+ gltfScript.onload = () => resolve(true);
+ gltfScript.onerror = reject;
+ document.head.appendChild(gltfScript);
  };
- script.onerror = reject;
- document.head.appendChild(script);
- });
- }
- 
- function loadThreeJSModule(name, url) {
- return new Promise((resolve, reject) => {
- const script = document.createElement('script');
- script.src = url;
- script.onload = resolve;
+ objScript.onerror = reject;
+ document.head.appendChild(objScript);
+ };
+ stlScript.onerror = reject;
+ document.head.appendChild(stlScript);
+ };
+ controlsScript.onerror = reject;
+ document.head.appendChild(controlsScript);
+ };
  script.onerror = reject;
  document.head.appendChild(script);
  });
@@ -2053,7 +2054,7 @@ document.getElementById('settings-subagents-tab').style.display = 'none';
  const partName = object.userData.partName || 'Unknown Part';
  
  // Insert part name into chat input
- const chatInput = document.getElementById('chat-input');
+ const chatInput = document.getElementById('chatInput');
  if (chatInput) {
  chatInput.value = `Edit the ${partName}: `;
  chatInput.focus();
