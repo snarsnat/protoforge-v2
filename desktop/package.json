@@ -105,6 +105,10 @@
     ],
     "asarUnpack": [
       "backend/**/*",
+      "requirements.txt"
+    ],
+    "asarUnpack": [
+      "backend/**/*",
       "templates/**/*",
       "static/**/*",
       "assets/**/*",
