@@ -1,23 +1,34 @@
-const { app, BrowserWindow, Menu, Tray, nativeImage, dialog, Notification } = require('electron');
+const { app, BrowserWindow, Menu, dialog, Notification } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
 
 // Keep a global reference of the window object
-let mainWindow;
+let mainWindow = null;
 let backendProcess = null;
-let tray = null;
 
 // Configuration
 const PORT = 8001;
-const BACKEND_PATH = app.isPackaged 
-  ? path.join(process.resourcesPath, 'backend')
-  : path.join(__dirname, '..', 'backend');
 
-const APP_PATH = app.isPackaged
-  ? path.dirname(process.execPath)
-  : path.join(__dirname, '..');
+// Get the correct paths for packaged vs development
+function getAppPaths() {
+  const isDev = !app.isPackaged;
+  
+  if (isDev) {
+    // Development: go up from desktop/ to protoforge-v2/
+    return {
+      rootPath: path.join(__dirname, '..'),
+      backendPath: path.join(__dirname, '..', 'backend'),
+    };
+  } else {
+    // Packaged: resources are in Contents/Resources/
+    return {
+      rootPath: path.dirname(process.execPath),
+      backendPath: path.join(process.resourcesPath, 'backend'),
+    };
+  }
+}
 
 function createWindow() {
   // Create the browser window
@@ -32,28 +43,28 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: false, // Allow local backend requests
+      webSecurity: false,
     },
     backgroundColor: '#1e1e1e',
-    show: false, // Don't show until ready
+    show: false,
   });
 
   // Load the app
   const url = `http://localhost:${PORT}`;
+  console.log('Loading URL:', url);
   mainWindow.loadURL(url);
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
+    console.log('Window ready to show');
     mainWindow.show();
     mainWindow.focus();
   });
 
-  // Handle window close
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  // Create menu
   createMenu();
 }
 
@@ -77,9 +88,7 @@ function createMenu() {
         {
           label: 'Quit ProtoForge',
           accelerator: 'CmdOrCtrl+Q',
-          click: () => {
-            app.quit();
-          },
+          click: () => app.quit(),
         },
       ],
     },
@@ -138,66 +147,85 @@ function checkPython() {
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     const check = spawn(pythonCmd, ['--version']);
     
-    check.on('error', () => {
-      resolve(false);
-    });
-    
-    check.on('close', (code) => {
-      resolve(code === 0);
-    });
+    check.on('error', () => resolve(false));
+    check.on('close', (code) => resolve(code === 0));
   });
 }
 
-function startBackend() {
+function startBackend(paths) {
   return new Promise((resolve, reject) => {
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-    const appPath = path.join(APP_PATH, 'backend', 'src', 'gateway', 'app.py');
+    const appPath = path.join(paths.backendPath, 'src', 'gateway', 'app.py');
+    
+    console.log('Starting backend...');
+    console.log('  Python:', pythonCmd);
+    console.log('  App path:', appPath);
+    console.log('  Root path:', paths.rootPath);
+    console.log('  Backend path:', paths.backendPath);
+    
+    // Check if app.py exists
+    if (!fs.existsSync(appPath)) {
+      reject(new Error(`Backend app not found at: ${appPath}`));
+      return;
+    }
     
     // Set up environment
     const env = {
       ...process.env,
-      PYTHONPATH: BACKEND_PATH,
-      PROTOFORGE_APP_PATH: APP_PATH,
+      PYTHONPATH: paths.backendPath,
+      PROTOFORGE_APP_PATH: paths.rootPath,
+      PYTHONUNBUFFERED: '1',
     };
 
     // Start the Python backend
     backendProcess = spawn(pythonCmd, [appPath], {
-      cwd: APP_PATH,
+      cwd: paths.rootPath,
       env: env,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    let started = false;
+    let errorMessage = '';
+
     backendProcess.stdout.on('data', (data) => {
-      console.log(`Backend: ${data}`);
+      const output = data.toString();
+      console.log('Backend:', output);
       
-      // Check if server started successfully
-      if (data.toString().includes('Uvicorn running')) {
+      // Check for successful startup
+      if (output.includes('Uvicorn running') || output.includes('Application startup complete')) {
+        started = true;
         resolve(true);
       }
     });
 
     backendProcess.stderr.on('data', (data) => {
-      console.error(`Backend Error: ${data}`);
+      const error = data.toString();
+      console.error('Backend Error:', error);
+      errorMessage += error;
+      
+      // Check for common errors
+      if (error.includes('ModuleNotFoundError') || error.includes('ImportError')) {
+        reject(new Error(`Python module not found. Please run:\n\ncd "${paths.rootPath}"\npip3 install -r requirements.txt\n\n${error}`));
+      }
     });
 
     backendProcess.on('close', (code) => {
       console.log(`Backend process exited with code ${code}`);
-      if (mainWindow) {
-        new Notification({
-          title: 'ProtoForge Backend Stopped',
-          body: `The backend server exited with code ${code}`,
-        }).show();
+      if (!started) {
+        reject(new Error(`Backend exited with code ${code}\n\n${errorMessage || 'Check console for details'}`));
       }
     });
 
-    // Timeout if backend doesn't start
+    // Timeout after 60 seconds
     setTimeout(() => {
-      reject(new Error('Backend failed to start within 30 seconds'));
-    }, 30000);
+      if (!started) {
+        reject(new Error('Backend failed to start within 60 seconds. Check console for errors.'));
+      }
+    }, 60000);
   });
 }
 
-function waitForServer(maxAttempts = 60) {
+function waitForServer(maxAttempts = 120) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
     
@@ -212,14 +240,12 @@ function waitForServer(maxAttempts = 60) {
         }
       });
       
-      req.on('error', () => {
-        retry();
-      });
+      req.on('error', () => retry());
     };
     
     const retry = () => {
       if (attempts >= maxAttempts) {
-        reject(new Error('Server failed to start'));
+        reject(new Error('Server failed to start after 60 seconds'));
       } else {
         setTimeout(checkServer, 500);
       }
@@ -230,6 +256,13 @@ function waitForServer(maxAttempts = 60) {
 }
 
 async function setupApp() {
+  const paths = getAppPaths();
+  
+  console.log('=== ProtoForge Desktop App ===');
+  console.log('Mode:', app.isPackaged ? 'Production' : 'Development');
+  console.log('Root path:', paths.rootPath);
+  console.log('Backend path:', paths.backendPath);
+  
   // Check Python
   const hasPython = await checkPython();
   if (!hasPython) {
@@ -243,9 +276,11 @@ async function setupApp() {
 
   // Start backend
   try {
-    await startBackend();
+    await startBackend(paths);
+    console.log('Backend started successfully!');
+    
     await waitForServer();
-    console.log('Backend server is ready!');
+    console.log('Server is ready!');
     
     // Show notification
     new Notification({
@@ -253,14 +288,23 @@ async function setupApp() {
       body: 'Your AI prototyping studio is ready to use!',
     }).show();
     
-    // Create window
     createWindow();
   } catch (error) {
     console.error('Failed to start backend:', error);
-    dialog.showErrorBox(
-      'Backend Error',
-      `Failed to start the ProtoForge backend:\n\n${error.message}\n\nPlease check the console for details.`
-    );
+    
+    let errorMsg = `Failed to start the ProtoForge backend:\n\n${error.message}`;
+    
+    // Add helpful tips based on error
+    if (error.message.includes('ModuleNotFoundError') || error.message.includes('pip')) {
+      errorMsg += '\n\nTo fix this:\n1. Open Terminal\n2. Run: cd ' + paths.rootPath + '\n3. Run: pip3 install -r requirements.txt\n4. Try opening ProtoForge again';
+    } else if (error.message.includes('within')) {
+      errorMsg += '\n\nThe backend is taking too long to start. This could be because:\n- Python dependencies are missing\n- Port 8001 is already in use\n- There\'s an error in the backend code\n\nCheck the console (Cmd+Option+I) for details.';
+    }
+    
+    dialog.showErrorBox('ProtoForge Backend Error', errorMsg);
+    
+    // Keep app open so user can see error and check console
+    // Don't quit immediately
   }
 }
 
@@ -272,10 +316,11 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   // Clean up backend process
   if (backendProcess) {
+    console.log('Killing backend process...');
     backendProcess.kill('SIGTERM');
+    backendProcess = null;
   }
   
-  // On macOS, apps typically stay active until explicitly quit
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -288,15 +333,12 @@ app.on('activate', () => {
 });
 
 app.on('before-quit', () => {
-  // Ensure backend is stopped
   if (backendProcess) {
     backendProcess.kill('SIGTERM');
     backendProcess = null;
   }
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  dialog.showErrorBox('ProtoForge Error', `An unexpected error occurred:\n\n${error.message}`);
 });
