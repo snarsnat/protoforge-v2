@@ -35,6 +35,14 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Desktop app build artifacts
+desktop/dist/
+desktop/node_modules/
+desktop/build/icon.icns
+desktop/build/icon.png
+desktop/build/dmg-background.png
+desktop/build/icon.iconset/
+
 # Coverage
 coverage/
 htmlcov/
@@ -61,4 +69,6 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-```
+
+# Demo files (not for repo)
+demo-simulation.html

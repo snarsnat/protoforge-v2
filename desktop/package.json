@@ -1,0 +1,115 @@
+{
+  "name": "ProtoForge",
+  "version": "2.0.0",
+  "description": "AI-powered prototyping for software, hardware, and hybrid projects",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dmg": "electron-builder --mac dmg",
+    "build:zip": "electron-builder --mac zip",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "protoforge",
+    "ai",
+    "prototyping",
+    "hardware",
+    "software",
+    "electron"
+  ],
+  "author": "Nausheen Suraj",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.protoforge.app",
+    "productName": "ProtoForge",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "title": "ProtoForge Installer",
+      "background": "build/dmg-background.png"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "build/**/*",
+      "../backend/**/*",
+      "../templates/**/*",
+      "../static/**/*",
+      "../requirements.txt",
+      "../config.yaml",
+      "../assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../templates",
+        "to": "templates",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../static",
+        "to": "static",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../assets",
+        "to": "assets",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../requirements.txt",
+        "to": "requirements.txt"
+      },
+      {
+        "from": "../config.yaml",
+        "to": "config.yaml"
+      }
+    ],
+    "asarUnpack": [
+      "backend/**/*",
+      "templates/**/*",
+      "static/**/*",
+      "assets/**/*",
+      "requirements.txt",
+      "config.yaml"
+    ]
+  }
+}

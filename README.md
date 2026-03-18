@@ -61,6 +61,36 @@ Navigate to **http://localhost:8001** in your browser.
 
 ---
 
+## 🖥️ Desktop App (macOS)
+
+Prefer a native app? ProtoForge is available as a macOS .dmg installer!
+
+### Install from .dmg
+
+1. **Download** the latest `.dmg` from [Releases](https://github.com/snarsnat/protoforge-v2/releases)
+2. **Open** the `.dmg` file
+3. **Drag** ProtoForge to your Applications folder
+4. **Launch** from Applications
+
+> **First Launch on macOS:** If you see a security warning:
+> - Right-click `ProtoForge.app` → **Open**
+> - Click **"Open Anyway"** in Security & Privacy
+> - Or run: `xattr -rd com.apple.quarantine /Applications/ProtoForge.app`
+
+### Build from Source
+
+```bash
+cd desktop
+chmod +x scripts/build.sh
+./scripts/build.sh
+```
+
+The `.dmg` will be created in `desktop/dist/ProtoForge-2.0.0.dmg`
+
+See [`desktop/README.md`](desktop/README.md) for full build instructions.
+
+---
+
 ## API Configuration
 
 ### 🆓 Free Tier API Keys (Recommended)
