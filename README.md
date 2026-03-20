@@ -21,7 +21,7 @@ ProtoForge is an AI-powered builder that generates real prototypes:
 - **Hybrid** → Combined hardware + software systems
 
 Just describe what you want, select a mode, and ProtoForge generates the files.
-[View how Protoforge works](protoforge_architecture.svg)
+! [View how Protoforge works](protoforge_architecture.svg)
 
 ## Quick Start
 
